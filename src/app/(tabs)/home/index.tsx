@@ -26,6 +26,8 @@ const COLORS = {
 const ROWS = 3;
 const COLS = 6;
 
+let online = true;
+
 export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -35,15 +37,19 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>RoadVet</Text>
-        <View style={styles.statusColumn}>
-          <View style={styles.statusRow}>
-            <Ionicons name="cloud-upload-outline" size={16} color={COLORS.green} />
-            <Text style={styles.statusText}>Dados sincronizados</Text>
-          </View>
-          <View style={styles.statusRow}>
-            <MaterialCommunityIcons name="wifi-off" size={16} color={COLORS.textMuted} />
-            <Text style={styles.statusText}>Offline</Text>
-          </View>
+          <View style={styles.statusColumn}>
+            { online ?
+              <View style={styles.statusRow}>
+                <Ionicons name="cloud-upload-outline" size={16} color={COLORS.green} />
+                <Text style={styles.statusText}>Dados sincronizados</Text>
+              </View>
+              :
+              <View style={styles.statusRow}>
+                <MaterialCommunityIcons name="wifi-off" size={16} color={COLORS.textMuted} />
+              <Text style={styles.statusText}>Offline</Text>
+            </View> }
+
+
         </View>
       </View>
 
