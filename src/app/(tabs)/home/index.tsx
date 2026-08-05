@@ -37,12 +37,9 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
       <StatusBar barStyle="dark-content" />
       <View style={styles.content}>
 
-        {/*testing*/}
-        <SearchBar />
-        <SortFilterBar />
-        
-      {/* Header */}
-        <Header title='RoadVet' isOffline={!online} />
+        {/* Header */}
+        {/* TODO: make online badge */}
+      <Header title='RoadVet' isOffline={!online} />
 
       {/* Greeting */}
       <Text style={styles.greeting}>Olá, {userName}</Text>

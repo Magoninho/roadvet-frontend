@@ -59,7 +59,7 @@ export default function ProntuariosScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Prontuários" isOffline />
+      <Header title="Prontuários" />
       <SearchBar value={search} onChangeText={setSearch} />
       <SortFilterBar onSortPress={handleSort} onFilterPress={handleFilter} />
 

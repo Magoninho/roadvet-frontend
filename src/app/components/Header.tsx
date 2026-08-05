@@ -7,7 +7,7 @@ interface HeaderProps {
   isOffline?: boolean;
 }
 
-export function Header({ title, isOffline = true }: HeaderProps) {
+export function Header({ title, isOffline = false }: HeaderProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
