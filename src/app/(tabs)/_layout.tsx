@@ -24,7 +24,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="home/index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -34,7 +34,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="pets/index"
+        name="pets"
         options={{
           title: 'Pets',
           tabBarIcon: ({ color, size }) => (
@@ -44,7 +44,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="tutores/index"
+        name="tutores"
         options={{
           title: 'Tutores',
           tabBarIcon: ({ color, size }) => (
@@ -54,7 +54,7 @@ export default function TabsLayout() {
       />
       
       <Tabs.Screen
-        name="prontuarios/index"
+        name="prontuarios"
         options={{
           title: 'Prontuarios',
           tabBarIcon: ({ color, size }) => (

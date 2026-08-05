@@ -36,6 +36,7 @@ export function ViewSortFilterBar({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    justifyContent: 'flex-end',
     paddingHorizontal: 16,
     marginTop: 12,
     gap: 20,
