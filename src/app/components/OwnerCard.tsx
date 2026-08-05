@@ -42,7 +42,7 @@ export function OwnerCard({ data, onPress }: OwnerCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    width: '31%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
@@ -50,7 +50,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 8,
-    margin: 6,
+    marginHorizontal: '1.16%',
+    marginBottom: 12,
   },
   avatarWrapper: {
     width: 48,
