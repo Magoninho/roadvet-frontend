@@ -2,6 +2,7 @@ import { Header } from '@/app/components/Header';
 import { SearchBar } from '@/app/components/SearchBar';
 import { SortFilterBar } from '@/app/components/SortFilterBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   StatusBar,
   StyleSheet,
@@ -32,6 +33,17 @@ const COLS = 6;
 let online = true;
 
 export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true }) {
+  const router = useRouter();
+
+  const handleNewProntuarioPress = () => {
+    router.navigate('/(tabs)/prontuarios/newProntuarioScreen');
+  };
+
+  const handleNewTutorPress = () => {
+    // TODO: create new tutor screen
+    router.navigate('/(tabs)/tutores')
+  }
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar barStyle="dark-content" />
@@ -45,7 +57,7 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
       <Text style={styles.greeting}>Olá, {userName}</Text>
 
       {/* Primary action */}
-      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85}>
+      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85} onPress={handleNewProntuarioPress}>
         <MaterialCommunityIcons name="clipboard-text-outline" size={20} color="#fff" />
         <Text style={styles.primaryButtonText}>Nova consulta (Prontuário)</Text>
       </TouchableOpacity>
@@ -55,6 +67,7 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
         <TouchableOpacity
           style={[styles.secondaryButton, { backgroundColor: COLORS.orange }]}
           activeOpacity={0.85}
+          onPress={handleNewTutorPress}
         >
           <Ionicons name="person-outline" size={20} color="#fff" />
           <Text style={styles.secondaryButtonText}>Novo Tutor</Text>
