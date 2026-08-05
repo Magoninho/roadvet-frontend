@@ -11,10 +11,10 @@ interface HeaderProps {
 
 const STATUS_CONFIG: Record<SyncStatus, { icon: string; color: string; label: string }> = {
   offline: { icon: 'wifi-off', color: '#8A8A8A', label: 'Offline' },
-  synced: { icon: 'cloud-check', color: '#22C55E', label: 'Dados sincronizados' },
+  synced: { icon: 'cloud-check', color: '#22C55E', label: 'Online' },
 };
 
-export function Header({ title, syncStatus = 'offline' }: HeaderProps) {
+export function Header({ title, syncStatus = 'synced' }: HeaderProps) {
   const status = STATUS_CONFIG[syncStatus];
 
   return (
