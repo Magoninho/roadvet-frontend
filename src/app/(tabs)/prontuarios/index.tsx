@@ -5,6 +5,7 @@ import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { useRouter } from 'expo-router';
 
 const MOCK_DATA: RecordCardData[] = [
   {
@@ -40,6 +41,7 @@ const MOCK_DATA: RecordCardData[] = [
 
 export default function ProntuariosScreen() {
   const [search, setSearch] = useState('');
+  const router = useRouter();
 
   const handleSort = () => {
     // abrir modal / lógica de ordenação
@@ -54,7 +56,7 @@ export default function ProntuariosScreen() {
   };
 
   const handleAddPress = () => {
-    // navegar para criação de novo prontuário
+    router.navigate('/(tabs)/prontuarios/newProntuario');
   };
 
   return (

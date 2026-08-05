@@ -28,7 +28,6 @@ export function PetCard({ data, onPress }: PetCardProps) {
       activeOpacity={0.8}
       onPress={() => onPress?.(id)}
     >
-      <SyncDot synced={synced} />
 
       <View style={styles.leftContent}>
         <Icon
