@@ -2,21 +2,28 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+type SyncStatus = 'offline' | 'synced';
+
 interface HeaderProps {
   title: string;
-  isOffline?: boolean;
+  syncStatus?: SyncStatus;
 }
 
-export function Header({ title, isOffline = false }: HeaderProps) {
+const STATUS_CONFIG: Record<SyncStatus, { icon: string; color: string; label: string }> = {
+  offline: { icon: 'wifi-off', color: '#8A8A8A', label: 'Offline' },
+  synced: { icon: 'cloud-check', color: '#22C55E', label: 'Dados sincronizados' },
+};
+
+export function Header({ title, syncStatus = 'offline' }: HeaderProps) {
+  const status = STATUS_CONFIG[syncStatus];
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      {isOffline && (
-        <View style={styles.offlineWrapper}>
-          <Icon name="wifi-off" size={16} color="#8A8A8A" />
-          <Text style={styles.offlineText}>Offline</Text>
-        </View>
-      )}
+      <View style={styles.statusWrapper}>
+        <Icon name={status.icon} size={16} color={status.color} />
+        <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+      </View>
     </View>
   );
 }
@@ -35,13 +42,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1A1A1A',
   },
-  offlineWrapper: {
+  statusWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  offlineText: {
+  statusText: {
     marginLeft: 4,
     fontSize: 13,
-    color: '#8A8A8A',
+    fontWeight: '500',
   },
 });
