@@ -1,3 +1,6 @@
+import { Header } from '@/app/components/Header';
+import { SearchBar } from '@/app/components/SearchBar';
+import { SortFilterBar } from '@/app/components/SortFilterBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   StatusBar,
@@ -34,24 +37,12 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
       <StatusBar barStyle="dark-content" />
       <View style={styles.content}>
 
+        {/*testing*/}
+        <SearchBar />
+        <SortFilterBar />
+        
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>RoadVet</Text>
-          <View style={styles.statusColumn}>
-            { online ?
-              <View style={styles.statusRow}>
-                <Ionicons name="cloud-upload-outline" size={16} color={COLORS.green} />
-                <Text style={styles.statusText}>Dados sincronizados</Text>
-              </View>
-              :
-              <View style={styles.statusRow}>
-                <MaterialCommunityIcons name="wifi-off" size={16} color={COLORS.textMuted} />
-              <Text style={styles.statusText}>Offline</Text>
-            </View> }
-
-
-        </View>
-      </View>
+        <Header title='RoadVet' isOffline={!online} />
 
       {/* Greeting */}
       <Text style={styles.greeting}>Olá, {userName}</Text>
