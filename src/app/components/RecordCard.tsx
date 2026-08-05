@@ -6,7 +6,7 @@ import { StatusBadge, BadgeType } from './StatusBadge';
 export interface RecordCardData {
   id: string;
   petName: string;
-  petType: string;
+  species: string;
   description: string;
   badges: BadgeType[];
   date: string;
@@ -19,7 +19,7 @@ interface RecordCardProps {
 }
 
 export function RecordCard({ data, onPress }: RecordCardProps) {
-  const { id, petName, petType, description, badges, date, synced } = data;
+  const { id, petName, species, description, badges, date, synced } = data;
 
   return (
     <TouchableOpacity
@@ -28,7 +28,7 @@ export function RecordCard({ data, onPress }: RecordCardProps) {
       onPress={() => onPress?.(id)}
     >
       <View style={styles.headerRow}>
-        <Icon name={ petType || "paw" } size={18} color="#1A1A1A" />
+        <Icon name={ species || "paw" } size={18} color="#1A1A1A" />
         <Text style={styles.petName}>{petName}</Text>
       </View>
 

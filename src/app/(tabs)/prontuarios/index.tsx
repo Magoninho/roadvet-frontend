@@ -10,7 +10,7 @@ const MOCK_DATA: RecordCardData[] = [
   {
     id: '1',
     petName: 'Floquinho',
-    petType: "dog",
+    species: "dog",
     description:
       'Apresentou dores na pata e tomou antibióticos, tomou dose de vacina antirrábica',
     badges: ['medication', 'vaccine'],
@@ -21,7 +21,7 @@ const MOCK_DATA: RecordCardData[] = [
     id: '2',
     petName: 'Cascão',
     description: 'Foram solicitados exames',
-    petType: "cat",
+    species: "cat",
     badges: ['exam'],
     date: '22/04/2026',
     synced: true,
@@ -29,7 +29,7 @@ const MOCK_DATA: RecordCardData[] = [
   {
     id: '3',
     petName: 'Mingau',
-    petType: "cat",
+    species: "cat",
     description:
       'Tomou dose de vacina polivalente e foram solicitados exames...',
     badges: ['medication', 'exam'],
