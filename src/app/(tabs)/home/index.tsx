@@ -39,7 +39,7 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
 
         {/* Header */}
         {/* TODO: make online badge */}
-      <Header title='RoadVet' isOffline={!online} />
+      <Header title='RoadVet' syncStatus="synced" />
 
       {/* Greeting */}
       <Text style={styles.greeting}>Olá, {userName}</Text>

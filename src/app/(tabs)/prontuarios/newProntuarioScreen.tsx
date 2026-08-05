@@ -63,7 +63,10 @@ export default function NewProntuarioScreen() {
   };
 
   const handleSelectPet = (id: string) => {
-    // selecionar pet e avançar no fluxo de criação do prontuário
+    router.push({
+      pathname: '/prontuarios/newProntuarioFormScreen',
+      params: { petId: id },
+    });
   };
 
   return (

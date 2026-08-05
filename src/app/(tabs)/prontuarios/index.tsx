@@ -56,7 +56,7 @@ export default function ProntuariosScreen() {
   };
 
   const handleAddPress = () => {
-    router.navigate('/(tabs)/prontuarios/newProntuario');
+    router.navigate('/(tabs)/prontuarios/newProntuarioScreen');
   };
 
   return (
