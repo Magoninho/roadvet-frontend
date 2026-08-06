@@ -5,6 +5,7 @@ import { SearchBar } from '../../components/SearchBar';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 import { PetCard, PetCardData } from '../../components/PetCard';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { useRouter } from 'expo-router';
 
 const MOCK_PETS: PetCardData[] = [
   {
@@ -52,6 +53,8 @@ const MOCK_PETS: PetCardData[] = [
 export default function PetsScreen() {
   const [search, setSearch] = useState('');
 
+  const router = useRouter();
+
   const handleView = () => {
     // alternar entre lista/grade
   };
@@ -69,7 +72,7 @@ export default function PetsScreen() {
   };
 
   const handleAddPress = () => {
-    // navegar para cadastro de novo pet
+    router.navigate('/(tabs)/pets/newPetScreen');
   };
 
   return (
