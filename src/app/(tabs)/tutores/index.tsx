@@ -5,11 +5,12 @@ import { SearchBar } from '../../components/SearchBar';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { useRouter } from 'expo-router';
 
 const NUM_COLUMNS = 3;
 
 const MOCK_OWNERS: OwnerCardData[] = [
-  { id: '1', name: 'Magali', pets: ['Mingau'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/4/4f/Magali_Lima.png/revision/latest?cb=20260420233335&path-prefix=pt-br' },
+  { id: '1', name: 'Magali', pets: ['Mingau'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/8/89/Magali_e_Mingau_se_abra%C3%A7ando.png/revision/latest?cb=20221221004720&path-prefix=pt-br' },
   { id: '2', name: 'Franjinha', pets: ['Bidu'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/3/3b/Franjinha_em_fundo_branco.jpeg/revision/latest/smart/width/250/height/250?cb=20250508134316&path-prefix=pt-br' },
   { id: '3', name: 'Cebolinha', pets: ['Floquinho'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/9/91/Cebolinha_Junior.png/revision/latest?cb=20260420233226&path-prefix=pt-br' },
   { id: '4', name: 'Mônica', pets: ['Monicão'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/9/91/M%C3%B4nica_Sousa_e_Sans%C3%A3o.png/revision/latest/scale-to-width-down/1000?cb=20260418070809&path-prefix=pt-br' },
@@ -31,13 +32,19 @@ function fillWithEmptyItems(data: OwnerCardData[]): ListItem[] {
 
 export default function TutoresScreen() {
   const [search, setSearch] = useState('');
+  const router = useRouter();
 
   const listData = useMemo(() => fillWithEmptyItems(MOCK_OWNERS), []);
 
   const handleView = () => {};
   const handleSort = () => {};
   const handleFilter = () => {};
-  const handleCardPress = (id: string) => {};
+  const handleCardPress = (id: string) => {
+    router.push({
+      params: { id: id },
+      pathname: '/(tabs)/tutores/details'
+    })
+  };
   const handleAddPress = () => {};
 
   return (
