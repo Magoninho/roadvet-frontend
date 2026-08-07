@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SyncDot } from './SyncDot';
 
@@ -12,15 +12,29 @@ export interface PetCardData {
   ownerName: string;
   species?: 'dog' | 'cat';
   synced: boolean;
+  photoUrl?: string;
 }
 
 interface PetCardProps {
   data: PetCardData;
   onPress?: (id: string) => void;
+  showSyncDot?: boolean;
 }
 
-export function PetCard({ data, onPress }: PetCardProps) {
-  const { id, name, age, gender, breed, ownerName, species = 'dog', synced } = data;
+function PetAvatar({ photoUrl, species }: { photoUrl?: string; species: 'dog' | 'cat' }) {
+  if (photoUrl) {
+    return <Image source={{ uri: photoUrl }} style={styles.avatarImage} />;
+  }
+
+  return (
+    <View style={styles.avatarFallback}>
+      <Icon name={species === 'cat' ? 'cat' : 'dog'} size={18} color="#5A5A5A" />
+    </View>
+  );
+}
+
+export function PetCard({ data, onPress, showSyncDot = true }: PetCardProps) {
+  const { id, name, age, gender, breed, ownerName, species = 'dog', synced, photoUrl } = data;
 
   return (
     <TouchableOpacity
@@ -30,12 +44,7 @@ export function PetCard({ data, onPress }: PetCardProps) {
     >
 
       <View style={styles.leftContent}>
-        <Icon
-          name={species === 'cat' ? 'cat' : 'dog'}
-          size={18}
-          color="#1A1A1A"
-          style={styles.petIcon}
-        />
+        <PetAvatar photoUrl={photoUrl} species={species} />
         <View>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.info}>
@@ -71,12 +80,23 @@ const styles = StyleSheet.create({
   },
   leftContent: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flex: 1,
   },
-  petIcon: {
-    marginRight: 8,
-    marginTop: 2,
+  avatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  avatarFallback: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F2F2F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   name: {
     fontSize: 16,
