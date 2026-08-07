@@ -5,9 +5,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 interface ProfileAvatarProps {
   photoUrl?: string;
   size?: number;
+  fallbackIcon?: string;
 }
 
-export function ProfileAvatar({ photoUrl, size = 120 }: ProfileAvatarProps) {
+export function ProfileAvatar({ photoUrl, size = 120, fallbackIcon = 'account' }: ProfileAvatarProps) {
   const dimensionStyle = { width: size, height: size, borderRadius: size / 2 };
 
   if (photoUrl) {
@@ -16,7 +17,7 @@ export function ProfileAvatar({ photoUrl, size = 120 }: ProfileAvatarProps) {
 
   return (
     <View style={[styles.fallback, dimensionStyle]}>
-      <Icon name="account" size={size * 0.5} color="#5A5A5A" />
+      <Icon name={fallbackIcon} size={size * 0.5} color="#5A5A5A" />
     </View>
   );
 }

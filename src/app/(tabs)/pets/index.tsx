@@ -17,7 +17,7 @@ const MOCK_PETS: PetCardData[] = [
     ownerName: 'Magali',
     species: 'cat',
     synced: true,
-    photoUrl: 'https://static.wikia.nocookie.net/monica/images/5/5a/Mingau_%28foto_promocional%29.jpg/revision/latest?cb=20180728012816&path-prefix=pt-br'
+    photoUrl: 'https://wsrv.nl/?url=https%3A%2F%2Fstatic.wikia.nocookie.net%2Fmonica%2Fimages%2F5%2F5a%2FMingau_%2528foto_promocional%2529.jpg%2Frevision%2Flatest%3Fcb%3D20180728012816%26path-prefix%3Dpt-br&cx=400'
   },
   {
     id: '2',
@@ -72,7 +72,10 @@ export default function PetsScreen() {
   };
 
   const handleCardPress = (id: string) => {
-    // navegar para detalhe do pet
+    router.push({
+      params: { id: id },
+      pathname: '/(tabs)/pets/details'
+    });
   };
 
   const handleAddPress = () => {
