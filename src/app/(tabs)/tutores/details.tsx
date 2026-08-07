@@ -11,7 +11,7 @@ import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard'
 const MOCK_TUTOR = {
   id: '1',
   name: 'Magali',
-  address: 'Rua General Fictício, 67',
+  address: 'Rua do Limoeiro, 67',
   phone: '(85) 9 9574-8673',
   cpf: '713.927.970-55',
   photoUrl: 'https://static.wikia.nocookie.net/monica/images/8/89/Magali_e_Mingau_se_abra%C3%A7ando.png/revision/latest?cb=20221221004720&path-prefix=pt-br'
