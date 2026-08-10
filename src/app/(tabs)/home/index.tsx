@@ -1,30 +1,30 @@
-import { Header } from '@/app/components/Header';
-import { SearchBar } from '@/app/components/SearchBar';
-import { SortFilterBar } from '@/app/components/SortFilterBar';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Header } from "@/app/components/Header";
+import { SearchBar } from "@/app/components/SearchBar";
+import { SortFilterBar } from "@/app/components/SortFilterBar";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Colors pulled from the mock
 const COLORS = {
-  bg: '#ffffff',
-  screenBg: '#f2f2f2',
-  textDark: '#2b2b2b',
-  textMuted: '#8a8a8a',
-  blue: '#5b8def',
-  orange: '#e8a838',
-  green: '#7ac2a5',
-  border: '#e5e5e5',
-  navActiveBg: '#dbe9ff',
-  navActive: '#5b8def',
-  navInactive: '#3a3a3a',
+  bg: "#ffffff",
+  screenBg: "#f2f2f2",
+  textDark: "#2b2b2b",
+  textMuted: "#8a8a8a",
+  blue: "#5b8def",
+  orange: "#e8a838",
+  green: "#7ac2a5",
+  border: "#e5e5e5",
+  navActiveBg: "#dbe9ff",
+  navActive: "#5b8def",
+  navInactive: "#3a3a3a",
 };
 
 const ROWS = 3;
@@ -32,61 +32,81 @@ const COLS = 6;
 
 let online = true;
 
-export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true }) {
+export default function HomeScreen({
+  userName = "Fulano de Tal",
+  isSynced = true,
+}) {
   const router = useRouter();
 
   const handleNewProntuarioPress = () => {
-    router.navigate('/global/prontuarios/newProntuarioScreen');
+    router.navigate("/global/prontuarios/select");
   };
 
   const handleNewTutorPress = () => {
     // TODO: create new tutor screen
-    router.navigate('/(tabs)/tutores')
-  }
+    router.navigate("/(tabs)/tutores");
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.content}>
-
         {/* Header */}
         {/* TODO: make online badge */}
-      <Header title='RoadVet' syncStatus="synced" />
+        <Header title="RoadVet" syncStatus="synced" />
+        <View style={{paddingHorizontal: 16}}>
+          {/* Greeting */}
+          <Text style={styles.greeting}>Olá, {userName}</Text>
 
-      {/* Greeting */}
-      <Text style={styles.greeting}>Olá, {userName}</Text>
+          {/* Primary action */}
+          <TouchableOpacity
+            style={styles.primaryButton}
+            activeOpacity={0.85}
+            onPress={handleNewProntuarioPress}
+          >
+            <MaterialCommunityIcons
+              name="clipboard-text-outline"
+              size={20}
+              color="#fff"
+            />
+            <Text style={styles.primaryButtonText}>
+              Nova consulta (Prontuário)
+            </Text>
+          </TouchableOpacity>
 
-      {/* Primary action */}
-      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85} onPress={handleNewProntuarioPress}>
-        <MaterialCommunityIcons name="clipboard-text-outline" size={20} color="#fff" />
-        <Text style={styles.primaryButtonText}>Nova consulta (Prontuário)</Text>
-      </TouchableOpacity>
-
-      {/* Secondary actions */}
-      <View style={styles.secondaryRow}>
-        <TouchableOpacity
-          style={[styles.secondaryButton, { backgroundColor: COLORS.orange }]}
-          activeOpacity={0.85}
-          onPress={handleNewTutorPress}
-        >
-          <Ionicons name="person-outline" size={20} color="#fff" />
-          <Text style={styles.secondaryButtonText}>Novo Tutor</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.secondaryButton, { backgroundColor: COLORS.green }]}
-          activeOpacity={0.85}
-        >
-          <MaterialCommunityIcons name="paw-outline" size={20} color="#fff" />
-          <Text style={styles.secondaryButtonText}>Novo Animal</Text>
-        </TouchableOpacity>
-      </View>
-
+          {/* Secondary actions */}
+          <View style={styles.secondaryRow}>
+            <TouchableOpacity
+              style={[
+                styles.secondaryButton,
+                { backgroundColor: COLORS.orange },
+              ]}
+              activeOpacity={0.85}
+              onPress={handleNewTutorPress}
+            >
+              <Ionicons name="person-outline" size={20} color="#fff" />
+              <Text style={styles.secondaryButtonText}>Novo Tutor</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.secondaryButton,
+                { backgroundColor: COLORS.green },
+              ]}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="paw-outline"
+                size={20}
+                color="#fff"
+              />
+              <Text style={styles.secondaryButtonText}>Novo Animal</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -95,25 +115,24 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginTop: 12,
   },
   logo: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.textDark,
   },
   statusColumn: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
   },
   statusText: {
@@ -123,7 +142,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.textDark,
     marginTop: 24,
     marginBottom: 24,
@@ -132,39 +151,39 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.blue,
     borderRadius: 12,
     paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 3
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 3,
   },
   primaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 15,
     marginLeft: 8,
   },
   secondaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 14,
-    gap: 12
+    gap: 12,
   },
   secondaryButton: {
     flex: 1,
     borderRadius: 12,
     paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 13,
   },
   sectionTitle: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.textDark,
     marginTop: 28,
     marginBottom: 12,
@@ -174,7 +193,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.textDark,
   },
   gridRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   gridCell: {
     flex: 1,
@@ -187,24 +206,24 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
   },
   navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     paddingTop: 8,
     paddingBottom: 12,
-    marginTop: 'auto',
+    marginTop: "auto",
   },
   navItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   navIconWrap: {
     width: 40,
     height: 32,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   navLabel: {
     fontSize: 10,
