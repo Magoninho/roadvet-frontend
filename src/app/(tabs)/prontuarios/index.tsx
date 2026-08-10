@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
+import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
-import { RecordCard, RecordCardData } from '../../components/RecordCard';
-import { FloatingActionButton } from '../../components/FloatingActionButton';
-import { useRouter } from 'expo-router';
 
 const MOCK_DATA: RecordCardData[] = [
   {

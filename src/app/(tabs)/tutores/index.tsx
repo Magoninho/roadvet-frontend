@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, SafeAreaView, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
+import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
 import { SearchBar } from '../../components/SearchBar';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
-import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
-import { FloatingActionButton } from '../../components/FloatingActionButton';
-import { useRouter } from 'expo-router';
 
 const NUM_COLUMNS = 3;
 

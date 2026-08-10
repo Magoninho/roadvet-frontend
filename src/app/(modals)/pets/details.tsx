@@ -1,13 +1,12 @@
-import React from 'react';
-import { ScrollView, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Header } from '../../components/Header';
-import { DetailTopBar } from '../../components/DetailTopBar';
-import { ProfileAvatar } from '../../components/ProfileAvatar';
-import { OwnerReference } from '../../components/OwnerReference';
-import { SectionDivider } from '../../components/SectionDivider';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BulletList } from '../../components/BulletList';
+import { DetailTopBar } from '../../components/DetailTopBar';
+import { OwnerReference } from '../../components/OwnerReference';
+import { ProfileAvatar } from '../../components/ProfileAvatar';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
+import { SectionDivider } from '../../components/SectionDivider';
 
 const MOCK_PET = {
   id: '1',

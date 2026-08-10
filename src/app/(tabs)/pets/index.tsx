@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
+import { PetCard, PetCardData } from '../../components/PetCard';
 import { SearchBar } from '../../components/SearchBar';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
-import { PetCard, PetCardData } from '../../components/PetCard';
-import { FloatingActionButton } from '../../components/FloatingActionButton';
-import { useRouter } from 'expo-router';
 
 const MOCK_PETS: PetCardData[] = [
   {

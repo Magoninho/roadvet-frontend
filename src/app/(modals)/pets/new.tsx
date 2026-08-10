@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, SafeAreaView, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BackHeader } from '../../components/BackHeader';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AvatarPicker } from '../../components/AvatarPicker';
-import { TutorAutocomplete } from '../../components/TutorAutocomplete';
+import { BackHeader } from '../../components/BackHeader';
+import { DateInput } from '../../components/DateInput';
+import { FormFooter } from '../../components/FormFooter';
 import { GhostButton } from '../../components/GhostButton';
 import { LabeledInput } from '../../components/LabeledInput';
-import { DateInput } from '../../components/DateInput';
-import { WeightInput } from '../../components/WeightInput';
 import { SelectInput } from '../../components/SelectInput';
-import { FormFooter } from '../../components/FormFooter';
+import { TutorAutocomplete } from '../../components/TutorAutocomplete';
 import { TutorFormModal } from '../../components/TutorFormModal';
+import { WeightInput } from '../../components/WeightInput';
 
 const MOCK_TUTORES = [
   'Ana Maria',
@@ -91,7 +92,7 @@ export function NovoPetScreen() {
           style={styles.fullInput}
         />
 
-        <Text style={styles.row}>
+        <View style={styles.row}>
           <DateInput
             value={dataNascimento}
             onChange={setDataNascimento}
@@ -102,9 +103,9 @@ export function NovoPetScreen() {
             onChangeText={setPeso}
             style={styles.rowInputRight}
           />
-        </Text>
+        </View>
 
-        <Text style={styles.row}>
+        <View style={styles.row}>
           <SelectInput
             value={especie}
             onSelect={setEspecie}
@@ -118,7 +119,7 @@ export function NovoPetScreen() {
             onChangeText={setRaca}
             style={styles.rowInputRight}
           />
-        </Text>
+        </View>
       </ScrollView>
 
       <FormFooter onCancel={handleCancelar} onSave={handleSalvar} />
@@ -165,6 +166,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 14,
     gap: 12,
+    alignItems: 'flex-start',
   },
   rowInputLeft: {
     flex: 1,

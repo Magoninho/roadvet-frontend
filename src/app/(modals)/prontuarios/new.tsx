@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { BackHeader } from '../../components/BackHeader';
-import { FormSectionTitle } from '../../components/FormSectionTitle';
-import { VitalInputField } from '../../components/VitalInputField';
-import { TextAreaField } from '../../components/TextAreaField';
-import { FormFooter } from '../../components/FormFooter';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BackHeader } from '../../components/BackHeader';
+import { FormFooter } from '../../components/FormFooter';
+import { FormSectionTitle } from '../../components/FormSectionTitle';
+import { TextAreaField } from '../../components/TextAreaField';
+import { VitalInputField } from '../../components/VitalInputField';
 
 export default function NewProntuario() {
   const [weight, setWeight] = useState('');

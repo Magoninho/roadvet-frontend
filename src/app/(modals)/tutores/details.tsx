@@ -1,13 +1,12 @@
-import React from 'react';
-import { ScrollView, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Header } from '../../components/Header';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { DetailTopBar } from '../../components/DetailTopBar';
+import { InfoText } from '../../components/InfoText';
+import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
+import { PrimaryButton } from '../../components/PrimaryButton';
 import { ProfileAvatar } from '../../components/ProfileAvatar';
 import { SectionDivider } from '../../components/SectionDivider';
-import { InfoText } from '../../components/InfoText';
-import { PrimaryButton } from '../../components/PrimaryButton';
-import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
 
 const MOCK_TUTOR = {
   id: '1',

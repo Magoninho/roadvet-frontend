@@ -27,7 +27,7 @@ export function TutorAutocomplete({
   }, [value, suggestions]);
 
   return (
-    <View>
+    <View style={{zIndex: 1}}>
       <View style={styles.inputWrapper}>
         <Icon name="account" size={20} color="#5A5A5A" style={styles.icon} />
         <TextInput
@@ -86,6 +86,12 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
   },
   suggestionsWrapper: {
+    position: 'absolute', // Pulls the element out of the flow
+    top: 50, // Adjust this value slightly if it overlaps your input text
+    left: 0, // Matches your old marginLeft
+    right: 0, // Matches your old marginHorizontal right side
+    zIndex: 1000, // Forces it to render on top for iOS
+    elevation: 5, // Forces it to render on top for Android, adds drop shadow
     marginHorizontal: 16,
     marginLeft: 46,
     marginTop: 4,
