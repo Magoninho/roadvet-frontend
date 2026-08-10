@@ -6,6 +6,7 @@ import { DetailTopBar } from '../../components/DetailTopBar';
 import { ProfileAvatar } from '../../components/ProfileAvatar';
 import { SectionDivider } from '../../components/SectionDivider';
 import { InfoText } from '../../components/InfoText';
+import { PrimaryButton } from '../../components/PrimaryButton';
 import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
 
 const MOCK_TUTOR = {
@@ -37,6 +38,10 @@ export function TutorDetalheScreen() {
     // navegar para detalhe do pet
   };
 
+  const handleNewPet = () => {
+    // create new pet passing the tutor id
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Tutores" syncStatus="synced" />
@@ -52,6 +57,7 @@ export function TutorDetalheScreen() {
         <InfoText label="CPF" value={MOCK_TUTOR.cpf} />
 
         <SectionDivider icon="paw" label="Pets" />
+        <PrimaryButton label="Novo pet" onPress={handleNewPet} />
         {MOCK_PETS.map((pet) => (
           <PetSummaryCard key={pet.id} data={pet} onPress={handlePetPress} />
         ))}
