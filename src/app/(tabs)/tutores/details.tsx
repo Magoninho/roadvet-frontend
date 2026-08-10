@@ -39,7 +39,7 @@ export function TutorDetalheScreen() {
   };
 
   const handleNewPet = () => {
-    router.push('/global/pets/newPetScreen');
+    router.push('/global/pets/new');
   };
 
   return (

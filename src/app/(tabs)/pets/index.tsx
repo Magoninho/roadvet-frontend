@@ -79,7 +79,7 @@ export default function PetsScreen() {
   };
 
   const handleAddPress = () => {
-    router.navigate('/global/pets/newPetScreen');
+    router.navigate('/global/pets/new');
   };
 
   return (
