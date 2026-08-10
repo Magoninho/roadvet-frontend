@@ -67,7 +67,6 @@ export function PetDetalheScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Pets" syncStatus="synced" />
       <DetailTopBar onBackPress={handleBack} onEditPress={handleEdit} onDeletePress={handleDelete} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>

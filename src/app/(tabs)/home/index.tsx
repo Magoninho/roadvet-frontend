@@ -39,7 +39,7 @@ export default function HomeScreen({
   const router = useRouter();
 
   const handleNewProntuarioPress = () => {
-    router.navigate("/global/prontuarios/select");
+    router.navigate("/(modals)/prontuarios/select");
   };
 
   const handleNewTutorPress = () => {

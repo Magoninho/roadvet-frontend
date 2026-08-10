@@ -39,12 +39,11 @@ export function TutorDetalheScreen() {
   };
 
   const handleNewPet = () => {
-    router.push('/global/pets/new');
+    router.push('/(modals)/pets/new');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Tutores" syncStatus="synced" />
       <DetailTopBar onBackPress={handleBack} onEditPress={handleEdit} onDeletePress={handleDelete} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>

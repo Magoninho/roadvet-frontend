@@ -74,12 +74,12 @@ export default function PetsScreen() {
   const handleCardPress = (id: string) => {
     router.push({
       params: { id: id },
-      pathname: '/(tabs)/pets/details'
+      pathname: '/(modals)/pets/details'
     });
   };
 
   const handleAddPress = () => {
-    router.navigate('/global/pets/new');
+    router.navigate('/(modals)/pets/new');
   };
 
   return (

@@ -42,7 +42,7 @@ export default function TutoresScreen() {
   const handleCardPress = (id: string) => {
     router.push({
       params: { id: id },
-      pathname: '/(tabs)/tutores/details'
+      pathname: '/(modals)/tutores/details'
     });
   };
   const handleAddPress = () => {};

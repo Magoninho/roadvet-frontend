@@ -56,7 +56,7 @@ export default function ProntuariosScreen() {
   };
 
   const handleAddPress = () => {
-    router.navigate('/global/prontuarios/select');
+    router.navigate('/(modals)/prontuarios/select');
   };
 
   return (

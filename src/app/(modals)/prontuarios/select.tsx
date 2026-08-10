@@ -64,7 +64,7 @@ export default function ProntuarioSelection() {
 
   const handleSelectPet = (id: string) => {
     router.push({
-      pathname: '/global/prontuarios/new',
+      pathname: '/(modals)/prontuarios/new',
       params: { petId: id },
     });
   };
