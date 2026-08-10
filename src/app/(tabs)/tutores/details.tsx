@@ -39,7 +39,7 @@ export function TutorDetalheScreen() {
   };
 
   const handleNewPet = () => {
-    // create new pet passing the tutor id
+    router.push('/global/pets/newPetScreen');
   };
 
   return (

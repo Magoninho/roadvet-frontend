@@ -36,7 +36,7 @@ export default function HomeScreen({ userName = 'Fulano de Tal', isSynced = true
   const router = useRouter();
 
   const handleNewProntuarioPress = () => {
-    router.navigate('/(tabs)/prontuarios/newProntuarioScreen');
+    router.navigate('/global/prontuarios/newProntuarioScreen');
   };
 
   const handleNewTutorPress = () => {

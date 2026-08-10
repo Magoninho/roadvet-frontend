@@ -64,7 +64,7 @@ export default function NewProntuarioScreen() {
 
   const handleSelectPet = (id: string) => {
     router.push({
-      pathname: '/prontuarios/newProntuarioFormScreen',
+      pathname: '/global/prontuarios/newProntuarioFormScreen',
       params: { petId: id },
     });
   };
