@@ -89,7 +89,7 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-const TEAL_BG = '#BFE6E6';
+const TEAL_BG = '#b6e0e4';
 const NAVY = '#0F1E3D';
 const CYAN = '#12B4C4';
 
