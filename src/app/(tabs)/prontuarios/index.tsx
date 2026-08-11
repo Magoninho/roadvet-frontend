@@ -53,7 +53,10 @@ export default function ProntuariosScreen() {
   };
 
   const handleCardPress = (id: string) => {
-    router.navigate('/(modals)/prontuarios/details');
+    router.push({
+      params: { id: id },
+      pathname: '/prontuarios/details'
+    });
   };
 
   const handleAddPress = () => {
