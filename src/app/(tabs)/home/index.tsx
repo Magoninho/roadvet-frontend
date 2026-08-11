@@ -39,12 +39,17 @@ export default function HomeScreen({
   const router = useRouter();
 
   const handleNewProntuarioPress = () => {
-    router.navigate("/(modals)/prontuarios/select");
+    router.navigate("/prontuarios/select");
   };
 
   const handleNewTutorPress = () => {
     // TODO: create new tutor screen
-    router.navigate("/(tabs)/tutores");
+    router.push("/tutores/new");
+  };
+
+  const handleNewPetPress = () => {
+    // TODO: create new tutor screen
+    router.push("/pets/new");
   };
 
   return (
@@ -93,6 +98,7 @@ export default function HomeScreen({
                 { backgroundColor: COLORS.green },
               ]}
               activeOpacity={0.85}
+              onPress={handleNewPetPress}
             >
               <MaterialCommunityIcons
                 name="paw-outline"
