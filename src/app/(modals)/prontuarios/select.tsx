@@ -60,7 +60,7 @@ export default function ProntuarioSelection() {
   };
 
   const handleNewPet = () => {
-    // navegar para cadastro de novo pet
+    router.push('/(modals)/pets/new');
   };
 
   const handleSelectPet = (id: string) => {
