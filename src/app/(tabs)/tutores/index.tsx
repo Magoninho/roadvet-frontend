@@ -46,7 +46,9 @@ export default function TutoresScreen() {
       pathname: '/(modals)/tutores/details'
     });
   };
-  const handleAddPress = () => {};
+  const handleAddPress = () => {
+    router.push('/(modals)/tutores/new');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
