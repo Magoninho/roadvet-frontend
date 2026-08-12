@@ -5,8 +5,8 @@ import { IconActionButton } from './IconActionButton';
 
 interface DetailTopBarProps {
   onBackPress: () => void;
-  onEditPress: () => void;
-  onDeletePress: () => void;
+  onEditPress?: () => void;
+  onDeletePress?: () => void;
 }
 
 export function DetailTopBar({ onBackPress, onEditPress, onDeletePress }: DetailTopBarProps) {
@@ -16,11 +16,16 @@ export function DetailTopBar({ onBackPress, onEditPress, onDeletePress }: Detail
         <Icon name="chevron-left" size={26} color="#1A1A1A" />
       </TouchableOpacity>
 
-      <View style={styles.actionsWrapper}>
-        {/* TODO: handle edit */}
-        {/*<IconActionButton icon="pencil-outline" color="#2FA9E8" onPress={onEditPress} />*/}
-        <IconActionButton icon="trash-can-outline" color="#E85C5C" onPress={onDeletePress} />
-      </View>
+      {(onEditPress || onDeletePress) && (
+        <View style={styles.actionsWrapper}>
+          {onEditPress && (
+            <IconActionButton icon="pencil-outline" color="#2FA9E8" onPress={onEditPress} />
+          )}
+          {onDeletePress && (
+            <IconActionButton icon="trash-can-outline" color="#E85C5C" onPress={onDeletePress} />
+          )}
+        </View>
+      )}
     </View>
   );
 }
