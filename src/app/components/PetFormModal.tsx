@@ -7,9 +7,10 @@ interface PetFormModalProps {
   onCancel: () => void;
   onSave: (petData: any) => void;
   tutorName?: string; // Opcional: só pra mostrar no título pra quem é o pet
+  showTutorSection?: boolean;
 }
 
-export function PetFormModal({ visible, onCancel, onSave, tutorName }: PetFormModalProps) {
+export function PetFormModal({ visible, onCancel, onSave, tutorName, showTutorSection }: PetFormModalProps) {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onCancel}>
       <KeyboardAvoidingView 
@@ -25,7 +26,7 @@ export function PetFormModal({ visible, onCancel, onSave, tutorName }: PetFormMo
           <PetForm 
             onCancel={onCancel} 
             onSave={onSave} 
-            showTutorSection={false} 
+            showTutorSection={showTutorSection || false} 
           />
           
         </View>

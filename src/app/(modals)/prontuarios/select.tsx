@@ -7,6 +7,7 @@ import { PetCard, PetCardData } from '../../components/PetCard';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SearchBar } from '../../components/SearchBar';
 import { SectionLabel } from '../../components/SectionLabel';
+import { PetFormModal } from '@/app/components/PetFormModal';
 
 const MOCK_PETS: PetCardData[] = [
   {
@@ -57,6 +58,8 @@ const MOCK_PETS: PetCardData[] = [
 
 export default function ProntuarioSelection() {
   const [search, setSearch] = useState('');
+  const [modalPetVisible, setModalPetVisible] = useState(false);
+
   const router = useRouter();
 
   const handleBack = () => {
@@ -64,7 +67,15 @@ export default function ProntuarioSelection() {
   };
 
   const handleNewPet = () => {
-    router.push('/(modals)/pets/new');
+    setModalPetVisible(true);
+  };
+
+  const handleSaveNewPet = (petData: any) => {
+    // Aqui você junta os dados do formulário de pet com o ID do Tutor (tutorId)
+    // console.log("Salvando pet para tutor:", tutorId, petData);
+    
+    // Esconde o modal após salvar
+    setModalPetVisible(false);
   };
 
   const handleSelectPet = (id: string) => {
@@ -89,6 +100,13 @@ export default function ProntuarioSelection() {
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+      />
+
+      <PetFormModal
+        visible={modalPetVisible}
+        onCancel={() => setModalPetVisible(false)}
+        onSave={handleSaveNewPet}
+        showTutorSection={true}
       />
     </SafeAreaView>
   );
