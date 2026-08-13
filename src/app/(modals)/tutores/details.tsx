@@ -11,6 +11,9 @@ import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard'
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SectionDivider } from '../../components/SectionDivider';
 
+// 1. Importar o modal de Pet criado
+import { PetFormModal } from '../../components/PetFormModal'; 
+
 const MOCK_TUTOR = {
   id: '1',
   name: 'Magali',
@@ -31,6 +34,9 @@ export function TutorDetalheScreen() {
   const { tutorId } = useLocalSearchParams<{ tutorId: string }>();
 
   const [editMode, setEditMode] = useState(false);
+  
+  // 2. Adicionar estado para controlar a visibilidade do modal de pet
+  const [modalPetVisible, setModalPetVisible] = useState(false);
 
   const [name, setName] = useState(MOCK_TUTOR.name);
   const [address, setAddress] = useState(MOCK_TUTOR.address);
@@ -73,11 +79,21 @@ export function TutorDetalheScreen() {
   };
 
   const handleNewPet = () => {
-    router.push('/(modals)/pets/new');
+    // 3. Em vez de dar push na rota, abrimos o modal
+    setModalPetVisible(true);
   };
 
   const handleChangePhoto = () => {
     // abrir seletor de imagem (expo-image-picker) e atualizar photoUrl
+  };
+  
+  // 4. Função para interceptar o "salvar" do modal
+  const handleSaveNewPet = (petData: any) => {
+    // Aqui você junta os dados do formulário de pet com o ID do Tutor (tutorId)
+    // console.log("Salvando pet para tutor:", tutorId, petData);
+    
+    // Esconde o modal após salvar
+    setModalPetVisible(false);
   };
 
   return (
@@ -139,13 +155,23 @@ export function TutorDetalheScreen() {
         )}
 
         <SectionDivider icon="paw" label="Pets" />
+        {/* Adicionado margin ao botão primário para espaçamento caso deseje manter o seu layout original intacto, mas o botão já funcionará. */}
         {!editMode && <PrimaryButton label="Novo pet" onPress={handleNewPet} />}
+        
         {MOCK_PETS.map((pet) => (
           <PetSummaryCard key={pet.id} data={pet} onPress={handlePetPress} />
         ))}
       </ScrollView>
 
       {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} />}
+      
+      {/* 5. Renderizar o modal ao final da tela */}
+      <PetFormModal
+        visible={modalPetVisible}
+        onCancel={() => setModalPetVisible(false)}
+        onSave={handleSaveNewPet}
+        tutorName={name} // Opcional, passa o nome do tutor atual pro título do modal
+      />
     </SafeAreaView>
   );
 }
