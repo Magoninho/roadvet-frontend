@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleCadastrar = () => {
-    navigation?.navigate?.('Cadastro');
+    router.push('/register')
   };
 
   return (
@@ -45,7 +45,7 @@ export default function LoginScreen({ navigation }) {
 
         <View style={styles.content}>
           <Logo />
-          
+
           <Text style={styles.title}>Login</Text>
 
           <View style={styles.form}>
