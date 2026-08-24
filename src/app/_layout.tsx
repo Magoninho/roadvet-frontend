@@ -4,11 +4,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider } from '@nozbe/watermelondb/react';
 import { database } from '@/database';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { useSyncEngine } from '@/database/sync';
 
 function RootNavigator() {
   const { veterinario, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  useSyncEngine(!!veterinario);
 
   useEffect(() => {
     if (isLoading) return;
