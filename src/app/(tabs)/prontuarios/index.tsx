@@ -2,47 +2,42 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Prontuario from '@/database/models/Prontuario';
+import Pet from '@/database/models/Pet';
+import { observeAllProntuarios } from '@/database/repositories/prontuarios';
+import { useObservable } from '@/database/hooks/useObservable';
+import { formatDateBR, speciesToIcon } from '@/utils/format';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
 
-const MOCK_DATA: RecordCardData[] = [
-  {
-    id: '1',
-    petName: 'Floquinho',
-    species: "dog",
-    description:
-      'Apresentou dores na pata e tomou antibióticos, tomou dose de vacina antirrábica',
-    badges: ['medication', 'vaccine'],
-    date: '22/04/2026',
+function RecordCardContainer({ prontuario, onPress }: { prontuario: Prontuario; onPress: (id: string) => void }) {
+  const pet = useObservable<Pet | null>(() => prontuario.pet.observe(), [prontuario.id], null);
+
+  const badges: RecordCardData['badges'] = [];
+  if (prontuario.prescription) badges.push('medication');
+  if (prontuario.examRequestNotes) badges.push('exam');
+
+  const data: RecordCardData = {
+    id: prontuario.id,
+    petName: pet?.nome ?? '',
+    species: pet ? speciesToIcon(pet.especie) : 'paw',
+    description: prontuario.anamnesis || prontuario.physicalExam || 'Consulta registrada',
+    badges,
+    date: formatDateBR(prontuario.date),
     synced: true,
-  },
-  {
-    id: '2',
-    petName: 'Cascão',
-    description: 'Foram solicitados exames',
-    species: "cat",
-    badges: ['exam'],
-    date: '22/04/2026',
-    synced: true,
-  },
-  {
-    id: '3',
-    petName: 'Mingau',
-    species: "cat",
-    description:
-      'Tomou dose de vacina polivalente e foram solicitados exames...',
-    badges: ['medication', 'exam'],
-    date: '22/04/2026',
-    synced: false,
-  },
-];
+  };
+
+  return <RecordCard data={data} onPress={onPress} />;
+}
 
 export default function ProntuariosScreen() {
   const [search, setSearch] = useState('');
   const router = useRouter();
+
+  const prontuarios = useObservable(() => observeAllProntuarios(), [], []);
 
   const handleSort = () => {
     // abrir modal / lógica de ordenação
@@ -54,8 +49,8 @@ export default function ProntuariosScreen() {
 
   const handleCardPress = (id: string) => {
     router.push({
-      params: { id: id },
-      pathname: '/prontuarios/details'
+      params: { prontuarioId: id },
+      pathname: '/(modals)/prontuarios/details'
     });
   };
 
@@ -70,10 +65,10 @@ export default function ProntuariosScreen() {
       <SortFilterBar onSortPress={handleSort} onFilterPress={handleFilter} />
 
       <FlatList
-        data={MOCK_DATA}
+        data={prontuarios}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RecordCard data={item} onPress={handleCardPress} />
+          <RecordCardContainer prontuario={item} onPress={handleCardPress} />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}

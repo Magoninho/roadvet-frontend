@@ -2,7 +2,13 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Prontuario from '@/database/models/Prontuario';
+import Pet from '@/database/models/Pet';
+import { observeProntuario, updateProntuario } from '@/database/repositories/prontuarios';
+import { createAnexo, observeAnexosByProntuarioAndType } from '@/database/repositories/anexos';
+import { useObservable } from '@/database/hooks/useObservable';
 import { BackHeader } from '../../components/BackHeader';
 import { FormFooter } from '../../components/FormFooter';
 import { FormSectionTitle } from '../../components/FormSectionTitle';
@@ -14,42 +20,68 @@ import { VitalInputField } from '../../components/VitalInputField';
 import { TextAreaField } from '../../components/TextAreaField';
 import { FileUploadField } from '../../components/FileUploadField';
 
-const MOCK_PRONTUARIO = {
-  id: '1',
-  petName: 'Mingau',
-  date: '22/04/2026',
-  weight: '4.2',
-  temperature: '38.5',
-  heartRate: '110',
-  anamnesis: 'Tutor relata que o pet apresentou dores na pata traseira direita há 3 dias.',
-  physicalExam: 'Animal alerta, hidratado. Dor à palpação em membro posterior direito.',
-  prescription: 'Antibiótico via oral por 7 dias. Repouso.',
-  examRequestNotes: 'Solicitado raio-x do membro posterior direito.',
-  examRequestFiles: [
-    { id: '1', name: 'pedido_raiox.pdf', uri: 'https://example.com/pedido_raiox.pdf', mimeType: 'application/pdf' },
-  ] as AttachmentFile[],
-  examResultsNotes: 'Sem fraturas visíveis. Leve inflamação de tecido mole.',
-  examResultFiles: [
-    { id: '2', name: 'resultado_raiox.jpg', uri: 'https://example.com/resultado_raiox.jpg', mimeType: 'image/jpeg' },
-  ] as AttachmentFile[],
-};
-
 export default function ProntuarioDetalhe() {
   const router = useRouter();
   const { prontuarioId } = useLocalSearchParams<{ prontuarioId: string }>();
 
-  const [editMode, setEditMode] = useState(false);
+  const prontuario = useObservable<Prontuario | null>(
+    () => (prontuarioId ? observeProntuario(prontuarioId) : of(null)),
+    [prontuarioId],
+    null,
+  );
+  const pet = useObservable<Pet | null>(() => (prontuario ? prontuario.pet.observe() : of(null)), [prontuario], null);
+  const examRequestAnexos = useObservable(
+    () => (prontuarioId ? observeAnexosByProntuarioAndType(prontuarioId, 'request') : of([])),
+    [prontuarioId],
+    [],
+  );
+  const examResultAnexos = useObservable(
+    () => (prontuarioId ? observeAnexosByProntuarioAndType(prontuarioId, 'result') : of([])),
+    [prontuarioId],
+    [],
+  );
 
-  const [weight, setWeight] = useState(MOCK_PRONTUARIO.weight);
-  const [temperature, setTemperature] = useState(MOCK_PRONTUARIO.temperature);
-  const [heartRate, setHeartRate] = useState(MOCK_PRONTUARIO.heartRate);
-  const [anamnesis, setAnamnesis] = useState(MOCK_PRONTUARIO.anamnesis);
-  const [physicalExam, setPhysicalExam] = useState(MOCK_PRONTUARIO.physicalExam);
-  const [prescription, setPrescription] = useState(MOCK_PRONTUARIO.prescription);
-  const [examRequestNotes, setExamRequestNotes] = useState(MOCK_PRONTUARIO.examRequestNotes);
-  const [examRequestFiles, setExamRequestFiles] = useState<AttachmentFile[]>(MOCK_PRONTUARIO.examRequestFiles);
-  const [examResultsNotes, setExamResultsNotes] = useState(MOCK_PRONTUARIO.examResultsNotes);
-  const [examResultFiles, setExamResultFiles] = useState<AttachmentFile[]>(MOCK_PRONTUARIO.examResultFiles);
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [weight, setWeight] = useState('');
+  const [temperature, setTemperature] = useState('');
+  const [heartRate, setHeartRate] = useState('');
+  const [anamnesis, setAnamnesis] = useState('');
+  const [physicalExam, setPhysicalExam] = useState('');
+  const [prescription, setPrescription] = useState('');
+  const [examRequestNotes, setExamRequestNotes] = useState('');
+  const [examResultsNotes, setExamResultsNotes] = useState('');
+  const [newRequestFiles, setNewRequestFiles] = useState<AttachmentFile[]>([]);
+  const [newResultFiles, setNewResultFiles] = useState<AttachmentFile[]>([]);
+
+  const seedFieldsFromProntuario = (record: Prontuario) => {
+    setWeight(record.weight ?? '');
+    setTemperature(record.temperature ?? '');
+    setHeartRate(record.heartRate ?? '');
+    setAnamnesis(record.anamnesis ?? '');
+    setPhysicalExam(record.physicalExam ?? '');
+    setPrescription(record.prescription ?? '');
+    setExamRequestNotes(record.examRequestNotes ?? '');
+    setExamResultsNotes(record.examResultsNotes ?? '');
+  };
+
+  const examRequestFiles: AttachmentFile[] = examRequestAnexos.map((anexo) => ({
+    id: anexo.id,
+    name: anexo.fileName,
+    uri: anexo.uri,
+    mimeType: anexo.mimeType ?? undefined,
+  }));
+  const examResultFiles: AttachmentFile[] = examResultAnexos.map((anexo) => ({
+    id: anexo.id,
+    name: anexo.fileName,
+    uri: anexo.uri,
+    mimeType: anexo.mimeType ?? undefined,
+  }));
+
+  if (!prontuario) {
+    return <SafeAreaView style={styles.container} />;
+  }
 
   const handleBack = () => {
     router.back();
@@ -60,33 +92,59 @@ export default function ProntuarioDetalhe() {
   };
 
   const handleEnableEdit = () => {
+    seedFieldsFromProntuario(prontuario);
     setEditMode(true);
   };
 
   const handleCancelEdit = () => {
-    // reverte para os valores originais
-    setWeight(MOCK_PRONTUARIO.weight);
-    setTemperature(MOCK_PRONTUARIO.temperature);
-    setHeartRate(MOCK_PRONTUARIO.heartRate);
-    setAnamnesis(MOCK_PRONTUARIO.anamnesis);
-    setPhysicalExam(MOCK_PRONTUARIO.physicalExam);
-    setPrescription(MOCK_PRONTUARIO.prescription);
-    setExamRequestNotes(MOCK_PRONTUARIO.examRequestNotes);
-    setExamRequestFiles(MOCK_PRONTUARIO.examRequestFiles);
-    setExamResultsNotes(MOCK_PRONTUARIO.examResultsNotes);
-    setExamResultFiles(MOCK_PRONTUARIO.examResultFiles);
+    setNewRequestFiles([]);
+    setNewResultFiles([]);
     setEditMode(false);
   };
 
-  const handleSaveEdit = () => {
-    // salvar alterações do prontuário (weight, temperature, heartRate, anamnesis, etc.)
-    setEditMode(false);
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    try {
+      await updateProntuario(prontuario, {
+        weight: weight.trim() || null,
+        temperature: temperature.trim() || null,
+        heartRate: heartRate.trim() || null,
+        anamnesis: anamnesis.trim() || null,
+        physicalExam: physicalExam.trim() || null,
+        prescription: prescription.trim() || null,
+        examRequestNotes: examRequestNotes.trim() || null,
+        examResultsNotes: examResultsNotes.trim() || null,
+      });
+
+      for (const file of newRequestFiles) {
+        await createAnexo(prontuario.id, {
+          fileType: 'request',
+          fileName: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType ?? null,
+        });
+      }
+      for (const file of newResultFiles) {
+        await createAnexo(prontuario.id, {
+          fileType: 'result',
+          fileName: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType ?? null,
+        });
+      }
+
+      setNewRequestFiles([]);
+      setNewResultFiles([]);
+      setEditMode(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <BackHeader
-        title={`Prontuário de ${MOCK_PRONTUARIO.petName}`}
+        title={`Prontuário de ${pet?.nome ?? ''}`}
         onBackPress={handleBack}
         rightElement={
           !editMode && (
@@ -108,9 +166,9 @@ export default function ProntuarioDetalhe() {
         ) : (
           <VitalReadOnlyRow
             items={[
-              { label: 'Peso', value: weight, unit: 'kg' },
-              { label: 'Temperatura', value: temperature, unit: '°C' },
-              { label: 'FC', value: heartRate },
+              { label: 'Peso', value: prontuario.weight ?? '', unit: 'kg' },
+              { label: 'Temperatura', value: prontuario.temperature ?? '', unit: '°C' },
+              { label: 'FC', value: prontuario.heartRate ?? '' },
             ]}
           />
         )}
@@ -119,36 +177,37 @@ export default function ProntuarioDetalhe() {
         {editMode ? (
           <TextAreaField value={anamnesis} onChangeText={setAnamnesis} />
         ) : (
-          <ReadOnlyField value={anamnesis} />
+          <ReadOnlyField value={prontuario.anamnesis ?? ''} />
         )}
 
         <FormSectionTitle text="Exame físico" />
         {editMode ? (
           <TextAreaField value={physicalExam} onChangeText={setPhysicalExam} />
         ) : (
-          <ReadOnlyField value={physicalExam} />
+          <ReadOnlyField value={prontuario.physicalExam ?? ''} />
         )}
 
         <FormSectionTitle text="Prescrição" />
         {editMode ? (
           <TextAreaField value={prescription} onChangeText={setPrescription} />
         ) : (
-          <ReadOnlyField value={prescription} />
+          <ReadOnlyField value={prontuario.prescription ?? ''} />
         )}
 
         <FormSectionTitle text="Solicitação de exames" />
         {editMode ? (
           <>
             <TextAreaField value={examRequestNotes} onChangeText={setExamRequestNotes} />
+            <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
             <FileUploadField
-              files={examRequestFiles}
-              onFilesChange={setExamRequestFiles}
+              files={newRequestFiles}
+              onFilesChange={setNewRequestFiles}
               label="Anexar solicitação (PDF ou imagem)"
             />
           </>
         ) : (
           <>
-            <ReadOnlyField value={examRequestNotes} />
+            <ReadOnlyField value={prontuario.examRequestNotes ?? ''} />
             <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
           </>
         )}
@@ -157,21 +216,22 @@ export default function ProntuarioDetalhe() {
         {editMode ? (
           <>
             <TextAreaField value={examResultsNotes} onChangeText={setExamResultsNotes} />
+            <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
             <FileUploadField
-              files={examResultFiles}
-              onFilesChange={setExamResultFiles}
+              files={newResultFiles}
+              onFilesChange={setNewResultFiles}
               label="Anexar resultados (PDF ou imagem)"
             />
           </>
         ) : (
           <>
-            <ReadOnlyField value={examResultsNotes} />
+            <ReadOnlyField value={prontuario.examResultsNotes ?? ''} />
             <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
           </>
         )}
       </ScrollView>
 
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} />}
+      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
     </SafeAreaView>
   );
 }

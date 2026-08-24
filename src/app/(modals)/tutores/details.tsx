@@ -1,7 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
+import Tutor from '@/database/models/Tutor';
+import { deleteTutor, observeTutor, updateTutor } from '@/database/repositories/tutores';
+import { observePetsByTutor } from '@/database/repositories/pets';
+import { useObservable } from '@/database/hooks/useObservable';
+import { formatAge } from '@/utils/format';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
 import { FormFooter } from '../../components/FormFooter';
@@ -10,39 +16,27 @@ import { LabeledInput } from '../../components/LabeledInput';
 import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SectionDivider } from '../../components/SectionDivider';
-
-// 1. Importar o modal de Pet criado
-import { PetFormModal } from '../../components/PetFormModal'; 
-
-const MOCK_TUTOR = {
-  id: '1',
-  name: 'Magali',
-  address: 'Rua do Limoeiro, 67',
-  phone: '(85) 9 9574-8673',
-  cpf: '713.927.970-55',
-  photoUrl:
-    'https://static.wikia.nocookie.net/monica/images/8/89/Magali_e_Mingau_se_abra%C3%A7ando.png/revision/latest?cb=20221221004720&path-prefix=pt-br',
-};
-
-const MOCK_PETS: PetSummaryData[] = [
-  { id: '1', name: 'Mingau', age: '6 anos', gender: 'Macho', breed: 'SRD', species: 'cat' },
-  { id: '2', name: 'Leo', age: '8 anos', gender: 'Macho', breed: 'SRD', species: 'cat' },
-];
+import { PetFormModal } from '../../components/PetFormModal';
 
 export function TutorDetalheScreen() {
   const router = useRouter();
-  const { tutorId } = useLocalSearchParams<{ tutorId: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
+
+  const tutor = useObservable<Tutor | null>(() => (id ? observeTutor(id) : of(null)), [id], null);
+  const pets = useObservable(() => (id ? observePetsByTutor(id) : of([])), [id], []);
 
   const [editMode, setEditMode] = useState(false);
-  
-  // 2. Adicionar estado para controlar a visibilidade do modal de pet
   const [modalPetVisible, setModalPetVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [name, setName] = useState(MOCK_TUTOR.name);
-  const [address, setAddress] = useState(MOCK_TUTOR.address);
-  const [phone, setPhone] = useState(MOCK_TUTOR.phone);
-  const [cpf, setCpf] = useState(MOCK_TUTOR.cpf);
-  const [photoUrl, setPhotoUrl] = useState(MOCK_TUTOR.photoUrl);
+  const [nome, setNome] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [cpf, setCpf] = useState('');
+
+  if (!tutor) {
+    return <SafeAreaView style={styles.container} />;
+  }
 
   const handleBack = () => {
     if (editMode) {
@@ -53,48 +47,67 @@ export function TutorDetalheScreen() {
   };
 
   const handleEnableEdit = () => {
+    setNome(tutor.nomeCompleto);
+    setEndereco(tutor.endereco ?? '');
+    setTelefone(tutor.telefone1 ?? '');
+    setCpf(tutor.cpf);
     setEditMode(true);
   };
 
   const handleCancelEdit = () => {
-    setName(MOCK_TUTOR.name);
-    setAddress(MOCK_TUTOR.address);
-    setPhone(MOCK_TUTOR.phone);
-    setCpf(MOCK_TUTOR.cpf);
-    setPhotoUrl(MOCK_TUTOR.photoUrl);
     setEditMode(false);
   };
 
-  const handleSaveEdit = () => {
-    // salvar alterações do tutor: name, address, phone, cpf, photoUrl
-    setEditMode(false);
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    try {
+      await updateTutor(tutor, {
+        nomeCompleto: nome.trim(),
+        endereco: endereco.trim() || null,
+        telefone1: telefone.trim() || null,
+        cpf: cpf.trim(),
+      });
+      setEditMode(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = () => {
-    // confirmar e excluir tutor
+    Alert.alert('Excluir tutor', `Tem certeza que deseja excluir ${tutor.nomeCompleto}? Todos os pets e prontuários vinculados também serão excluídos.`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteTutor(tutor);
+          router.back();
+        },
+      },
+    ]);
   };
 
-  const handlePetPress = (id: string) => {
-    // navegar para detalhe do pet
+  const handlePetPress = (petId: string) => {
+    router.push({ pathname: '/(modals)/pets/details', params: { petId } });
   };
 
-  const handleNewPet = () => {
-    // 3. Em vez de dar push na rota, abrimos o modal
-    setModalPetVisible(true);
-  };
+  const handleNewPet = () => setModalPetVisible(true);
 
   const handleChangePhoto = () => {
-    // abrir seletor de imagem (expo-image-picker) e atualizar photoUrl
+    // Seleção de foto ainda não implementada.
   };
-  
-  // 4. Função para interceptar o "salvar" do modal
-  const handleSaveNewPet = (petData: any) => {
-    // Aqui você junta os dados do formulário de pet com o ID do Tutor (tutorId)
-    // console.log("Salvando pet para tutor:", tutorId, petData);
-    
-    // Esconde o modal após salvar
+
+  const handleSaveNewPet = () => {
     setModalPetVisible(false);
   };
+
+  const petSummaries: PetSummaryData[] = pets.map((pet) => ({
+    id: pet.id,
+    name: pet.nome,
+    age: formatAge(pet.dataNascimento),
+    breed: pet.raca,
+    species: pet.especie?.toLowerCase().startsWith('fel') ? 'cat' : 'dog',
+  }));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,7 +119,7 @@ export function TutorDetalheScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <EditableAvatar
-          photoUrl={photoUrl}
+          photoUrl={tutor.avatarUrl ?? undefined}
           editable={editMode}
           onPress={handleChangePhoto}
         />
@@ -114,12 +127,12 @@ export function TutorDetalheScreen() {
         {editMode ? (
           <LabeledInput
             placeholder="Nome"
-            value={name}
-            onChangeText={setName}
+            value={nome}
+            onChangeText={setNome}
             style={styles.nameInput}
           />
         ) : (
-          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.name}>{tutor.nomeCompleto}</Text>
         )}
 
         <SectionDivider icon="information" label="Informações básicas" />
@@ -127,14 +140,14 @@ export function TutorDetalheScreen() {
           <>
             <LabeledInput
               placeholder="Endereço"
-              value={address}
-              onChangeText={setAddress}
+              value={endereco}
+              onChangeText={setEndereco}
               style={styles.fullInput}
             />
             <LabeledInput
               placeholder="Telefone"
-              value={phone}
-              onChangeText={setPhone}
+              value={telefone}
+              onChangeText={setTelefone}
               keyboardType="numeric"
               style={styles.fullInput}
             />
@@ -148,29 +161,29 @@ export function TutorDetalheScreen() {
           </>
         ) : (
           <>
-            <InfoText label="Endereço" value={address} />
-            <InfoText label="Telefone" value={phone} />
-            <InfoText label="CPF" value={cpf} />
+            <InfoText label="Endereço" value={tutor.endereco ?? ''} />
+            <InfoText label="Telefone" value={tutor.telefone1 ?? ''} />
+            <InfoText label="CPF" value={tutor.cpf} />
           </>
         )}
 
         <SectionDivider icon="paw" label="Pets" />
-        {/* Adicionado margin ao botão primário para espaçamento caso deseje manter o seu layout original intacto, mas o botão já funcionará. */}
         {!editMode && <PrimaryButton label="Novo pet" onPress={handleNewPet} />}
-        
-        {MOCK_PETS.map((pet) => (
+
+        {petSummaries.map((pet) => (
           <PetSummaryCard key={pet.id} data={pet} onPress={handlePetPress} />
         ))}
       </ScrollView>
 
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} />}
-      
-      {/* 5. Renderizar o modal ao final da tela */}
+      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+
       <PetFormModal
         visible={modalPetVisible}
         onCancel={() => setModalPetVisible(false)}
         onSave={handleSaveNewPet}
-        tutorName={name} // Opcional, passa o nome do tutor atual pro título do modal
+        tutorName={tutor.nomeCompleto}
+        tutorId={tutor.id}
+        showTutorSection={false}
       />
     </SafeAreaView>
   );

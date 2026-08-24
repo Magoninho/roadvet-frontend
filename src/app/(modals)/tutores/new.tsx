@@ -2,8 +2,9 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from 'expo-router';
+import Tutor from '@/database/models/Tutor';
 import { BackHeader } from '../../components/BackHeader';
-import { TutorForm } from '../../components/TutorForm'; // Importe o formulário
+import { TutorForm } from '../../components/TutorForm';
 
 export function NovoTutorScreen() {
   const router = useRouter();
@@ -12,21 +13,20 @@ export function NovoTutorScreen() {
     router.back();
   };
 
-  const handleSalvar = (nomeCompleto: string) => {
-    // Como a tela tem foco próprio, ao salvar, você pode voltar para a tela anterior
-    // ou ir para um tela de sucesso.
-    console.log('Tutor salvo pela tela inteira:', nomeCompleto);
-    router.back();
+  const handleSalvar = (tutor: Tutor) => {
+    router.replace({
+      pathname: '/(modals)/tutores/details',
+      params: { id: tutor.id },
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <BackHeader title="Novo Tutor" onBackPress={handleBack} />
 
-      {/* Reutilizando a mesma lógica! */}
-      <TutorForm 
-        onCancel={handleBack} 
-        onSave={handleSalvar} 
+      <TutorForm
+        onCancel={handleBack}
+        onSave={handleSalvar}
       />
 
     </SafeAreaView>

@@ -8,9 +8,11 @@
     "scheme": "roadvet",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.roadvet.app"
     },
     "android": {
+      "package": "com.roadvet.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -35,7 +37,9 @@
       ],
       "expo-status-bar",
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-dev-client",
+      "@morrowdigital/watermelondb-expo-plugin"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,6 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
+import Pet from '@/database/models/Pet';
+import Tutor from '@/database/models/Tutor';
+import { deletePet, observePet } from '@/database/repositories/pets';
+import { observeProntuariosByPet } from '@/database/repositories/prontuarios';
+import { useObservable } from '@/database/hooks/useObservable';
+import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
 import { BulletList } from '../../components/BulletList';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { OwnerReference } from '../../components/OwnerReference';
@@ -8,60 +15,65 @@ import { ProfileAvatar } from '../../components/ProfileAvatar';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SectionDivider } from '../../components/SectionDivider';
 
-const MOCK_PET = {
-  id: '1',
-  name: 'Mingau',
-  age: '6 anos',
-  gender: 'Macho',
-  breed: 'Angorá',
-  birthDate: '12/07/2020',
-  ownerName: 'Magali',
-  species: 'cat',
-  synced: true,
-  photoUrl: 'https://wsrv.nl/?url=https%3A%2F%2Fstatic.wikia.nocookie.net%2Fmonica%2Fimages%2F5%2F5a%2FMingau_%2528foto_promocional%2529.jpg%2Frevision%2Flatest%3Fcb%3D20180728012816%26path-prefix%3Dpt-br&cx=400'
-};
-
-const MOCK_RECORDS: RecordCardData[] = [
-  {
-    id: '1',
-    petName: 'Mingau',
-    description: 'Tomou dose de vacina polivalente e foram solicitados exames...',
-    badges: ['medication', 'exam'],
-    date: '22/04/2026',
-    synced: false,
-    species: 'cat'
-  },
-  {
-    id: '2',
-    petName: 'Mingau',
-    description: 'Consulta de rotina...',
-    badges: ['exam'],
-    date: '15/03/2026',
-    synced: true,
-    species: 'cat'
-  },
-];
-
 export function PetDetalheScreen() {
   const router = useRouter();
   const { petId } = useLocalSearchParams<{ petId: string }>();
 
+  const pet = useObservable<Pet | null>(() => (petId ? observePet(petId) : of(null)), [petId], null);
+  const prontuarios = useObservable(
+    () => (petId ? observeProntuariosByPet(petId) : of([])),
+    [petId],
+    [],
+  );
+  const tutor = useObservable<Tutor | null>(() => (pet ? pet.tutor.observe() : of(null)), [pet], null);
+
+  if (!pet) {
+    return <SafeAreaView style={styles.container} />;
+  }
+
+  const species = speciesToIcon(pet.especie);
   const infoItems = [
-    `Data Nasc.: ${MOCK_PET.birthDate} (${MOCK_PET.age})`,
-    MOCK_PET.gender,
-    MOCK_PET.breed,
-    MOCK_PET.species === 'cat' ? 'Felino' : 'Canino',
-  ];
+    `Data Nasc.: ${formatDateBR(pet.dataNascimento)} (${formatAge(pet.dataNascimento)})`,
+    pet.raca ?? undefined,
+    pet.especie,
+    pet.peso ? `${pet.peso} kg` : undefined,
+  ].filter(Boolean) as string[];
+
+  const records: RecordCardData[] = prontuarios.map((prontuario) => {
+    const badges: RecordCardData['badges'] = [];
+    if (prontuario.prescription) badges.push('medication');
+    if (prontuario.examRequestNotes) badges.push('exam');
+
+    return {
+      id: prontuario.id,
+      petName: pet.nome,
+      species,
+      description: prontuario.anamnesis || prontuario.physicalExam || 'Consulta registrada',
+      badges,
+      date: formatDateBR(prontuario.date),
+      synced: true,
+    };
+  });
 
   const handleBack = () => router.back();
   const handleEdit = () => {
-    // navegar para edição do pet
+    // A edição é feita diretamente pelo formulário de novo prontuário; sem edição de dados fixos do pet por ora.
   };
   const handleDelete = () => {
-    // confirmar e excluir pet
+    Alert.alert('Excluir pet', `Tem certeza que deseja excluir ${pet.nome}? Todos os prontuários vinculados também serão excluídos.`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          await deletePet(pet);
+          router.back();
+        },
+      },
+    ]);
   };
   const handleRecordPress = (id: string) => {
-    // navegar para detalhe do prontuário
+    router.push({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: id } });
   };
 
   return (
@@ -69,15 +81,15 @@ export function PetDetalheScreen() {
       <DetailTopBar onBackPress={handleBack} onEditPress={handleEdit} onDeletePress={handleDelete} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <ProfileAvatar photoUrl={MOCK_PET.photoUrl} fallbackIcon="cat" />
-        <Text style={styles.name}>{MOCK_PET.name}</Text>
-        <OwnerReference ownerName={MOCK_PET.ownerName} />
+        <ProfileAvatar photoUrl={pet.avatarUrl ?? undefined} fallbackIcon={species} />
+        <Text style={styles.name}>{pet.nome}</Text>
+        {tutor && <OwnerReference ownerName={tutor.nomeCompleto} />}
 
         <SectionDivider icon="information" label="Informações básicas" />
         <BulletList items={infoItems} />
 
         <SectionDivider icon="script-text-outline" label="Prontuários" />
-        {MOCK_RECORDS.map((record) => (
+        {records.map((record) => (
           <RecordCard key={record.id} data={record} onPress={handleRecordPress} />
         ))}
       </ScrollView>

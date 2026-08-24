@@ -2,6 +2,9 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Tutor from '@/database/models/Tutor';
+import { observeTutoresWhereNome, observeTutores } from '@/database/repositories/tutores';
+import { useObservable } from '@/database/hooks/useObservable';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
@@ -10,16 +13,10 @@ import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
 const NUM_COLUMNS = 3;
 
-const MOCK_OWNERS: OwnerCardData[] = [
-  { id: '1', name: 'Magali', pets: ['Mingau'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/8/89/Magali_e_Mingau_se_abra%C3%A7ando.png/revision/latest?cb=20221221004720&path-prefix=pt-br' },
-  { id: '2', name: 'Franjinha', pets: ['Bidu'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/3/3b/Franjinha_em_fundo_branco.jpeg/revision/latest/smart/width/250/height/250?cb=20250508134316&path-prefix=pt-br' },
-  { id: '3', name: 'Cebolinha', pets: ['Floquinho'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/9/91/Cebolinha_Junior.png/revision/latest?cb=20260420233226&path-prefix=pt-br' },
-  { id: '4', name: 'Mônica', pets: ['Monicão'], photoUrl: 'https://static.wikia.nocookie.net/monica/images/9/91/M%C3%B4nica_Sousa_e_Sans%C3%A3o.png/revision/latest/scale-to-width-down/1000?cb=20260418070809&path-prefix=pt-br' },
-];
+type ListItem = { id: string; tutor: Tutor } | { id: string; empty: true };
 
-type ListItem = OwnerCardData | { id: string; empty: true };
-
-function fillWithEmptyItems(data: OwnerCardData[]): ListItem[] {
+function fillWithEmptyItems(tutores: Tutor[]): ListItem[] {
+  const data: ListItem[] = tutores.map((tutor) => ({ id: tutor.id, tutor }));
   const remainder = data.length % NUM_COLUMNS;
   if (remainder === 0) return data;
 
@@ -31,18 +28,37 @@ function fillWithEmptyItems(data: OwnerCardData[]): ListItem[] {
   return [...data, ...emptyItems];
 }
 
+function OwnerCardContainer({ tutor, onPress }: { tutor: Tutor; onPress: (id: string) => void }) {
+  const pets = useObservable(() => tutor.pets.observe(), [tutor.id], []);
+
+  const data: OwnerCardData = {
+    id: tutor.id,
+    name: tutor.nomeCompleto,
+    pets: pets.map((pet) => pet.nome),
+    photoUrl: tutor.avatarUrl ?? undefined,
+  };
+
+  return <OwnerCard data={data} onPress={onPress} />;
+}
+
 export default function TutoresScreen() {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const listData = useMemo(() => fillWithEmptyItems(MOCK_OWNERS), []);
+  const tutores = useObservable(
+    () => (search.trim() ? observeTutoresWhereNome(search.trim()) : observeTutores()),
+    [search],
+    [],
+  );
+
+  const listData = useMemo(() => fillWithEmptyItems(tutores), [tutores]);
 
   const handleView = () => {};
   const handleSort = () => {};
   const handleFilter = () => {};
   const handleCardPress = (id: string) => {
     router.push({
-      params: { id: id },
+      params: { id },
       pathname: '/(modals)/tutores/details'
     });
   };
@@ -67,7 +83,7 @@ export default function TutoresScreen() {
           'empty' in item ? (
             <View style={styles.emptyCard} />
           ) : (
-            <OwnerCard data={item} onPress={handleCardPress} />
+            <OwnerCardContainer tutor={item.tutor} onPress={handleCardPress} />
           )
         }
         numColumns={NUM_COLUMNS}

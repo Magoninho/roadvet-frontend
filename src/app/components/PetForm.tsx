@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { of } from 'rxjs';
+import Pet from '@/database/models/Pet';
+import Tutor from '@/database/models/Tutor';
+import { createPet } from '@/database/repositories/pets';
+import { observeTutoresWhereNome } from '@/database/repositories/tutores';
 import { AvatarPicker } from './AvatarPicker';
 import { DateInput } from './DateInput';
 import { FormFooter } from './FormFooter';
 import { GhostButton } from './GhostButton';
 import { LabeledInput } from './LabeledInput';
 import { SelectInput } from './SelectInput';
-import { TutorAutocomplete } from './TutorAutocomplete';
+import { TutorAutocomplete, TutorSuggestion } from './TutorAutocomplete';
 import { TutorFormModal } from './TutorFormModal';
 import { WeightInput } from './WeightInput';
 
-const MOCK_TUTORES = [
-  'Ana Maria', 'Ana Julia', 'Antonio Carlos', 
-  'Antonio Ferreira', 'Beltrano da Silva', 'Fulaninho de Souza',
-];
 const ESPECIES = ['Canino', 'Felino'];
 
 interface PetFormProps {
   onCancel: () => void;
-  onSave: (petData: any) => void;
+  onSave: (pet: Pet) => void;
   showTutorSection?: boolean; // Define se a seção de escolher tutor aparece
+  tutorId?: string; // Obrigatório quando showTutorSection é false: tutor já conhecido pela tela chamadora
 }
 
-export function PetForm({ onCancel, onSave, showTutorSection = true }: PetFormProps) {
+export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: PetFormProps) {
   // Estados do Tutor (só usados se showTutorSection for true)
-  const [tutor, setTutor] = useState('');
+  const [tutorQuery, setTutorQuery] = useState('');
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<TutorSuggestion[]>([]);
   const [showSugestoes, setShowSugestoes] = useState(false);
   const [modalTutorVisible, setModalTutorVisible] = useState(false);
 
@@ -34,17 +38,49 @@ export function PetForm({ onCancel, onSave, showTutorSection = true }: PetFormPr
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleTutorCadastrado = (nomeTutor: string) => {
-    setTutor(nomeTutor);
+  useEffect(() => {
+    if (!showTutorSection) return;
+
+    const query$ = tutorQuery.trim() ? observeTutoresWhereNome(tutorQuery) : of([]);
+    const subscription = query$.subscribe((tutores) => {
+      setSuggestions(tutores.map((tutor) => ({ id: tutor.id, label: tutor.nomeCompleto })));
+    });
+    return () => subscription.unsubscribe();
+  }, [tutorQuery, showTutorSection]);
+
+  const handleTutorCadastrado = (tutor: Tutor) => {
+    setTutorQuery(tutor.nomeCompleto);
+    setSelectedTutorId(tutor.id);
     setModalTutorVisible(false);
   };
 
-  const handleSalvar = () => {
-    // Retorna os dados do pet. 
-    // Se não tiver a seção do tutor, o campo 'tutor' vai vazio, 
-    // e a tela que chamou (a de detalhes) fica responsável por vincular o ID.
-    onSave({ tutor, nome, dataNascimento, peso, especie, raca });
+  const handleSalvar = async () => {
+    const resolvedTutorId = showTutorSection ? selectedTutorId : tutorId;
+
+    if (!resolvedTutorId) {
+      Alert.alert('Tutor obrigatório', 'Selecione um tutor cadastrado ou cadastre um novo antes de salvar.');
+      return;
+    }
+    if (!nome.trim() || !especie) {
+      Alert.alert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const pet = await createPet(resolvedTutorId, {
+        nome: nome.trim(),
+        dataNascimento,
+        peso: peso.trim() || null,
+        especie,
+        raca: raca.trim() || null,
+      });
+      onSave(pet);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -60,16 +96,18 @@ export function PetForm({ onCancel, onSave, showTutorSection = true }: PetFormPr
         {showTutorSection && (
           <>
             <TutorAutocomplete
-              value={tutor}
+              value={tutorQuery}
               onChangeText={(text) => {
-                setTutor(text);
+                setTutorQuery(text);
+                setSelectedTutorId(null);
                 setShowSugestoes(true);
               }}
               onFocus={() => setShowSugestoes(true)}
               showSuggestions={showSugestoes}
-              suggestions={MOCK_TUTORES}
-              onSelectSuggestion={(nomeSelecionado) => {
-                setTutor(nomeSelecionado);
+              suggestions={suggestions}
+              onSelectSuggestion={(suggestion) => {
+                setTutorQuery(suggestion.label);
+                setSelectedTutorId(suggestion.id);
                 setShowSugestoes(false);
               }}
             />
@@ -104,7 +142,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true }: PetFormPr
         </View>
       </ScrollView>
 
-      <FormFooter onCancel={onCancel} onSave={handleSalvar} />
+      <FormFooter onCancel={onCancel} onSave={handleSalvar} saving={saving} />
 
       {/* Modal de Tutor também condicionado */}
       {showTutorSection && (

@@ -1,6 +1,7 @@
 import { Header } from "@/app/components/Header";
 import { SearchBar } from "@/app/components/SearchBar";
 import { SortFilterBar } from "@/app/components/SortFilterBar";
+import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
@@ -32,24 +33,24 @@ const COLS = 6;
 
 let online = true;
 
-export default function HomeScreen({
-  userName = "Fulano de Tal",
-  isSynced = true,
-}) {
+export default function HomeScreen() {
   const router = useRouter();
+  const { veterinario, logout } = useAuth();
 
   const handleNewProntuarioPress = () => {
     router.navigate("/prontuarios/select");
   };
 
   const handleNewTutorPress = () => {
-    // TODO: create new tutor screen
     router.push("/tutores/new");
   };
 
   const handleNewPetPress = () => {
-    // TODO: create new tutor screen
     router.push("/pets/new");
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -57,11 +58,15 @@ export default function HomeScreen({
       <StatusBar barStyle="dark-content" />
       <View style={styles.content}>
         {/* Header */}
-        {/* TODO: make online badge */}
         <Header title="RoadVet" syncStatus="synced" />
         <View style={{paddingHorizontal: 16}}>
           {/* Greeting */}
-          <Text style={styles.greeting}>Olá, {userName}</Text>
+          <View style={styles.greetingRow}>
+            <Text style={styles.greeting}>Olá, {veterinario?.nome ?? ''}</Text>
+            <TouchableOpacity onPress={handleLogout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="log-out-outline" size={22} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          </View>
 
           {/* Primary action */}
           <TouchableOpacity
@@ -145,6 +150,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textMuted,
     marginLeft: 4,
+  },
+  greetingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   greeting: {
     fontSize: 24,

@@ -7,8 +7,7 @@ export interface PetCardData {
   id: string;
   name: string;
   age: string;
-  gender: 'Macho' | 'Fêmea';
-  breed: string;
+  breed?: string | null;
   ownerName: string;
   species?: 'dog' | 'cat';
   synced: boolean;
@@ -34,7 +33,8 @@ function PetAvatar({ photoUrl, species }: { photoUrl?: string; species: 'dog' | 
 }
 
 export function PetCard({ data, onPress, showSyncDot = true }: PetCardProps) {
-  const { id, name, age, gender, breed, ownerName, species = 'dog', synced, photoUrl } = data;
+  const { id, name, age, breed, ownerName, species = 'dog', synced, photoUrl } = data;
+  const info = [age, breed].filter(Boolean).join(' | ');
 
   return (
     <TouchableOpacity
@@ -47,9 +47,7 @@ export function PetCard({ data, onPress, showSyncDot = true }: PetCardProps) {
         <PetAvatar photoUrl={photoUrl} species={species} />
         <View>
           <Text style={styles.name}>{name}</Text>
-          <Text style={styles.info}>
-            {age} | {gender} | {breed}
-          </Text>
+          <Text style={styles.info}>{info}</Text>
         </View>
       </View>
 

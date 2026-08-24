@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface FormFooterProps {
   onCancel: () => void;
   onSave: () => void;
   cancelLabel?: string;
   saveLabel?: string;
+  saving?: boolean;
 }
 
 export function FormFooter({
@@ -13,15 +14,26 @@ export function FormFooter({
   onSave,
   cancelLabel = 'Cancelar',
   saveLabel = 'Salvar',
+  saving = false,
 }: FormFooterProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.cancelButton} onPress={onCancel} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={[styles.cancelButton, saving && styles.disabled]}
+        onPress={onCancel}
+        activeOpacity={0.8}
+        disabled={saving}
+      >
         <Text style={styles.cancelText}>{cancelLabel}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.saveButton} onPress={onSave} activeOpacity={0.8}>
-        <Text style={styles.saveText}>{saveLabel}</Text>
+      <TouchableOpacity
+        style={[styles.saveButton, saving && styles.disabled]}
+        onPress={onSave}
+        activeOpacity={0.8}
+        disabled={saving}
+      >
+        {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveText}>{saveLabel}</Text>}
       </TouchableOpacity>
     </View>
   );
@@ -58,5 +70,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  disabled: {
+    opacity: 0.6,
   },
 });

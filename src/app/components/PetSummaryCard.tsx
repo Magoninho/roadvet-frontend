@@ -6,8 +6,7 @@ export interface PetSummaryData {
   id: string;
   name: string;
   age: string;
-  gender: 'Macho' | 'Fêmea';
-  breed: string;
+  breed?: string | null;
   species?: 'dog' | 'cat';
 }
 
@@ -17,7 +16,8 @@ interface PetSummaryCardProps {
 }
 
 export function PetSummaryCard({ data, onPress }: PetSummaryCardProps) {
-  const { id, name, age, gender, breed, species = 'cat' } = data;
+  const { id, name, age, breed, species = 'cat' } = data;
+  const info = [age, breed].filter(Boolean).join(' | ');
 
   return (
     <TouchableOpacity
@@ -30,9 +30,7 @@ export function PetSummaryCard({ data, onPress }: PetSummaryCardProps) {
         <Text style={styles.name}>{name}</Text>
       </View>
 
-      <Text style={styles.info}>
-        {age} | {gender} | {breed}
-      </Text>
+      <Text style={styles.info}>{info}</Text>
     </TouchableOpacity>
   );
 }

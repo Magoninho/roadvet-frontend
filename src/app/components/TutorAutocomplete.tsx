@@ -2,13 +2,18 @@ import React, { useMemo } from 'react';
 import { View, TextInput, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+export interface TutorSuggestion {
+  id: string;
+  label: string;
+}
+
 interface TutorAutocompleteProps {
   value: string;
   onChangeText: (text: string) => void;
-  suggestions: string[];
+  suggestions: TutorSuggestion[];
   showSuggestions: boolean;
   onFocus: () => void;
-  onSelectSuggestion: (name: string) => void;
+  onSelectSuggestion: (suggestion: TutorSuggestion) => void;
 }
 
 export function TutorAutocomplete({
@@ -21,8 +26,8 @@ export function TutorAutocomplete({
 }: TutorAutocompleteProps) {
   const filteredSuggestions = useMemo(() => {
     if (!value) return [];
-    return suggestions.filter((name) =>
-      name.toLowerCase().startsWith(value.toLowerCase())
+    return suggestions.filter((suggestion) =>
+      suggestion.label.toLowerCase().startsWith(value.toLowerCase())
     );
   }, [value, suggestions]);
 
@@ -44,7 +49,7 @@ export function TutorAutocomplete({
         <View style={styles.suggestionsWrapper}>
           <FlatList
             data={filteredSuggestions}
-            keyExtractor={(item) => item}
+            keyExtractor={(item) => item.id}
             scrollEnabled={false}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -53,9 +58,9 @@ export function TutorAutocomplete({
               >
                 <Text style={styles.suggestionText}>
                   <Text style={styles.suggestionTextBold}>
-                    {item.slice(0, value.length)}
+                    {item.label.slice(0, value.length)}
                   </Text>
-                  {item.slice(value.length)}
+                  {item.label.slice(value.length)}
                 </Text>
               </TouchableOpacity>
             )}

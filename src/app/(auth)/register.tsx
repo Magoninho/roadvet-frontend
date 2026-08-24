@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -13,6 +14,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
 
 function Logo() {
   return (
@@ -20,26 +22,49 @@ function Logo() {
   );
 }
 
-export default function CadastroScreen({ navigation }) {
+export default function CadastroScreen() {
+  const { register } = useAuth();
   const [nome, setNome] = useState('');
   const [crmv, setCrmv] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleCadastrar = () => {
-    if (senha !== confirmarSenha) {
-      // TODO: exibir mensagem de erro (senhas não coincidem)
+  const handleCadastrar = async () => {
+    if (!nome.trim() || !email.trim() || !senha) {
+      setError('Preencha nome, email e senha.');
       return;
     }
-    // Wire this up to your auth/cadastro call
-    console.log('Cadastro pressed', { nome, crmv, email, telefone, senha });
-    router.push('/home');
+    if (senha !== confirmarSenha) {
+      setError('As senhas não coincidem.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await register({
+        nome: nome.trim(),
+        crmv: crmv.trim() || null,
+        email: email.trim(),
+        telefone: telefone.trim() || null,
+        senha,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.replace('/(tabs)/home');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleVoltarLogin = () => {
-    navigation?.navigate?.('Login') ?? router.back();
+    router.back();
   };
 
   return (
@@ -126,12 +151,19 @@ export default function CadastroScreen({ navigation }) {
                 onSubmitEditing={handleCadastrar}
               />
 
+              {error && <Text style={styles.errorText}>{error}</Text>}
+
               <TouchableOpacity
-                style={styles.loginButton}
+                style={[styles.loginButton, submitting && styles.disabledButton]}
                 activeOpacity={0.85}
                 onPress={handleCadastrar}
+                disabled={submitting}
               >
-                <Text style={styles.loginButtonText}>Cadastrar</Text>
+                {submitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.loginButtonText}>Cadastrar</Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleVoltarLogin} activeOpacity={0.7}>
@@ -219,5 +251,14 @@ const styles = StyleSheet.create({
     color: CYAN,
     fontSize: 15,
     fontWeight: '700',
+  },
+  errorText: {
+    color: '#D64545',
+    fontSize: 13,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });

@@ -1,12 +1,20 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
+import Pet from '@/database/models/Pet';
+import { observePet } from '@/database/repositories/pets';
+import { createProntuario } from '@/database/repositories/prontuarios';
+import { createAnexo } from '@/database/repositories/anexos';
+import { useObservable } from '@/database/hooks/useObservable';
+import { useAuth } from '@/contexts/AuthContext';
 import { BackHeader } from '../../components/BackHeader';
 import { FormFooter } from '../../components/FormFooter';
 import { FormSectionTitle } from '../../components/FormSectionTitle';
@@ -15,6 +23,10 @@ import { VitalInputField } from '../../components/VitalInputField';
 import { FileUploadField, AttachmentFile } from '../../components/FileUploadField';
 
 export default function NewProntuario() {
+  const { petId } = useLocalSearchParams<{ petId: string }>();
+  const { veterinario } = useAuth();
+  const pet = useObservable<Pet | null>(() => (petId ? observePet(petId) : of(null)), [petId], null);
+
   const [weight, setWeight] = useState('');
   const [temperature, setTemperature] = useState('');
   const [heartRate, setHeartRate] = useState('');
@@ -28,9 +40,9 @@ export default function NewProntuario() {
   const [examResultsNotes, setExamResultsNotes] = useState('');
   const [examResultFiles, setExamResultFiles] = useState<AttachmentFile[]>([]);
 
-  const router = useRouter();
+  const [saving, setSaving] = useState(false);
 
-  const petName = 'Mingau';
+  const router = useRouter();
 
   const handleBack = () => {
     router.back();
@@ -40,13 +52,54 @@ export default function NewProntuario() {
     router.back();
   };
 
-  const handleSave = () => {
-    // salvar prontuário, incluindo examRequestFiles e examResultFiles
+  const handleSave = async () => {
+    if (!petId || !veterinario) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const prontuario = await createProntuario(petId, veterinario.id, {
+        date: new Date(),
+        weight: weight.trim() || null,
+        temperature: temperature.trim() || null,
+        heartRate: heartRate.trim() || null,
+        anamnesis: anamnesis.trim() || null,
+        physicalExam: physicalExam.trim() || null,
+        prescription: prescription.trim() || null,
+        examRequestNotes: examRequestNotes.trim() || null,
+        examResultsNotes: examResultsNotes.trim() || null,
+      });
+
+      for (const file of examRequestFiles) {
+        await createAnexo(prontuario.id, {
+          fileType: 'request',
+          fileName: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType ?? null,
+        });
+      }
+      for (const file of examResultFiles) {
+        await createAnexo(prontuario.id, {
+          fileType: 'result',
+          fileName: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType ?? null,
+        });
+      }
+
+      router.replace({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: prontuario.id } });
+    } catch (error) {
+      Alert.alert('Erro ao salvar', 'Não foi possível salvar o prontuário. Tente novamente.');
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <BackHeader title={`Novo prontuário para ${petName}`} onBackPress={handleBack} />
+      <BackHeader title={`Novo prontuário para ${pet?.nome ?? ''}`} onBackPress={handleBack} />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -109,7 +162,7 @@ export default function NewProntuario() {
           />
         </ScrollView>
 
-        <FormFooter onCancel={handleCancel} onSave={handleSave} />
+        <FormFooter onCancel={handleCancel} onSave={handleSave} saving={saving} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

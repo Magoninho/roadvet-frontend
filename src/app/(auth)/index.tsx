@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
+    ActivityIndicator,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -12,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
 
 function Logo() {
   return (
@@ -19,14 +21,30 @@ function Logo() {
   );
 }
 
-export default function LoginScreen({ navigation }) {
-  const [usuario, setUsuario] = useState('');
+export default function LoginScreen() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = () => {
-    // Wire this up to your auth call
-    console.log('Login pressed', { usuario, senha });
-    router.push("/home")
+  const handleLogin = async () => {
+    if (!email.trim() || !senha) {
+      setError('Informe email e senha.');
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await login(email.trim(), senha);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.replace('/(tabs)/home');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCadastrar = () => {
@@ -51,10 +69,11 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.form}>
             <TextInput
               style={styles.input}
-              placeholder="Usuario"
+              placeholder="Email"
               placeholderTextColor="#8A8F98"
-              value={usuario}
-              onChangeText={setUsuario}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="next"
@@ -71,12 +90,15 @@ export default function LoginScreen({ navigation }) {
               onSubmitEditing={handleLogin}
             />
 
+            {error && <Text style={styles.errorText}>{error}</Text>}
+
             <TouchableOpacity
-              style={styles.loginButton}
+              style={[styles.loginButton, submitting && styles.disabledButton]}
               activeOpacity={0.85}
               onPress={handleLogin}
+              disabled={submitting}
             >
-              <Text style={styles.loginButtonText}>Login</Text>
+              {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.loginButtonText}>Login</Text>}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleCadastrar} activeOpacity={0.7}>
@@ -182,5 +204,14 @@ const styles = StyleSheet.create({
     color: CYAN,
     fontSize: 15,
     fontWeight: '700',
+  },
+  errorText: {
+    color: '#D64545',
+    fontSize: 13,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });

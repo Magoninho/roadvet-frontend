@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, Modal, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import Tutor from '@/database/models/Tutor';
 import { TutorForm } from './TutorForm'; // Importe o componente criado
 
 interface TutorFormModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (nomeTutor: string) => void;
+  onSave: (tutor: Tutor) => void;
 }
 
 export function TutorFormModal({ visible, onCancel, onSave }: TutorFormModalProps) {

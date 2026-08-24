@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import Tutor from '@/database/models/Tutor';
+import { createTutor } from '@/database/repositories/tutores';
 import { AvatarPicker } from './AvatarPicker'; // Ajuste os imports
 import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
@@ -8,8 +10,7 @@ import { FormFooter } from './FormFooter';
 
 interface TutorFormProps {
   onCancel: () => void;
-  onSave: (nomeTutor: string) => void; 
-  // No futuro, onSave pode retornar o objeto completo do tutor
+  onSave: (tutor: Tutor) => void;
 }
 
 export function TutorForm({ onCancel, onSave }: TutorFormProps) {
@@ -26,12 +27,35 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
   const [uf, setUf] = useState('');
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSalvar = () => {
-    // TODO: Adicionar validações e chamada à API aqui
-    
-    // Retorna o nome do tutor para quem chamou o componente
-    onSave(nomeCompleto || 'Novo Tutor Sem Nome');
+  const handleSalvar = async () => {
+    if (!nomeCompleto.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
+      Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const tutor = await createTutor({
+        nomeCompleto: nomeCompleto.trim(),
+        cpf: cpf.trim(),
+        dataNascimento,
+        email: email.trim() || null,
+        cep: cep.trim(),
+        endereco: endereco.trim(),
+        numero: numero.trim(),
+        bairro: bairro.trim(),
+        complemento: complemento.trim() || null,
+        cidade: cidade.trim(),
+        uf: uf.trim().toUpperCase(),
+        telefone1: telefone1.trim(),
+        telefone2: telefone2.trim() || null,
+      });
+      onSave(tutor);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -91,14 +115,14 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
       </ScrollView>
 
       {/* Usando o seu próprio Footer */}
-      <FormFooter onCancel={onCancel} onSave={handleSalvar} />
+      <FormFooter onCancel={onCancel} onSave={handleSalvar} saving={saving} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
