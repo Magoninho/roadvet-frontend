@@ -2,10 +2,12 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
 import Prontuario from '@/database/models/Prontuario';
 import Pet from '@/database/models/Pet';
-import { observeAllProntuarios } from '@/database/repositories/prontuarios';
+import { observeProntuariosByVeterinario } from '@/database/repositories/prontuarios';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatDateBR, speciesToIcon } from '@/utils/format';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
@@ -34,10 +36,15 @@ function RecordCardContainer({ prontuario, onPress }: { prontuario: Prontuario; 
 }
 
 export default function ProntuariosScreen() {
+  const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const prontuarios = useObservable(() => observeAllProntuarios(), [], []);
+  const prontuarios = useObservable(
+    () => (veterinario ? observeProntuariosByVeterinario(veterinario.id) : of([])),
+    [veterinario],
+    [],
+  );
 
   const handleSort = () => {
     // abrir modal / lógica de ordenação

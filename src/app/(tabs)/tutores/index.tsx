@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import { of } from 'rxjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Tutor from '@/database/models/Tutor';
 import { observeTutoresWhereNome, observeTutores } from '@/database/repositories/tutores';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useAuth } from '@/contexts/AuthContext';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
@@ -42,12 +44,18 @@ function OwnerCardContainer({ tutor, onPress }: { tutor: Tutor; onPress: (id: st
 }
 
 export default function TutoresScreen() {
+  const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
   const router = useRouter();
 
   const tutores = useObservable(
-    () => (search.trim() ? observeTutoresWhereNome(search.trim()) : observeTutores()),
-    [search],
+    () =>
+      !veterinario
+        ? of([])
+        : search.trim()
+          ? observeTutoresWhereNome(veterinario.id, search.trim())
+          : observeTutores(veterinario.id),
+    [search, veterinario],
     [],
   );
 

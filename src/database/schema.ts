@@ -1,11 +1,12 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'tutores',
       columns: [
+        { name: 'veterinario_id', type: 'string', isIndexed: true },
         { name: 'nome_completo', type: 'string' },
         { name: 'cpf', type: 'string', isIndexed: true },
         { name: 'data_nascimento', type: 'number', isOptional: true },

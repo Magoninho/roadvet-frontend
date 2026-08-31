@@ -5,6 +5,7 @@ import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
 import { createPet } from '@/database/repositories/pets';
 import { observeTutoresWhereNome } from '@/database/repositories/tutores';
+import { useAuth } from '@/contexts/AuthContext';
 import { AvatarPicker } from './AvatarPicker';
 import { DateInput } from './DateInput';
 import { FormFooter } from './FormFooter';
@@ -25,6 +26,7 @@ interface PetFormProps {
 }
 
 export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: PetFormProps) {
+  const { veterinario } = useAuth();
   // Estados do Tutor (só usados se showTutorSection for true)
   const [tutorQuery, setTutorQuery] = useState('');
   const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
@@ -41,14 +43,14 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!showTutorSection) return;
+    if (!showTutorSection || !veterinario) return;
 
-    const query$ = tutorQuery.trim() ? observeTutoresWhereNome(tutorQuery) : of([]);
+    const query$ = tutorQuery.trim() ? observeTutoresWhereNome(veterinario.id, tutorQuery) : of([]);
     const subscription = query$.subscribe((tutores) => {
       setSuggestions(tutores.map((tutor) => ({ id: tutor.id, label: tutor.nomeCompleto })));
     });
     return () => subscription.unsubscribe();
-  }, [tutorQuery, showTutorSection]);
+  }, [tutorQuery, showTutorSection, veterinario]);
 
   const handleTutorCadastrado = (tutor: Tutor) => {
     setTutorQuery(tutor.nomeCompleto);

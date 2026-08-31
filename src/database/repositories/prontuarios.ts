@@ -64,10 +64,6 @@ export function observeProntuariosByVeterinario(veterinarioId: string) {
     .observe();
 }
 
-export function observeAllProntuarios() {
-  return prontuariosCollection().query(Q.sortBy('date', Q.desc)).observe();
-}
-
 export function observeProntuario(id: string) {
   return prontuariosCollection().findAndObserve(id);
 }

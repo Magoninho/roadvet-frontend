@@ -39,8 +39,13 @@ function applyTutorInput(tutor: Tutor, input: Partial<TutorInput>) {
   if (input.avatarUrl !== undefined) tutor.avatarUrl = input.avatarUrl ?? null;
 }
 
-export async function createTutor(input: TutorInput): Promise<Tutor> {
-  return database.write(() => tutoresCollection().create((tutor) => applyTutorInput(tutor, input)));
+export async function createTutor(veterinarioId: string, input: TutorInput): Promise<Tutor> {
+  return database.write(() =>
+    tutoresCollection().create((tutor) => {
+      tutor.veterinarioId = veterinarioId;
+      applyTutorInput(tutor, input);
+    }),
+  );
 }
 
 export async function updateTutor(tutor: Tutor, input: Partial<TutorInput>): Promise<Tutor> {
@@ -52,15 +57,19 @@ export async function deleteTutor(tutor: Tutor): Promise<void> {
   await database.write(() => cascadeDeleteTutor(tutor));
 }
 
-export function observeTutores() {
+export function observeTutores(veterinarioId: string) {
   return tutoresCollection()
-    .query(Q.sortBy('nome_completo', Q.asc))
+    .query(Q.where('veterinario_id', veterinarioId), Q.sortBy('nome_completo', Q.asc))
     .observe();
 }
 
-export function observeTutoresWhereNome(search: string) {
+export function observeTutoresWhereNome(veterinarioId: string, search: string) {
   return tutoresCollection()
-    .query(Q.where('nome_completo', Q.like(`%${Q.sanitizeLikeString(search)}%`)), Q.sortBy('nome_completo', Q.asc))
+    .query(
+      Q.where('veterinario_id', veterinarioId),
+      Q.where('nome_completo', Q.like(`%${Q.sanitizeLikeString(search)}%`)),
+      Q.sortBy('nome_completo', Q.asc),
+    )
     .observe();
 }
 

@@ -47,8 +47,10 @@ export function observePetsByTutor(tutorId: string) {
     .observe();
 }
 
-export function observeAllPets() {
-  return petsCollection().query(Q.sortBy('nome', Q.asc)).observe();
+export function observePetsByVeterinario(veterinarioId: string) {
+  return petsCollection()
+    .query(Q.on('tutores', 'veterinario_id', veterinarioId), Q.sortBy('nome', Q.asc))
+    .observe();
 }
 
 export function observePet(id: string) {

@@ -2,10 +2,12 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
-import { observeAllPets } from '@/database/repositories/pets';
+import { observePetsByVeterinario } from '@/database/repositories/pets';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatAge, speciesToIcon } from '@/utils/format';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
@@ -31,10 +33,15 @@ function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) =>
 }
 
 export default function PetsScreen() {
+  const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const pets = useObservable(() => observeAllPets(), [], []);
+  const pets = useObservable(
+    () => (veterinario ? observePetsByVeterinario(veterinario.id) : of([])),
+    [veterinario],
+    [],
+  );
   const filteredPets = search.trim()
     ? pets.filter((pet) => pet.nome.toLowerCase().includes(search.trim().toLowerCase()))
     : pets;

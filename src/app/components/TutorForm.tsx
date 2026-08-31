@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import Tutor from '@/database/models/Tutor';
 import { createTutor } from '@/database/repositories/tutores';
+import { useAuth } from '@/contexts/AuthContext';
 import { AvatarPicker } from './AvatarPicker'; // Ajuste os imports
 import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
@@ -14,6 +15,7 @@ interface TutorFormProps {
 }
 
 export function TutorForm({ onCancel, onSave }: TutorFormProps) {
+  const { veterinario } = useAuth();
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [cpf, setCpf] = useState('');
   const [dataNascimento, setDataNascimento] = useState<Date | null>(null);
@@ -34,10 +36,11 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
       Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
       return;
     }
+    if (!veterinario) return;
 
     setSaving(true);
     try {
-      const tutor = await createTutor({
+      const tutor = await createTutor(veterinario.id, {
         nomeCompleto: nomeCompleto.trim(),
         cpf: cpf.trim(),
         dataNascimento,
