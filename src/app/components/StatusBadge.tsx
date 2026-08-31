@@ -9,9 +9,9 @@ interface StatusBadgeProps {
 }
 
 const BADGE_CONFIG: Record<BadgeType, { icon: string; color: string }> = {
-  medication: { icon: 'needle', color: '#3B82F6' },
-  vaccine: { icon: 'shield-alert', color: '#EF4444' },
-  exam: { icon: 'flask', color: '#F5A623' },
+  medication: { icon: 'medication', color: '#EF4444' },
+  vaccine: { icon: 'needle', color: '#3B82F6' },
+  exam: { icon: 'file-document', color: '#F5A623' },
 };
 
 export function StatusBadge({ type }: StatusBadgeProps) {
