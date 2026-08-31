@@ -39,7 +39,12 @@
       "expo-image",
       "expo-web-browser",
       "expo-dev-client",
-      "@morrowdigital/watermelondb-expo-plugin",
+      [
+        "@morrowdigital/watermelondb-expo-plugin",
+        {
+          "disableJsi": true
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {
