@@ -45,8 +45,14 @@ function messageFromApiError(error: ApiError, fallback: string): string {
   if (Array.isArray(body)) {
     return typeof body[0] === 'string' ? body[0] : fallback;
   }
-  if (body && typeof body === 'object' && typeof (body as { detail?: unknown }).detail === 'string') {
-    return (body as { detail: string }).detail;
+  if (body && typeof body === 'object') {
+    const obj = body as Record<string, unknown>;
+    if (typeof obj.detail === 'string') return obj.detail;
+    // DRF field-validation errors, e.g. {"senha": ["Certifique-se de que..."]} or {"email": "..."}.
+    for (const value of Object.values(obj)) {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
+    }
   }
   return fallback;
 }

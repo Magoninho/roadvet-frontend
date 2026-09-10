@@ -38,6 +38,10 @@ export default function CadastroScreen() {
       setError('Preencha nome, email e senha.');
       return;
     }
+    if (senha.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
     if (senha !== confirmarSenha) {
       setError('As senhas não coincidem.');
       return;
