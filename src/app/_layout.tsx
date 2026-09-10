@@ -11,7 +11,7 @@ function RootNavigator() {
   const segments = useSegments();
   const router = useRouter();
 
-  useSyncEngine(!!veterinario);
+  useSyncEngine(veterinario?.id ?? null);
 
   useEffect(() => {
     if (isLoading) return;

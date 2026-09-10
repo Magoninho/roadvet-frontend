@@ -11,7 +11,8 @@ export async function pullChanges({ lastPulledAt, schemaVersion, migration }: Sy
   return apiRequest<SyncPullResult>('/sync', {
     method: 'GET',
     query: {
-      last_pulled_at: lastPulledAt !== undefined ? String(lastPulledAt) : undefined,
+      // WatermelonDB passes `null` (not `undefined`) before the first sync.
+      last_pulled_at: lastPulledAt != null ? String(lastPulledAt) : undefined,
       schema_version: String(schemaVersion),
       migration: migration ? JSON.stringify(migration) : undefined,
     },
@@ -21,7 +22,7 @@ export async function pullChanges({ lastPulledAt, schemaVersion, migration }: Sy
 export async function pushChanges({ changes, lastPulledAt }: SyncPushArgs): Promise<SyncPushResult | undefined> {
   return apiRequest<SyncPushResult>('/sync', {
     method: 'POST',
-    query: { last_pulled_at: String(lastPulledAt) },
+    query: { last_pulled_at: lastPulledAt != null ? String(lastPulledAt) : undefined },
     body: { changes },
   });
 }

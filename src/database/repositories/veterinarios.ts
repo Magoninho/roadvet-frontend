@@ -1,4 +1,5 @@
 import { Q } from '@nozbe/watermelondb';
+import * as Crypto from 'expo-crypto';
 import { database } from '../index';
 import Veterinario from '../models/Veterinario';
 import { hashPassword, verifyPassword } from './password';
@@ -10,24 +11,24 @@ export interface VeterinarioInput {
   telefone?: string | null;
 }
 
+export interface RemoteVeterinarioProfile {
+  id: string;
+  nome: string;
+  crmv?: string | null;
+  email: string;
+  telefone?: string | null;
+}
+
 const veterinariosCollection = () => database.get<Veterinario>('veterinarios');
+
+/** A 32-char alphanumeric id, safe as a WatermelonDB row id and within the backend's CharField(max_length=32). */
+export function generateVeterinarioId(): string {
+  return Crypto.randomUUID().replace(/-/g, '');
+}
 
 export async function emailJaCadastrado(email: string): Promise<boolean> {
   const results = await veterinariosCollection().query(Q.where('email', email)).fetch();
   return results.length > 0;
-}
-
-export async function createVeterinario(input: VeterinarioInput, senha: string): Promise<Veterinario> {
-  const senhaHash = await hashPassword(senha);
-  return database.write(() =>
-    veterinariosCollection().create((veterinario) => {
-      veterinario.nome = input.nome;
-      veterinario.crmv = input.crmv ?? null;
-      veterinario.email = input.email;
-      veterinario.senhaHash = senhaHash;
-      veterinario.telefone = input.telefone ?? null;
-    }),
-  );
 }
 
 export async function updateVeterinario(
@@ -70,4 +71,62 @@ export function observeVeterinarios() {
 
 export async function findVeterinarioById(id: string): Promise<Veterinario> {
   return veterinariosCollection().find(id);
+}
+
+/**
+ * Ensures the authenticated vet's own row exists locally with the fields
+ * the backend just confirmed, WITHOUT going through synchronizeDatabase().
+ *
+ * This must run before the first synchronizeDatabase() call after
+ * login/register: the backend always reports this table's row as 'updated'
+ * (see the Django sync view), which requires WatermelonDB to already have
+ * it locally — if it didn't exist yet the pull would fail just as it would
+ * if the backend instead reported it as 'created' for an id the client
+ * already has.
+ *
+ * `senhaHash`, when provided (registration), seeds the local hash used by
+ * the offline-login fallback; omitted on login so an already-correct local
+ * hash from a prior registration/sync isn't clobbered with a blank one.
+ */
+export async function upsertVeterinarioFromRemote(
+  profile: RemoteVeterinarioProfile,
+  senhaHash?: string,
+): Promise<Veterinario> {
+  const collection = veterinariosCollection();
+
+  let existing: Veterinario | null = null;
+  try {
+    existing = await collection.find(profile.id);
+  } catch {
+    existing = null;
+  }
+
+  if (existing) {
+    const record = existing;
+    return database.write(() =>
+      record.update((r) => {
+        r.nome = profile.nome;
+        r.crmv = profile.crmv ?? null;
+        r.email = profile.email;
+        r.telefone = profile.telefone ?? null;
+        if (senhaHash) r.senhaHash = senhaHash;
+      }),
+    );
+  }
+
+  const now = Date.now();
+  return database.write(async () => {
+    const created = collection.prepareCreateFromDirtyRaw({
+      id: profile.id,
+      nome: profile.nome,
+      crmv: profile.crmv ?? null,
+      email: profile.email,
+      senha_hash: senhaHash ?? '',
+      telefone: profile.telefone ?? null,
+      created_at: now,
+      updated_at: now,
+    }) as Veterinario;
+    await database.batch(created);
+    return created;
+  });
 }

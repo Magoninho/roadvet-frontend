@@ -1,4 +1,9 @@
-import { getAuthToken } from '@/services/auth/tokenStore';
+import {
+  clearAuthTokens,
+  getAuthToken,
+  getRefreshToken,
+  setAuthTokens,
+} from '@/services/auth/tokenStore';
 
 export class ApiError extends Error {
   constructor(
@@ -25,12 +30,53 @@ interface RequestOptions {
   method?: 'GET' | 'POST';
   query?: Record<string, string | undefined>;
   body?: unknown;
+  /** Skip attaching a bearer token (used by /auth/login and /auth/register). */
+  skipAuth?: boolean;
+  /** Internal: prevents infinite refresh loops. */
+  _retried?: boolean;
+}
+
+let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Exchanges the stored refresh token for a new access token. Concurrent
+ * callers share the same in-flight refresh instead of racing.
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refresh = await getRefreshToken();
+    if (!refresh) return null;
+
+    try {
+      const url = new URL(`${getBaseUrl()}/auth/refresh`);
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ refresh }),
+      });
+      if (!response.ok) {
+        await clearAuthTokens();
+        return null;
+      }
+      const data = (await response.json()) as { access: string };
+      await setAuthTokens({ access: data.access, refresh });
+      return data.access;
+    } catch {
+      return null;
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
 }
 
 /**
- * Minimal JSON HTTP client for the cloud sync API. Attaches a bearer token
- * when one is available; requests are unauthenticated otherwise since no
- * real login flow issues tokens yet.
+ * Minimal JSON HTTP client for the cloud API (auth + sync). Attaches a
+ * bearer token when one is available, and transparently refreshes it and
+ * retries once on a 401 before giving up.
  */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const url = new URL(`${getBaseUrl()}${path}`);
@@ -38,9 +84,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     if (value !== undefined) url.searchParams.set(key, value);
   }
 
-  const token = await getAuthToken();
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (!options.skipAuth) {
+    const token = await getAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
 
   const response = await fetch(url.toString(), {
@@ -49,11 +97,55 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
+  if (response.status === 401 && !options.skipAuth && !options._retried) {
+    const newAccess = await refreshAccessToken();
+    if (newAccess) {
+      return apiRequest<T>(path, { ...options, _retried: true });
+    }
+  }
+
   const text = await response.text();
   const data = text ? JSON.parse(text) : undefined;
 
   if (!response.ok) {
     throw new ApiError(`Request to ${path} failed with status ${response.status}`, response.status, data);
+  }
+
+  return data as T;
+}
+
+/** Uploads a single file as multipart/form-data (used for anexo uploads). */
+export async function apiUpload<T>(
+  path: string,
+  file: { uri: string; name: string; type?: string },
+  _retried = false,
+): Promise<T> {
+  const url = new URL(`${getBaseUrl()}${path}`);
+  const token = await getAuthToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const form = new FormData();
+  form.append('file', {
+    uri: file.uri,
+    name: file.name,
+    type: file.type ?? 'application/octet-stream',
+  } as unknown as Blob);
+
+  const response = await fetch(url.toString(), { method: 'POST', headers, body: form });
+
+  if (response.status === 401 && !_retried) {
+    const newAccess = await refreshAccessToken();
+    if (newAccess) {
+      return apiUpload<T>(path, file, true);
+    }
+  }
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : undefined;
+
+  if (!response.ok) {
+    throw new ApiError(`Upload to ${path} failed with status ${response.status}`, response.status, data);
   }
 
   return data as T;
