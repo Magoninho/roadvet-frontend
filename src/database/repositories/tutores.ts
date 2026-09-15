@@ -57,9 +57,16 @@ export async function deleteTutor(tutor: Tutor): Promise<void> {
   await database.write(() => cascadeDeleteTutor(tutor));
 }
 
-export function observeTutores(veterinarioId: string) {
+export function observeTutores(veterinarioId?: string) {
+  const queries = [Q.sortBy('nome_completo', Q.asc)];
+
+  // Aplica a trava por veterinario_id apenas se ele for informado
+  if (veterinarioId) {
+    queries.push(Q.where('veterinario_id', veterinarioId));
+  }
+
   return tutoresCollection()
-    .query(Q.where('veterinario_id', veterinarioId), Q.sortBy('nome_completo', Q.asc))
+    .query(...queries)
     .observe();
 }
 

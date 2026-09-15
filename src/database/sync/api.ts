@@ -1,28 +1,34 @@
-import type { SyncPullArgs, SyncPullResult, SyncPushArgs, SyncPushResult } from '@nozbe/watermelondb/sync';
 import { apiRequest } from '@/services/api/client';
+import type { DirtyRaw, SyncPullArgs, SyncPullResult, SyncPushArgs, SyncPushResult } from '@nozbe/watermelondb/sync';
 
-/**
- * Talks to the cloud sync API using WatermelonDB's standard pull/push
- * contract (see https://watermelondb.dev/docs/Sync/Backend). No backend
- * implements these endpoints yet — this is the client half, ready to point
- * at one once it exists.
- */
-export async function pullChanges({ lastPulledAt, schemaVersion, migration }: SyncPullArgs): Promise<SyncPullResult> {
-  return apiRequest<SyncPullResult>('/sync', {
+export async function pullChanges({ lastPulledAt }: SyncPullArgs): Promise<SyncPullResult> {
+  const tutors = await apiRequest<any[]>('/api/tutors/', {
     method: 'GET',
-    query: {
-      // WatermelonDB passes `null` (not `undefined`) before the first sync.
-      last_pulled_at: lastPulledAt != null ? String(lastPulledAt) : undefined,
-      schema_version: String(schemaVersion),
-      migration: migration ? JSON.stringify(migration) : undefined,
-    },
   });
+
+  const updatedTutores = tutors.map((tutor) => ({
+  id: String(tutor.id),
+  nome_completo: tutor.full_name || '',
+  cpf: tutor.cpf,
+  email: tutor.email,
+  telefone: tutor.phone_1,
+  avatar_url: tutor.photo || null,
+  created_at: tutor.created_at ? new Date(tutor.created_at).getTime() : Date.now(),
+  updated_at: tutor.updated_at ? new Date(tutor.updated_at).getTime() : Date.now(),
+}));
+
+  return {
+    changes: {
+      tutores: {
+        created: [],
+        updated: updatedTutores as DirtyRaw[],
+        deleted: [],
+      },
+    },
+    timestamp: Date.now(),
+  };
 }
 
-export async function pushChanges({ changes, lastPulledAt }: SyncPushArgs): Promise<SyncPushResult | undefined> {
-  return apiRequest<SyncPushResult>('/sync', {
-    method: 'POST',
-    query: { last_pulled_at: lastPulledAt != null ? String(lastPulledAt) : undefined },
-    body: { changes },
-  });
+export async function pushChanges({ changes }: SyncPushArgs): Promise<SyncPushResult | undefined> {
+  return undefined;
 }

@@ -1,19 +1,18 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { useObservable } from '@/database/hooks/useObservable';
+import Pet from '@/database/models/Pet';
+import Tutor from '@/database/models/Tutor';
+import { observePetsByVeterinario } from '@/database/repositories/pets';
+import { formatAge, speciesToIcon } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
-import Pet from '@/database/models/Pet';
-import Tutor from '@/database/models/Tutor';
-import { observePetsByVeterinario } from '@/database/repositories/pets';
-import { useObservable } from '@/database/hooks/useObservable';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatAge, speciesToIcon } from '@/utils/format';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { PetCard, PetCardData } from '../../components/PetCard';
 import { SearchBar } from '../../components/SearchBar';
-import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
 function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) => void }) {
   const tutor = useObservable<Tutor | null>(() => pet.tutor.observe(), [pet.id], null);
@@ -73,7 +72,7 @@ export default function PetsScreen() {
     <SafeAreaView style={styles.container}>
       <Header title="Pets" syncStatus="synced" />
       <SearchBar value={search} onChangeText={setSearch} />
-      <ViewSortFilterBar
+      <View
         onViewPress={handleView}
         onSortPress={handleSort}
         onFilterPress={handleFilter}
