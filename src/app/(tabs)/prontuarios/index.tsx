@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
@@ -8,12 +8,28 @@ import { useObservable } from '@/database/hooks/useObservable';
 import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateBR, speciesToIcon } from '@/utils/format';
+import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
+import { applySort, makeSortState, sortByDate, sortByString, type SortOption, type SortState } from '@/utils/sort';
 import { EmptyListMessage } from '../../components/EmptyListMessage';
+import { FilterSheet } from '../../components/FilterSheet';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
+import { SortSheet } from '../../components/SortSheet';
+
+const SORT_OPTIONS: SortOption[] = [
+  {
+    key: 'data',
+    label: 'Data da consulta',
+    ascLabel: 'Mais antigas primeiro',
+    descLabel: 'Mais recentes primeiro',
+    defaultDirection: 'desc',
+  },
+  { key: 'pet', label: 'Pet', ascLabel: 'Pet (A-Z)', descLabel: 'Pet (Z-A)', defaultDirection: 'asc' },
+  { key: 'tutor', label: 'Tutor', ascLabel: 'Tutor (A-Z)', descLabel: 'Tutor (Z-A)', defaultDirection: 'asc' },
+];
 
 function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
   const badges: RecordCardData['badges'] = [];
@@ -34,6 +50,10 @@ function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
 export default function ProntuariosScreen() {
   const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
+  const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
+  const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
   const router = useRouter();
 
   const prontuarioRows = useObservable<ProntuarioRow[]>(
@@ -41,15 +61,39 @@ export default function ProntuariosScreen() {
     [veterinario],
     [],
   );
-  const visibleRows = useSearchFilter(prontuarioRows, search);
 
-  const handleSort = () => {
-    // abrir modal / lógica de ordenação
-  };
+  const filterGroups = useMemo(
+    () => [
+      { key: 'especie', title: 'Espécie do pet', options: distinctChipOptions(prontuarioRows, (row) => row.pet?.especie) },
+    ],
+    [prontuarioRows],
+  );
 
-  const handleFilter = () => {
-    // abrir modal / lógica de filtro
-  };
+  const filteredRows = useMemo(
+    () =>
+      applyFilters(
+        prontuarioRows,
+        filterState,
+        { especie: (row) => row.pet?.especie },
+        {
+          comPrescricao: (row) => !!row.prontuario.prescription,
+          comExame: (row) => !!row.prontuario.examRequestNotes,
+        },
+      ),
+    [prontuarioRows, filterState],
+  );
+
+  const searchedRows = useSearchFilter(filteredRows, search);
+
+  const visibleRows = useMemo(
+    () =>
+      applySort(searchedRows, sortState, {
+        data: sortByDate((row) => row.prontuario.date, sortState.direction),
+        pet: sortByString((row) => row.pet?.nome, sortState.direction),
+        tutor: sortByString((row) => row.tutor?.nomeCompleto, sortState.direction),
+      }),
+    [searchedRows, sortState],
+  );
 
   const handleCardPress = (id: string) => {
     router.push({
@@ -70,7 +114,11 @@ export default function ProntuariosScreen() {
         onChangeText={setSearch}
         placeholder="Pesquisar por pet, tutor, data ou anotação..."
       />
-      <SortFilterBar onSortPress={handleSort} onFilterPress={handleFilter} />
+      <SortFilterBar
+        onSortPress={() => setSortVisible(true)}
+        onFilterPress={() => setFilterVisible(true)}
+        filterActive={isFilterActive(filterState)}
+      />
 
       <FlatList
         data={visibleRows}
@@ -82,10 +130,10 @@ export default function ProntuariosScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
-          search.trim() ? (
+          search.trim() || isFilterActive(filterState) ? (
             <EmptyListMessage
-              title={`Nenhum prontuário encontrado para "${search.trim()}"`}
-              subtitle="Pesquise pelo pet, tutor, data da consulta, prescrição ou qualquer anotação clínica."
+              title="Nenhum prontuário encontrado"
+              subtitle="Ajuste a pesquisa ou os filtros aplicados."
             />
           ) : (
             <EmptyListMessage
@@ -98,6 +146,27 @@ export default function ProntuariosScreen() {
       />
 
       <FloatingActionButton onPress={handleAddPress} />
+
+      <SortSheet
+        visible={sortVisible}
+        options={SORT_OPTIONS}
+        value={sortState}
+        onChange={setSortState}
+        onClose={() => setSortVisible(false)}
+      />
+
+      <FilterSheet
+        visible={filterVisible}
+        chipGroups={filterGroups}
+        toggles={[
+          { key: 'comPrescricao', label: 'Com prescrição' },
+          { key: 'comExame', label: 'Com pedido de exame' },
+        ]}
+        value={filterState}
+        onChange={setFilterState}
+        onClear={() => setFilterState(makeEmptyFilterState())}
+        onClose={() => setFilterVisible(false)}
+      />
     </SafeAreaView>
   );
 }

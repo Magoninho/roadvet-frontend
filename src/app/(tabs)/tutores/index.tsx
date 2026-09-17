@@ -7,14 +7,30 @@ import { observeTutorRows, TutorRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
 import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
+import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
+import { applySort, makeSortState, sortByNumber, sortByString, type SortOption, type SortState } from '@/utils/sort';
 import { EmptyListMessage } from '../../components/EmptyListMessage';
+import { FilterSheet } from '../../components/FilterSheet';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
 import { SearchBar } from '../../components/SearchBar';
+import { SortSheet } from '../../components/SortSheet';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
 const NUM_COLUMNS = 3;
+
+const SORT_OPTIONS: SortOption[] = [
+  { key: 'nome', label: 'Nome', ascLabel: 'Nome (A-Z)', descLabel: 'Nome (Z-A)', defaultDirection: 'asc' },
+  {
+    key: 'pets',
+    label: 'Quantidade de pets',
+    ascLabel: 'Menos pets primeiro',
+    descLabel: 'Mais pets primeiro',
+    defaultDirection: 'desc',
+  },
+  { key: 'cidade', label: 'Cidade', ascLabel: 'Cidade (A-Z)', descLabel: 'Cidade (Z-A)', defaultDirection: 'asc' },
+];
 
 type ListItem = { id: string; row: TutorRow } | { id: string; empty: true };
 
@@ -43,6 +59,10 @@ function toOwnerCardData({ tutor, pets }: TutorRow): OwnerCardData {
 export default function TutoresScreen() {
   const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
+  const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
+  const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
   const router = useRouter();
 
   const tutorRows = useObservable<TutorRow[]>(
@@ -50,13 +70,40 @@ export default function TutoresScreen() {
     [veterinario],
     [],
   );
-  const visibleRows = useSearchFilter(tutorRows, search);
+
+  const filterGroups = useMemo(
+    () => [
+      { key: 'cidade', title: 'Cidade', options: distinctChipOptions(tutorRows, (row) => row.tutor.cidade) },
+      { key: 'uf', title: 'UF', options: distinctChipOptions(tutorRows, (row) => row.tutor.uf) },
+    ],
+    [tutorRows],
+  );
+
+  const filteredRows = useMemo(
+    () =>
+      applyFilters(
+        tutorRows,
+        filterState,
+        { cidade: (row) => row.tutor.cidade, uf: (row) => row.tutor.uf },
+        { comPets: (row) => row.pets.length > 0 },
+      ),
+    [tutorRows, filterState],
+  );
+
+  const searchedRows = useSearchFilter(filteredRows, search);
+
+  const visibleRows = useMemo(
+    () =>
+      applySort(searchedRows, sortState, {
+        nome: sortByString((row) => row.tutor.nomeCompleto, sortState.direction),
+        pets: sortByNumber((row) => row.pets.length, sortState.direction),
+        cidade: sortByString((row) => row.tutor.cidade, sortState.direction),
+      }),
+    [searchedRows, sortState],
+  );
 
   const listData = useMemo(() => fillWithEmptyItems(visibleRows), [visibleRows]);
 
-  const handleView = () => {};
-  const handleSort = () => {};
-  const handleFilter = () => {};
   const handleCardPress = (id: string) => {
     router.push({
       params: { id },
@@ -76,9 +123,10 @@ export default function TutoresScreen() {
         placeholder="Pesquisar por nome, CPF, telefone ou pet..."
       />
       <ViewSortFilterBar
-        onViewPress={handleView}
-        onSortPress={handleSort}
-        onFilterPress={handleFilter}
+        onViewPress={() => {}}
+        onSortPress={() => setSortVisible(true)}
+        onFilterPress={() => setFilterVisible(true)}
+        filterActive={isFilterActive(filterState)}
       />
 
       <FlatList
@@ -97,10 +145,10 @@ export default function TutoresScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
-          search.trim() ? (
+          search.trim() || isFilterActive(filterState) ? (
             <EmptyListMessage
-              title={`Nenhum tutor encontrado para "${search.trim()}"`}
-              subtitle="Pesquise pelo nome, CPF, e-mail, telefone, cidade ou pelo nome de um pet."
+              title="Nenhum tutor encontrado"
+              subtitle="Ajuste a pesquisa ou os filtros aplicados."
             />
           ) : (
             <EmptyListMessage
@@ -113,6 +161,24 @@ export default function TutoresScreen() {
       />
 
       <FloatingActionButton onPress={handleAddPress} />
+
+      <SortSheet
+        visible={sortVisible}
+        options={SORT_OPTIONS}
+        value={sortState}
+        onChange={setSortState}
+        onClose={() => setSortVisible(false)}
+      />
+
+      <FilterSheet
+        visible={filterVisible}
+        chipGroups={filterGroups}
+        toggles={[{ key: 'comPets', label: 'Somente tutores com pets cadastrados' }]}
+        value={filterState}
+        onChange={setFilterState}
+        onClear={() => setFilterState(makeEmptyFilterState())}
+        onClose={() => setFilterVisible(false)}
+      />
     </SafeAreaView>
   );
 }
