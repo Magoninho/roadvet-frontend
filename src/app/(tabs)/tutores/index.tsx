@@ -3,10 +3,11 @@ import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { of } from 'rxjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Tutor from '@/database/models/Tutor';
-import { observeTutoresWhereNome, observeTutores } from '@/database/repositories/tutores';
+import { observeTutorRows, TutorRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
+import { EmptyListMessage } from '../../components/EmptyListMessage';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
@@ -15,10 +16,10 @@ import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
 const NUM_COLUMNS = 3;
 
-type ListItem = { id: string; tutor: Tutor } | { id: string; empty: true };
+type ListItem = { id: string; row: TutorRow } | { id: string; empty: true };
 
-function fillWithEmptyItems(tutores: Tutor[]): ListItem[] {
-  const data: ListItem[] = tutores.map((tutor) => ({ id: tutor.id, tutor }));
+function fillWithEmptyItems(rows: TutorRow[]): ListItem[] {
+  const data: ListItem[] = rows.map((row) => ({ id: row.id, row }));
   const remainder = data.length % NUM_COLUMNS;
   if (remainder === 0) return data;
 
@@ -30,17 +31,13 @@ function fillWithEmptyItems(tutores: Tutor[]): ListItem[] {
   return [...data, ...emptyItems];
 }
 
-function OwnerCardContainer({ tutor, onPress }: { tutor: Tutor; onPress: (id: string) => void }) {
-  const pets = useObservable(() => tutor.pets.observe(), [tutor.id], []);
-
-  const data: OwnerCardData = {
+function toOwnerCardData({ tutor, pets }: TutorRow): OwnerCardData {
+  return {
     id: tutor.id,
     name: tutor.nomeCompleto,
     pets: pets.map((pet) => pet.nome),
     photoUrl: tutor.avatarUrl ?? undefined,
   };
-
-  return <OwnerCard data={data} onPress={onPress} />;
 }
 
 export default function TutoresScreen() {
@@ -48,18 +45,14 @@ export default function TutoresScreen() {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const tutores = useObservable(
-    () =>
-      !veterinario
-        ? of([])
-        : search.trim()
-          ? observeTutoresWhereNome(veterinario.id, search.trim())
-          : observeTutores(veterinario.id),
-    [search, veterinario],
+  const tutorRows = useObservable<TutorRow[]>(
+    () => (veterinario ? observeTutorRows(veterinario.id) : of([])),
+    [veterinario],
     [],
   );
+  const visibleRows = useSearchFilter(tutorRows, search);
 
-  const listData = useMemo(() => fillWithEmptyItems(tutores), [tutores]);
+  const listData = useMemo(() => fillWithEmptyItems(visibleRows), [visibleRows]);
 
   const handleView = () => {};
   const handleSort = () => {};
@@ -77,7 +70,11 @@ export default function TutoresScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Tutores" syncStatus="synced" />
-      <SearchBar value={search} onChangeText={setSearch} />
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Pesquisar por nome, CPF, telefone ou pet..."
+      />
       <ViewSortFilterBar
         onViewPress={handleView}
         onSortPress={handleSort}
@@ -91,13 +88,28 @@ export default function TutoresScreen() {
           'empty' in item ? (
             <View style={styles.emptyCard} />
           ) : (
-            <OwnerCardContainer tutor={item.tutor} onPress={handleCardPress} />
+            <OwnerCard data={toOwnerCardData(item.row)} onPress={handleCardPress} />
           )
         }
         numColumns={NUM_COLUMNS}
         contentContainerStyle={styles.listContent}
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          search.trim() ? (
+            <EmptyListMessage
+              title={`Nenhum tutor encontrado para "${search.trim()}"`}
+              subtitle="Pesquise pelo nome, CPF, e-mail, telefone, cidade ou pelo nome de um pet."
+            />
+          ) : (
+            <EmptyListMessage
+              icon="account-outline"
+              title="Nenhum tutor cadastrado"
+              subtitle="Toque no botão + para cadastrar o primeiro tutor."
+            />
+          )
+        }
       />
 
       <FloatingActionButton onPress={handleAddPress} />

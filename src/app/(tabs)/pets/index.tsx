@@ -3,22 +3,20 @@ import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
-import Pet from '@/database/models/Pet';
-import Tutor from '@/database/models/Tutor';
-import { observePetsByVeterinario } from '@/database/repositories/pets';
+import { observePetRows, PetRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatAge, speciesToIcon } from '@/utils/format';
+import { EmptyListMessage } from '../../components/EmptyListMessage';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { PetCard, PetCardData } from '../../components/PetCard';
 import { SearchBar } from '../../components/SearchBar';
 import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
-function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) => void }) {
-  const tutor = useObservable<Tutor | null>(() => pet.tutor.observe(), [pet.id], null);
-
-  const data: PetCardData = {
+function toPetCardData({ pet, tutor }: PetRow): PetCardData {
+  return {
     id: pet.id,
     name: pet.nome,
     age: formatAge(pet.dataNascimento),
@@ -28,8 +26,6 @@ function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) =>
     synced: true,
     photoUrl: pet.avatarUrl ?? undefined,
   };
-
-  return <PetCard data={data} onPress={onPress} />;
 }
 
 export default function PetsScreen() {
@@ -37,14 +33,12 @@ export default function PetsScreen() {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const pets = useObservable(
-    () => (veterinario ? observePetsByVeterinario(veterinario.id) : of([])),
+  const petRows = useObservable<PetRow[]>(
+    () => (veterinario ? observePetRows(veterinario.id) : of([])),
     [veterinario],
     [],
   );
-  const filteredPets = search.trim()
-    ? pets.filter((pet) => pet.nome.toLowerCase().includes(search.trim().toLowerCase()))
-    : pets;
+  const visibleRows = useSearchFilter(petRows, search);
 
   const handleView = () => {
     // alternar entre lista/grade
@@ -72,7 +66,11 @@ export default function PetsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Pets" syncStatus="synced" />
-      <SearchBar value={search} onChangeText={setSearch} />
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Pesquisar por pet, raça ou tutor..."
+      />
       <ViewSortFilterBar
         onViewPress={handleView}
         onSortPress={handleSort}
@@ -80,13 +78,28 @@ export default function PetsScreen() {
       />
 
       <FlatList
-        data={filteredPets}
+        data={visibleRows}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PetCardContainer pet={item} onPress={handleCardPress} />
+          <PetCard data={toPetCardData(item)} onPress={handleCardPress} />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          search.trim() ? (
+            <EmptyListMessage
+              title={`Nenhum pet encontrado para "${search.trim()}"`}
+              subtitle="Pesquise pelo nome do pet, raça, espécie ou pelo tutor."
+            />
+          ) : (
+            <EmptyListMessage
+              icon="paw"
+              title="Nenhum pet cadastrado"
+              subtitle="Toque no botão + para cadastrar o primeiro pet."
+            />
+          )
+        }
       />
 
       <FloatingActionButton onPress={handleAddPress} />

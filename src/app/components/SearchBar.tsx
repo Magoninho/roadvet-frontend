@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface SearchBarProps {
@@ -18,7 +18,20 @@ export function SearchBar({ value, onChangeText, placeholder = 'Pesquisar...' }:
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor="#9A9A9A"
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="search"
+        clearButtonMode="never"
       />
+      {!!value && (
+        <TouchableOpacity
+          onPress={() => onChangeText?.('')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Limpar pesquisa"
+        >
+          <Icon name="close-circle" size={18} color="#9A9A9A" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

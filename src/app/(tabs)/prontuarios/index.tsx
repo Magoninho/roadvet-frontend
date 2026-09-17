@@ -3,26 +3,24 @@ import { useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
-import Prontuario from '@/database/models/Prontuario';
-import Pet from '@/database/models/Pet';
-import { observeProntuariosByVeterinario } from '@/database/repositories/prontuarios';
+import { observeProntuarioRows, ProntuarioRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateBR, speciesToIcon } from '@/utils/format';
+import { EmptyListMessage } from '../../components/EmptyListMessage';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
 
-function RecordCardContainer({ prontuario, onPress }: { prontuario: Prontuario; onPress: (id: string) => void }) {
-  const pet = useObservable<Pet | null>(() => prontuario.pet.observe(), [prontuario.id], null);
-
+function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
   const badges: RecordCardData['badges'] = [];
   if (prontuario.prescription) badges.push('medication');
   if (prontuario.examRequestNotes) badges.push('exam');
 
-  const data: RecordCardData = {
+  return {
     id: prontuario.id,
     petName: pet?.nome ?? '',
     species: pet ? speciesToIcon(pet.especie) : 'paw',
@@ -31,8 +29,6 @@ function RecordCardContainer({ prontuario, onPress }: { prontuario: Prontuario; 
     date: formatDateBR(prontuario.date),
     synced: true,
   };
-
-  return <RecordCard data={data} onPress={onPress} />;
 }
 
 export default function ProntuariosScreen() {
@@ -40,11 +36,12 @@ export default function ProntuariosScreen() {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  const prontuarios = useObservable(
-    () => (veterinario ? observeProntuariosByVeterinario(veterinario.id) : of([])),
+  const prontuarioRows = useObservable<ProntuarioRow[]>(
+    () => (veterinario ? observeProntuarioRows(veterinario.id) : of([])),
     [veterinario],
     [],
   );
+  const visibleRows = useSearchFilter(prontuarioRows, search);
 
   const handleSort = () => {
     // abrir modal / lógica de ordenação
@@ -68,17 +65,36 @@ export default function ProntuariosScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Prontuários" />
-      <SearchBar value={search} onChangeText={setSearch} />
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Pesquisar por pet, tutor, data ou anotação..."
+      />
       <SortFilterBar onSortPress={handleSort} onFilterPress={handleFilter} />
 
       <FlatList
-        data={prontuarios}
+        data={visibleRows}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RecordCardContainer prontuario={item} onPress={handleCardPress} />
+          <RecordCard data={toRecordCardData(item)} onPress={handleCardPress} />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          search.trim() ? (
+            <EmptyListMessage
+              title={`Nenhum prontuário encontrado para "${search.trim()}"`}
+              subtitle="Pesquise pelo pet, tutor, data da consulta, prescrição ou qualquer anotação clínica."
+            />
+          ) : (
+            <EmptyListMessage
+              icon="file-document-outline"
+              title="Nenhum prontuário registrado"
+              subtitle="Toque no botão + para registrar a primeira consulta."
+            />
+          )
+        }
       />
 
       <FloatingActionButton onPress={handleAddPress} />
