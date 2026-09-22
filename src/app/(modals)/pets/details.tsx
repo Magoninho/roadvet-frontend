@@ -1,19 +1,27 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
-import { deletePet, observePet } from '@/database/repositories/pets';
+import { deletePet, observePet, updatePet } from '@/database/repositories/pets';
 import { observeProntuariosByPet } from '@/database/repositories/prontuarios';
 import { useObservable } from '@/database/hooks/useObservable';
 import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
-import { BulletList } from '../../components/BulletList';
+import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
+import { EditableAvatar } from '../../components/EditableAvatar';
+import { FormFooter } from '../../components/FormFooter';
+import { InfoText } from '../../components/InfoText';
+import { LabeledInput } from '../../components/LabeledInput';
 import { OwnerReference } from '../../components/OwnerReference';
-import { ProfileAvatar } from '../../components/ProfileAvatar';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SectionDivider } from '../../components/SectionDivider';
+import { SelectInput } from '../../components/SelectInput';
+import { WeightInput } from '../../components/WeightInput';
+
+const ESPECIES = ['Canino', 'Felino'];
 
 export function PetDetalheScreen() {
   const router = useRouter();
@@ -27,17 +35,20 @@ export function PetDetalheScreen() {
   );
   const tutor = useObservable<Tutor | null>(() => (pet ? pet.tutor.observe() : of(null)), [pet], null);
 
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [nome, setNome] = useState('');
+  const [dataNascimento, setDataNascimento] = useState<Date | null>(null);
+  const [peso, setPeso] = useState('');
+  const [especie, setEspecie] = useState('');
+  const [raca, setRaca] = useState('');
+
   if (!pet) {
     return <SafeAreaView style={styles.container} />;
   }
 
   const species = speciesToIcon(pet.especie);
-  const infoItems = [
-    `Data Nasc.: ${formatDateBR(pet.dataNascimento)} (${formatAge(pet.dataNascimento)})`,
-    pet.raca ?? undefined,
-    pet.especie,
-    pet.peso ? `${pet.peso} kg` : undefined,
-  ].filter(Boolean) as string[];
 
   const records: RecordCardData[] = prontuarios.map((prontuario) => {
     const badges: RecordCardData['badges'] = [];
@@ -55,10 +66,52 @@ export function PetDetalheScreen() {
     };
   });
 
-  const handleBack = () => router.back();
-  const handleEdit = () => {
-    // A edição é feita diretamente pelo formulário de novo prontuário; sem edição de dados fixos do pet por ora.
+  const handleBack = () => {
+    if (editMode) {
+      handleCancelEdit();
+      return;
+    }
+    router.back();
   };
+
+  const handleEnableEdit = () => {
+    setNome(pet.nome);
+    setDataNascimento(pet.dataNascimento);
+    setPeso(pet.peso ?? '');
+    setEspecie(pet.especie);
+    setRaca(pet.raca ?? '');
+    setEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!nome.trim() || !especie) {
+      Alert.alert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updatePet(pet, {
+        nome: nome.trim(),
+        dataNascimento,
+        peso: peso.trim() || null,
+        especie,
+        raca: raca.trim() || null,
+      });
+      setEditMode(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePhoto = () => {
+    // Seleção de foto ainda não implementada.
+  };
+
   const handleDelete = () => {
     Alert.alert('Excluir pet', `Tem certeza que deseja excluir ${pet.nome}? Todos os prontuários vinculados também serão excluídos.`, [
       { text: 'Cancelar', style: 'cancel' },
@@ -78,21 +131,64 @@ export function PetDetalheScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <DetailTopBar onBackPress={handleBack} onEditPress={handleEdit} onDeletePress={handleDelete} />
+      <DetailTopBar
+        onBackPress={handleBack}
+        onEditPress={editMode ? undefined : handleEnableEdit}
+        onDeletePress={editMode ? undefined : handleDelete}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <ProfileAvatar photoUrl={pet.avatarUrl ?? undefined} fallbackIcon={species} />
-        <Text style={styles.name}>{pet.nome}</Text>
+        <EditableAvatar
+          photoUrl={pet.avatarUrl ?? undefined}
+          fallbackIcon={species}
+          editable={editMode}
+          onPress={handleChangePhoto}
+        />
+
+        {editMode ? (
+          <LabeledInput placeholder="Nome" value={nome} onChangeText={setNome} style={styles.nameInput} />
+        ) : (
+          <Text style={styles.name}>{pet.nome}</Text>
+        )}
+
         {tutor && <OwnerReference ownerName={tutor.nomeCompleto} />}
 
         <SectionDivider icon="information" label="Informações básicas" />
-        <BulletList items={infoItems} />
+        {editMode ? (
+          <>
+            <View style={styles.row}>
+              <DateInput value={dataNascimento} onChange={setDataNascimento} style={styles.rowInputLeft} />
+              <WeightInput value={peso} onChangeText={setPeso} style={styles.rowInputRight} />
+            </View>
+
+            <View style={styles.row}>
+              <SelectInput
+                value={especie}
+                onSelect={setEspecie}
+                options={ESPECIES}
+                placeholder="Espécie*"
+                style={styles.rowInputLeft}
+              />
+              <LabeledInput placeholder="Raça" value={raca} onChangeText={setRaca} style={styles.rowInputRight} />
+            </View>
+          </>
+        ) : (
+          <>
+            <InfoText label="Espécie" value={pet.especie} />
+            <InfoText label="Raça" value={pet.raca ?? ''} />
+            <InfoText label="Data de nascimento" value={formatDateBR(pet.dataNascimento)} />
+            <InfoText label="Idade" value={formatAge(pet.dataNascimento)} />
+            {!!pet.peso && <InfoText label="Peso" value={`${pet.peso} kg`} />}
+          </>
+        )}
 
         <SectionDivider icon="script-text-outline" label="Prontuários" />
         {records.map((record) => (
           <RecordCard key={record.id} data={record} onPress={handleRecordPress} />
         ))}
       </ScrollView>
+
+      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
     </SafeAreaView>
   );
 }
@@ -114,4 +210,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 14,
   },
+  nameInput: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    textAlign: 'center',
+  },
+  row: { flexDirection: 'row', marginHorizontal: 16, marginTop: 12, gap: 12, alignItems: 'flex-start' },
+  rowInputLeft: { flex: 1 },
+  rowInputRight: { flex: 1 },
 });
