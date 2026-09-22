@@ -4,10 +4,12 @@ import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Tutor from '@/database/models/Tutor';
+import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/avatars';
 import { deleteTutor, observeTutor, updateTutor } from '@/database/repositories/tutores';
 import { observePetsByTutor } from '@/database/repositories/pets';
 import { useObservable } from '@/database/hooks/useObservable';
 import { formatAge, formatDateBR } from '@/utils/format';
+import { pickAvatarImage } from '@/utils/pickAvatarImage';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
@@ -44,6 +46,8 @@ export function TutorDetalheScreen() {
   const [uf, setUf] = useState('');
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
 
   if (!tutor) {
     return <SafeAreaView style={styles.container} />;
@@ -71,6 +75,8 @@ export function TutorDetalheScreen() {
     setUf(tutor.uf ?? '');
     setTelefone1(tutor.telefone1 ?? '');
     setTelefone2(tutor.telefone2 ?? '');
+    setAvatarUri(null);
+    setAvatarFileName(null);
     setEditMode(true);
   };
 
@@ -86,6 +92,9 @@ export function TutorDetalheScreen() {
 
     setSaving(true);
     try {
+      const previousAvatarUrl = tutor.avatarUrl;
+      const avatarUrl = avatarUri ? await persistAvatarFile(avatarUri, avatarFileName!) : undefined;
+
       await updateTutor(tutor, {
         nomeCompleto: nome.trim(),
         cpf: cpf.trim(),
@@ -100,7 +109,13 @@ export function TutorDetalheScreen() {
         uf: uf.trim().toUpperCase(),
         telefone1: telefone1.trim(),
         telefone2: telefone2.trim() || null,
+        ...(avatarUrl !== undefined ? { avatarUrl } : {}),
       });
+
+      if (avatarUrl !== undefined && previousAvatarUrl && previousAvatarUrl !== avatarUrl) {
+        await deleteAvatarFile(previousAvatarUrl);
+      }
+
       setEditMode(false);
     } finally {
       setSaving(false);
@@ -127,8 +142,11 @@ export function TutorDetalheScreen() {
 
   const handleNewPet = () => setModalPetVisible(true);
 
-  const handleChangePhoto = () => {
-    // Seleção de foto ainda não implementada.
+  const handleChangePhoto = async () => {
+    const picked = await pickAvatarImage();
+    if (!picked) return;
+    setAvatarUri(picked.uri);
+    setAvatarFileName(picked.fileName);
   };
 
   const handleSaveNewPet = () => {
@@ -153,7 +171,7 @@ export function TutorDetalheScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <EditableAvatar
-          photoUrl={tutor.avatarUrl ?? undefined}
+          photoUrl={avatarUri ?? tutor.avatarUrl ?? undefined}
           editable={editMode}
           onPress={handleChangePhoto}
         />

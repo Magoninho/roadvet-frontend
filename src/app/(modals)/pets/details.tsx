@@ -5,10 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
+import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/avatars';
 import { deletePet, observePet, updatePet } from '@/database/repositories/pets';
 import { observeProntuariosByPet } from '@/database/repositories/prontuarios';
 import { useObservable } from '@/database/hooks/useObservable';
 import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
+import { pickAvatarImage } from '@/utils/pickAvatarImage';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
@@ -43,6 +45,8 @@ export function PetDetalheScreen() {
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
 
   if (!pet) {
     return <SafeAreaView style={styles.container} />;
@@ -80,6 +84,8 @@ export function PetDetalheScreen() {
     setPeso(pet.peso ?? '');
     setEspecie(pet.especie);
     setRaca(pet.raca ?? '');
+    setAvatarUri(null);
+    setAvatarFileName(null);
     setEditMode(true);
   };
 
@@ -95,21 +101,33 @@ export function PetDetalheScreen() {
 
     setSaving(true);
     try {
+      const previousAvatarUrl = pet.avatarUrl;
+      const avatarUrl = avatarUri ? await persistAvatarFile(avatarUri, avatarFileName!) : undefined;
+
       await updatePet(pet, {
         nome: nome.trim(),
         dataNascimento,
         peso: peso.trim() || null,
         especie,
         raca: raca.trim() || null,
+        ...(avatarUrl !== undefined ? { avatarUrl } : {}),
       });
+
+      if (avatarUrl !== undefined && previousAvatarUrl && previousAvatarUrl !== avatarUrl) {
+        await deleteAvatarFile(previousAvatarUrl);
+      }
+
       setEditMode(false);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleChangePhoto = () => {
-    // Seleção de foto ainda não implementada.
+  const handleChangePhoto = async () => {
+    const picked = await pickAvatarImage();
+    if (!picked) return;
+    setAvatarUri(picked.uri);
+    setAvatarFileName(picked.fileName);
   };
 
   const handleDelete = () => {
@@ -139,7 +157,7 @@ export function PetDetalheScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <EditableAvatar
-          photoUrl={pet.avatarUrl ?? undefined}
+          photoUrl={avatarUri ?? pet.avatarUrl ?? undefined}
           fallbackIcon={species}
           editable={editMode}
           onPress={handleChangePhoto}

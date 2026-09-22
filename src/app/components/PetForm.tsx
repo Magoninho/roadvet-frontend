@@ -3,11 +3,14 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
+import { persistAvatarFile } from '@/database/repositories/avatars';
 import { createPet } from '@/database/repositories/pets';
 import { observeTutoresWhereNome } from '@/database/repositories/tutores';
 import { useAuth } from '@/contexts/AuthContext';
-import { AvatarPicker } from './AvatarPicker';
+import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { speciesToIcon } from '@/utils/format';
 import { DateInput } from './DateInput';
+import { EditableAvatar } from './EditableAvatar';
 import { FormFooter } from './FormFooter';
 import { GhostButton } from './GhostButton';
 import { LabeledInput } from './LabeledInput';
@@ -40,7 +43,16 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const handlePickAvatar = async () => {
+    const picked = await pickAvatarImage();
+    if (!picked) return;
+    setAvatarUri(picked.uri);
+    setAvatarFileName(picked.fileName);
+  };
 
   useEffect(() => {
     if (!showTutorSection || !veterinario) return;
@@ -72,12 +84,14 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
 
     setSaving(true);
     try {
+      const avatarUrl = avatarUri ? await persistAvatarFile(avatarUri, avatarFileName!) : null;
       const pet = await createPet(resolvedTutorId, {
         nome: nome.trim(),
         dataNascimento,
         peso: peso.trim() || null,
         especie,
         raca: raca.trim() || null,
+        avatarUrl,
       });
       onSave(pet);
     } finally {
@@ -92,7 +106,12 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AvatarPicker />
+        <EditableAvatar
+          photoUrl={avatarUri ?? undefined}
+          fallbackIcon={speciesToIcon(especie)}
+          editable
+          onPress={handlePickAvatar}
+        />
 
         {/* Renderização condicional da seleção de Tutor */}
         {showTutorSection && (
