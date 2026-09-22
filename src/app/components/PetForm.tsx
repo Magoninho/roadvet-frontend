@@ -125,7 +125,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
           </>
         )}
 
-        <LabeledInput placeholder="Nome" value={nome} onChangeText={setNome} style={styles.fullInput} />
+        <LabeledInput placeholder="Nome do pet" value={nome} onChangeText={setNome} style={styles.fullInput} />
 
         <View style={styles.row}>
           <DateInput value={dataNascimento} onChange={setDataNascimento} style={styles.rowInputLeft} />

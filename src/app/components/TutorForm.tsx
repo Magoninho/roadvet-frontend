@@ -71,7 +71,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         <AvatarPicker />
 
         <LabeledInput
-          placeholder="Nome completo*"
+          placeholder="Nome completo do tutor*"
           value={nomeCompleto}
           onChangeText={setNomeCompleto}
           style={styles.fullInput}
