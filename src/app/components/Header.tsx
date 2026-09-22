@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-type SyncStatus = 'offline' | 'synced';
+import type { ConnectionIndicatorStatus } from '@/database/sync';
 
 interface HeaderProps {
   title: string;
-  syncStatus?: SyncStatus;
+  syncStatus?: ConnectionIndicatorStatus;
 }
 
-const STATUS_CONFIG: Record<SyncStatus, { icon: string; color: string; label: string }> = {
+const STATUS_CONFIG: Record<ConnectionIndicatorStatus, { icon: string; color: string; label: string }> = {
   offline: { icon: 'wifi-off', color: '#8A8A8A', label: 'Offline' },
-  synced: { icon: 'cloud-check', color: '#22C55E', label: 'Online' },
+  syncing: { icon: 'cloud-sync', color: '#2FA9E8', label: 'Sincronizando...' },
+  online: { icon: 'cloud-check', color: '#22C55E', label: 'Online' },
 };
 
-export function Header({ title, syncStatus = 'synced' }: HeaderProps) {
+export function Header({ title, syncStatus = 'online' }: HeaderProps) {
   const status = STATUS_CONFIG[syncStatus];
 
   return (

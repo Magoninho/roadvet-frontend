@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import { observePetRows, PetRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useConnectionIndicator } from '@/database/sync';
 import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatAge, speciesToIcon } from '@/utils/format';
@@ -46,6 +47,7 @@ function toPetCardData({ pet, tutor }: PetRow): PetCardData {
 
 export default function PetsScreen() {
   const { veterinario } = useAuth();
+  const syncStatus = useConnectionIndicator();
   const [search, setSearch] = useState('');
   const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
   const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
@@ -105,7 +107,7 @@ export default function PetsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Pets" syncStatus="synced" />
+      <Header title="Pets" syncStatus={syncStatus} />
       <SearchBar
         value={search}
         onChangeText={setSearch}

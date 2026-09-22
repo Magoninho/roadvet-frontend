@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { observeTutorRows, TutorRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useConnectionIndicator } from '@/database/sync';
 import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
@@ -58,6 +59,7 @@ function toOwnerCardData({ tutor, pets }: TutorRow): OwnerCardData {
 
 export default function TutoresScreen() {
   const { veterinario } = useAuth();
+  const syncStatus = useConnectionIndicator();
   const [search, setSearch] = useState('');
   const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
   const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
@@ -116,7 +118,7 @@ export default function TutoresScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Tutores" syncStatus="synced" />
+      <Header title="Tutores" syncStatus={syncStatus} />
       <SearchBar
         value={search}
         onChangeText={setSearch}

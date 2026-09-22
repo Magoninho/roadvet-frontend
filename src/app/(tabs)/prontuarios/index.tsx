@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import { observeProntuarioRows, ProntuarioRow } from '@/database/repositories/lists';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useConnectionIndicator } from '@/database/sync';
 import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateBR, speciesToIcon } from '@/utils/format';
@@ -49,6 +50,7 @@ function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
 
 export default function ProntuariosScreen() {
   const { veterinario } = useAuth();
+  const syncStatus = useConnectionIndicator();
   const [search, setSearch] = useState('');
   const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
   const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
@@ -108,7 +110,7 @@ export default function ProntuariosScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Prontuários" />
+      <Header title="Prontuários" syncStatus={syncStatus} />
       <SearchBar
         value={search}
         onChangeText={setSearch}
