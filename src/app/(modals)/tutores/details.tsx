@@ -7,10 +7,12 @@ import Tutor from '@/database/models/Tutor';
 import { deleteTutor, observeTutor, updateTutor } from '@/database/repositories/tutores';
 import { observePetsByTutor } from '@/database/repositories/pets';
 import { useObservable } from '@/database/hooks/useObservable';
-import { formatAge } from '@/utils/format';
+import { formatAge, formatDateBR } from '@/utils/format';
+import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
 import { FormFooter } from '../../components/FormFooter';
+import { FormRow } from '../../components/FormRow';
 import { InfoText } from '../../components/InfoText';
 import { LabeledInput } from '../../components/LabeledInput';
 import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
@@ -30,9 +32,18 @@ export function TutorDetalheScreen() {
   const [saving, setSaving] = useState(false);
 
   const [nome, setNome] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [telefone, setTelefone] = useState('');
   const [cpf, setCpf] = useState('');
+  const [dataNascimento, setDataNascimento] = useState<Date | null>(null);
+  const [email, setEmail] = useState('');
+  const [cep, setCep] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [complemento, setComplemento] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+  const [telefone1, setTelefone1] = useState('');
+  const [telefone2, setTelefone2] = useState('');
 
   if (!tutor) {
     return <SafeAreaView style={styles.container} />;
@@ -48,9 +59,18 @@ export function TutorDetalheScreen() {
 
   const handleEnableEdit = () => {
     setNome(tutor.nomeCompleto);
-    setEndereco(tutor.endereco ?? '');
-    setTelefone(tutor.telefone1 ?? '');
     setCpf(tutor.cpf);
+    setDataNascimento(tutor.dataNascimento);
+    setEmail(tutor.email ?? '');
+    setCep(tutor.cep ?? '');
+    setEndereco(tutor.endereco ?? '');
+    setNumero(tutor.numero ?? '');
+    setBairro(tutor.bairro ?? '');
+    setComplemento(tutor.complemento ?? '');
+    setCidade(tutor.cidade ?? '');
+    setUf(tutor.uf ?? '');
+    setTelefone1(tutor.telefone1 ?? '');
+    setTelefone2(tutor.telefone2 ?? '');
     setEditMode(true);
   };
 
@@ -59,13 +79,27 @@ export function TutorDetalheScreen() {
   };
 
   const handleSaveEdit = async () => {
+    if (!nome.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
+      Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
+      return;
+    }
+
     setSaving(true);
     try {
       await updateTutor(tutor, {
         nomeCompleto: nome.trim(),
-        endereco: endereco.trim() || null,
-        telefone1: telefone.trim() || null,
         cpf: cpf.trim(),
+        dataNascimento,
+        email: email.trim() || null,
+        cep: cep.trim(),
+        endereco: endereco.trim(),
+        numero: numero.trim(),
+        bairro: bairro.trim(),
+        complemento: complemento.trim() || null,
+        cidade: cidade.trim(),
+        uf: uf.trim().toUpperCase(),
+        telefone1: telefone1.trim(),
+        telefone2: telefone2.trim() || null,
       });
       setEditMode(false);
     } finally {
@@ -138,32 +172,59 @@ export function TutorDetalheScreen() {
         <SectionDivider icon="information" label="Informações básicas" />
         {editMode ? (
           <>
-            <LabeledInput
-              placeholder="Endereço"
-              value={endereco}
-              onChangeText={setEndereco}
-              style={styles.fullInput}
-            />
-            <LabeledInput
-              placeholder="Telefone"
-              value={telefone}
-              onChangeText={setTelefone}
-              keyboardType="numeric"
-              style={styles.fullInput}
-            />
-            <LabeledInput
-              placeholder="CPF"
-              value={cpf}
-              onChangeText={setCpf}
-              keyboardType="numeric"
-              style={styles.fullInput}
-            />
+            <FormRow style={styles.formRowMargin}>
+              <LabeledInput
+                placeholder="CPF*"
+                value={cpf}
+                onChangeText={setCpf}
+                keyboardType="numeric"
+                style={styles.flexInput}
+              />
+              <DateInput
+                value={dataNascimento}
+                onChange={setDataNascimento}
+                placeholder="Data de nasc."
+                style={styles.flexInput}
+              />
+            </FormRow>
+
+            <LabeledInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.fullInput} />
+            <LabeledInput placeholder="CEP*" value={cep} onChangeText={setCep} keyboardType="numeric" style={styles.fullInput} />
+
+            <FormRow style={styles.formRowMargin}>
+              <LabeledInput placeholder="Endereço*" value={endereco} onChangeText={setEndereco} style={styles.flexInputLarge} />
+              <LabeledInput placeholder="Número*" value={numero} onChangeText={setNumero} keyboardType="numeric" style={styles.flexInputSmall} />
+            </FormRow>
+
+            <FormRow style={styles.formRowMargin}>
+              <LabeledInput placeholder="Bairro*" value={bairro} onChangeText={setBairro} style={styles.flexInput} />
+              <LabeledInput placeholder="Complemento" value={complemento} onChangeText={setComplemento} style={styles.flexInput} />
+            </FormRow>
+
+            <FormRow style={styles.formRowMargin}>
+              <LabeledInput placeholder="Cidade*" value={cidade} onChangeText={setCidade} style={styles.flexInputLarge} />
+              <LabeledInput placeholder="UF*" value={uf} onChangeText={setUf} style={styles.flexInputSmall} />
+            </FormRow>
+
+            <FormRow style={styles.formRowMargin}>
+              <LabeledInput placeholder="Telefone 1*" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" style={styles.flexInput} />
+              <LabeledInput placeholder="Telefone 2" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" style={styles.flexInput} />
+            </FormRow>
           </>
         ) : (
           <>
-            <InfoText label="Endereço" value={tutor.endereco ?? ''} />
-            <InfoText label="Telefone" value={tutor.telefone1 ?? ''} />
             <InfoText label="CPF" value={tutor.cpf} />
+            <InfoText label="Data de nascimento" value={formatDateBR(tutor.dataNascimento)} />
+            {!!tutor.email && <InfoText label="Email" value={tutor.email} />}
+            <InfoText label="Endereço" value={tutor.endereco ?? ''} />
+            {!!tutor.numero && <InfoText label="Número" value={tutor.numero} />}
+            {!!tutor.complemento && <InfoText label="Complemento" value={tutor.complemento} />}
+            <InfoText label="Bairro" value={tutor.bairro ?? ''} />
+            <InfoText label="Cidade" value={tutor.cidade ?? ''} />
+            <InfoText label="UF" value={tutor.uf ?? ''} />
+            <InfoText label="CEP" value={tutor.cep ?? ''} />
+            <InfoText label="Telefone" value={tutor.telefone1 ?? ''} />
+            {!!tutor.telefone2 && <InfoText label="Telefone 2" value={tutor.telefone2} />}
           </>
         )}
 
@@ -215,4 +276,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
   },
+  formRowMargin: {
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  flexInput: { flex: 1, minWidth: 0, flexShrink: 1 },
+  flexInputLarge: { flex: 2, minWidth: 0, flexShrink: 1 },
+  flexInputSmall: { flex: 1, minWidth: 0, flexShrink: 1 },
 });

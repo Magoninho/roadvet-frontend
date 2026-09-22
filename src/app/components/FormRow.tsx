@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 
 interface FormRowProps {
   children: ReactNode;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function FormRow({ children }: FormRowProps) {
-  return <View style={styles.row}>{children}</View>;
+export function FormRow({ children, style }: FormRowProps) {
+  return <View style={[styles.row, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
