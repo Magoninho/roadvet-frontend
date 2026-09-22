@@ -4,12 +4,13 @@ import { getIsOnline, isOnline$ } from './connectivity';
 import { synchronizeDatabase } from './engine';
 import { syncStatus$ } from './status';
 import { uploadPendingAttachments } from './attachmentUpload';
+import { uploadPendingAvatars } from './avatarUpload';
 
 const RETRY_INTERVAL_MS = 10000;
 
 function runSyncCycle(veterinarioId: string) {
   synchronizeDatabase()
-    .then(() => uploadPendingAttachments(veterinarioId))
+    .then(() => Promise.all([uploadPendingAttachments(veterinarioId), uploadPendingAvatars(veterinarioId)]))
     .catch(() => {});
 }
 
