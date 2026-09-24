@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -9,10 +9,18 @@ interface ProfileAvatarProps {
 }
 
 export function ProfileAvatar({ photoUrl, size = 120, fallbackIcon = 'account' }: ProfileAvatarProps) {
+  const [hasError, setHasError] = useState(false);
   const dimensionStyle = { width: size, height: size, borderRadius: size / 2 };
 
-  if (photoUrl) {
-    return <Image source={{ uri: photoUrl }} style={[styles.image, dimensionStyle]} />;
+  if (photoUrl && !hasError) {
+    return (
+      <Image
+        key={photoUrl}
+        source={{ uri: photoUrl }}
+        style={[styles.image, dimensionStyle]}
+        onError={() => setHasError(true)}
+      />
+    );
   }
 
   return (

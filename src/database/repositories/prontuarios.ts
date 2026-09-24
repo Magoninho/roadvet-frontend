@@ -48,8 +48,7 @@ export async function updateProntuario(prontuario: Prontuario, input: Partial<Pr
 }
 
 export async function deleteProntuario(prontuario: Prontuario): Promise<void> {
-  // Cascades to anexos_prontuario, deleting attachment files too.
-  await database.write(() => cascadeDeleteProntuario(prontuario));
+  await cascadeDeleteProntuario(prontuario);
 }
 
 export function observeProntuariosByPet(petId: string) {

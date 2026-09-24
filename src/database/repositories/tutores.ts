@@ -53,8 +53,7 @@ export async function updateTutor(tutor: Tutor, input: Partial<TutorInput>): Pro
 }
 
 export async function deleteTutor(tutor: Tutor): Promise<void> {
-  // Cascades to pets -> prontuarios -> anexos_prontuario, deleting attachment files too.
-  await database.write(() => cascadeDeleteTutor(tutor));
+  await cascadeDeleteTutor(tutor);
 }
 
 /** Columns whose edits must refresh a tutor list (displayed or searched on). */

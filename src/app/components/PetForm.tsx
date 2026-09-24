@@ -40,6 +40,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         peso: peso.trim() || null,
         especie,
         raca: raca.trim() || null,
+        avatarUrl: avatarUrl || null,
       });
       onSave(pet);
     } finally {
@@ -92,7 +94,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AvatarPicker />
+        <AvatarPicker imageUri={avatarUrl} onSelectImage={setAvatarUrl} />
 
         {/* Renderização condicional da seleção de Tutor */}
         {showTutorSection && (

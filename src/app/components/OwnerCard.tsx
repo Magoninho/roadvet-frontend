@@ -15,8 +15,17 @@ interface OwnerCardProps {
 }
 
 function OwnerAvatar({ photoUrl }: { photoUrl?: string }) {
-  if (photoUrl) {
-    return <Image source={{ uri: photoUrl }} style={styles.avatarImage} />;
+  const [hasError, setHasError] = React.useState(false);
+
+  if (photoUrl && !hasError) {
+    return (
+      <Image
+        key={photoUrl}
+        source={{ uri: photoUrl }}
+        style={styles.avatarImage}
+        onError={() => setHasError(true)}
+      />
+    );
   }
 
   return (

@@ -29,6 +29,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
   const [uf, setUf] = useState('');
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleSalvar = async () => {
@@ -54,6 +55,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         uf: uf.trim().toUpperCase(),
         telefone1: telefone1.trim(),
         telefone2: telefone2.trim() || null,
+        avatarUrl: avatarUrl || null,
       });
       onSave(tutor);
     } finally {
@@ -68,7 +70,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AvatarPicker />
+        <AvatarPicker imageUri={avatarUrl} onSelectImage={setAvatarUrl} />
 
         <LabeledInput
           placeholder="Nome completo*"

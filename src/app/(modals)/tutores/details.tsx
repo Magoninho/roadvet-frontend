@@ -16,6 +16,9 @@ import { LabeledInput } from '../../components/LabeledInput';
 import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SectionDivider } from '../../components/SectionDivider';
+import * as DocumentPicker from 'expo-document-picker';
+import { persistAttachmentFile } from '@/database/repositories/attachments';
+import { convertToDataUri } from '@/utils/image';
 import { PetFormModal } from '../../components/PetFormModal';
 
 export function TutorDetalheScreen() {
@@ -93,8 +96,22 @@ export function TutorDetalheScreen() {
 
   const handleNewPet = () => setModalPetVisible(true);
 
-  const handleChangePhoto = () => {
-    // Seleção de foto ainda não implementada.
+  const handleChangePhoto = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'image/*',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+
+      const asset = result.assets[0];
+      const savedUri = await persistAttachmentFile(asset.uri, asset.name || 'avatar.jpg');
+      const dataUri = await convertToDataUri(savedUri, asset.mimeType);
+      await updateTutor(tutor, { avatarUrl: dataUri });
+    } catch (error) {
+      console.warn('Erro ao atualizar foto do tutor:', error);
+    }
   };
 
   const handleSaveNewPet = () => {
@@ -120,7 +137,7 @@ export function TutorDetalheScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <EditableAvatar
           photoUrl={tutor.avatarUrl ?? undefined}
-          editable={editMode}
+          editable={true}
           onPress={handleChangePhoto}
         />
 

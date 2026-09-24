@@ -34,14 +34,9 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 interface RemoteAuthResponse {
-  access?: string;
-  refresh?: string;
-  veterinario?: RemoteVeterinarioProfile;
-  id?: string;
-  email?: string;
-  first_name?: string;
-  crmv?: string;
-  phone?: string;
+  access: string;
+  refresh: string;
+  veterinario: RemoteVeterinarioProfile;
 }
 
 function messageFromApiError(error: ApiError, fallback: string): string {
@@ -53,7 +48,7 @@ function messageFromApiError(error: ApiError, fallback: string): string {
   if (body && typeof body === 'object') {
     const obj = body as Record<string, unknown>;
     if (typeof obj.detail === 'string') return obj.detail;
-    // DRF field-validation errors, e.g. {"password": ["..."]} or {"username": ["..."]}.
+    // DRF field-validation errors, e.g. {"senha": ["..."]} or {"email": ["..."]}.
     for (const value of Object.values(obj)) {
       if (typeof value === 'string') return value;
       if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
@@ -64,23 +59,10 @@ function messageFromApiError(error: ApiError, fallback: string): string {
 
 async function completeRemoteAuth(
   response: RemoteAuthResponse,
-  fallbackData: { email: string; nome: string; crmv?: string | null; phone?: string | null },
   senhaHash?: string
 ): Promise<Veterinario> {
-  if (response.access && response.refresh) {
-    await setAuthTokens({ access: response.access, refresh: response.refresh });
-  }
-
-  // Monta o perfil local caso a resposta do Django não traga o objeto veterinario aninhado
-  const profile: RemoteVeterinarioProfile = response.veterinario ?? {
-    id: response.id ? String(response.id) : generateVeterinarioId(),
-    nome: response.first_name || fallbackData.nome,
-    email: response.email || fallbackData.email,
-    crmv: response.crmv ?? fallbackData.crmv ?? null,
-    telefone: response.phone ?? fallbackData.phone ?? null,
-  };
-
-  const vet = await upsertVeterinarioFromRemote(profile, senhaHash);
+  await setAuthTokens({ access: response.access, refresh: response.refresh });
+  const vet = await upsertVeterinarioFromRemote(response.veterinario, senhaHash);
   try {
     await synchronizeDatabase();
   } catch {
@@ -112,14 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const normalizedEmail = email.trim().toLowerCase();
 
     try {
-      // SimpleJWT exige 'username' e 'password'
-      const response = await apiRequest<RemoteAuthResponse>('/api/token/', {
+      const response = await apiRequest<RemoteAuthResponse>('/auth/login', {
         method: 'POST',
         skipAuth: true,
-        body: { username: normalizedEmail, password: senha },
+        body: { email: normalizedEmail, senha },
       });
 
-      const vet = await completeRemoteAuth(response, { email: normalizedEmail, nome: '' });
+      const vet = await completeRemoteAuth(response);
       setVeterinario(vet);
       return { ok: true };
     } catch (error) {
@@ -144,46 +125,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Já existe um cadastro com este email.' };
     }
 
+    const id = generateVeterinarioId();
     const senhaHash = await hashPassword(input.senha);
 
     try {
-      // Envia os campos esperados pelo model User do Django
-      const registerResponse = await apiRequest<RemoteAuthResponse>('/api/users/', {
+      const response = await apiRequest<RemoteAuthResponse>('/auth/register', {
         method: 'POST',
         skipAuth: true,
         body: {
-          username: email,
-          email: email,
-          password: input.senha,
+          id,
+          nome: input.nome,
           crmv: input.crmv ?? null,
-          phone: input.telefone ?? null,
-          first_name: input.nome,
+          email,
+          telefone: input.telefone ?? null,
+          senha: input.senha,
         },
       });
 
-      // Se a resposta de cadastro do Django não incluir os tokens JWT, realiza a autenticação na sequência
-      let authResponse = registerResponse;
-      if (!authResponse.access) {
-        authResponse = await apiRequest<RemoteAuthResponse>('/api/token/', {
-          method: 'POST',
-          skipAuth: true,
-          body: { username: email, password: input.senha },
-        });
-      }
-
-      const vet = await completeRemoteAuth(
-        authResponse,
-        { email, nome: input.nome, crmv: input.crmv, phone: input.telefone },
-        senhaHash
-      );
-
+      const vet = await completeRemoteAuth(response, senhaHash);
       setVeterinario(vet);
       return { ok: true };
     } catch (error) {
-      console.log('--- ERRO DETALHADO NO CADASTRO ---', error);
-      
       const fallback = 'Não foi possível concluir o cadastro. Verifique sua conexão e tente novamente.';
-      const detalheErro = error?.message || JSON.stringify(error);
       if (error instanceof ApiError) {
         return { ok: false, error: messageFromApiError(error, fallback) };
       }

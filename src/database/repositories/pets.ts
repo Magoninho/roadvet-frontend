@@ -37,8 +37,7 @@ export async function updatePet(pet: Pet, input: Partial<PetInput>): Promise<Pet
 }
 
 export async function deletePet(pet: Pet): Promise<void> {
-  // Cascades to prontuarios -> anexos_prontuario, deleting attachment files too.
-  await database.write(() => cascadeDeletePet(pet));
+  await cascadeDeletePet(pet);
 }
 
 export function observePetsByTutor(tutorId: string) {
