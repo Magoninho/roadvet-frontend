@@ -57,17 +57,16 @@ export async function deleteTutor(tutor: Tutor): Promise<void> {
   await database.write(() => cascadeDeleteTutor(tutor));
 }
 
-export function observeTutores(veterinarioId?: string) {
-  const queries = [Q.sortBy('nome_completo', Q.asc)];
+/** Columns whose edits must refresh a tutor list (displayed or searched on). */
+export const TUTOR_LIST_COLUMNS = [
+  'nome_completo', 'cpf', 'email', 'telefone1', 'telefone2',
+  'endereco', 'bairro', 'cidade', 'uf', 'avatar_url',
+];
 
-  // Aplica a trava por veterinario_id apenas se ele for informado
-  if (veterinarioId) {
-    queries.push(Q.where('veterinario_id', veterinarioId));
-  }
-
+export function observeTutores(veterinarioId: string) {
   return tutoresCollection()
-    .query(...queries)
-    .observe();
+    .query(Q.where('veterinario_id', veterinarioId), Q.sortBy('nome_completo', Q.asc))
+    .observeWithColumns(TUTOR_LIST_COLUMNS);
 }
 
 export function observeTutoresWhereNome(veterinarioId: string, search: string) {

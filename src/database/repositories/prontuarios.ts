@@ -58,10 +58,16 @@ export function observeProntuariosByPet(petId: string) {
     .observe();
 }
 
+/** Columns whose edits must refresh a prontuário list (displayed or searched on). */
+export const PRONTUARIO_LIST_COLUMNS = [
+  'pet_id', 'date', 'weight', 'anamnesis', 'physical_exam',
+  'prescription', 'exam_request_notes', 'exam_results_notes',
+];
+
 export function observeProntuariosByVeterinario(veterinarioId: string) {
   return prontuariosCollection()
     .query(Q.where('veterinario_id', veterinarioId), Q.sortBy('date', Q.desc))
-    .observe();
+    .observeWithColumns(PRONTUARIO_LIST_COLUMNS);
 }
 
 export function observeProntuario(id: string) {

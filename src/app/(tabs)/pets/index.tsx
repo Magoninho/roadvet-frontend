@@ -1,23 +1,38 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useObservable } from '@/database/hooks/useObservable';
-import Pet from '@/database/models/Pet';
-import Tutor from '@/database/models/Tutor';
-import { observePetsByVeterinario } from '@/database/repositories/pets';
+import { observePetRows, PetRow } from '@/database/repositories/lists';
+import { useSearchFilter } from '@/hooks/useSearchFilter';
+import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
 import { formatAge, speciesToIcon } from '@/utils/format';
+import { applySort, makeSortState, sortByDate, sortByString, type SortOption, type SortState } from '@/utils/sort';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
+import { EmptyListMessage } from '../../components/EmptyListMessage';
+import { FilterSheet } from '../../components/FilterSheet';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { Header } from '../../components/Header';
 import { PetCard, PetCardData } from '../../components/PetCard';
 import { SearchBar } from '../../components/SearchBar';
+import { SortSheet } from '../../components/SortSheet';
+import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
 
-function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) => void }) {
-  const tutor = useObservable<Tutor | null>(() => pet.tutor.observe(), [pet.id], null);
+const SORT_OPTIONS: SortOption[] = [
+  { key: 'nome', label: 'Nome', ascLabel: 'Nome (A-Z)', descLabel: 'Nome (Z-A)', defaultDirection: 'asc' },
+  {
+    key: 'idade',
+    label: 'Idade',
+    ascLabel: 'Mais velhos primeiro',
+    descLabel: 'Mais novos primeiro',
+    defaultDirection: 'asc',
+  },
+  { key: 'tutor', label: 'Tutor', ascLabel: 'Tutor (A-Z)', descLabel: 'Tutor (Z-A)', defaultDirection: 'asc' },
+];
 
-  const data: PetCardData = {
+function toPetCardData({ pet, tutor }: PetRow): PetCardData {
+  return {
     id: pet.id,
     name: pet.nome,
     age: formatAge(pet.dataNascimento),
@@ -27,35 +42,55 @@ function PetCardContainer({ pet, onPress }: { pet: Pet; onPress: (id: string) =>
     synced: true,
     photoUrl: pet.avatarUrl ?? undefined,
   };
-
-  return <PetCard data={data} onPress={onPress} />;
 }
 
 export default function PetsScreen() {
   const { veterinario } = useAuth();
   const [search, setSearch] = useState('');
+  const [sortState, setSortState] = useState<SortState>(() => makeSortState(SORT_OPTIONS));
+  const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
   const router = useRouter();
 
-  const pets = useObservable(
-    () => (veterinario ? observePetsByVeterinario(veterinario.id) : of([])),
+  const petRows = useObservable<PetRow[]>(
+    () => (veterinario ? observePetRows(veterinario.id) : of([])),
     [veterinario],
     [],
   );
-  const filteredPets = search.trim()
-    ? pets.filter((pet) => pet.nome.toLowerCase().includes(search.trim().toLowerCase()))
-    : pets;
 
-  const handleView = () => {
-    // alternar entre lista/grade
-  };
+  const filterGroups = useMemo(
+    () => [
+      { key: 'especie', title: 'Espécie', options: distinctChipOptions(petRows, (row) => row.pet.especie) },
+      { key: 'raca', title: 'Raça', options: distinctChipOptions(petRows, (row) => row.pet.raca) },
+    ],
+    [petRows],
+  );
 
-  const handleSort = () => {
-    // abrir modal de ordenação
-  };
+  const filteredRows = useMemo(
+    () =>
+      applyFilters(
+        petRows,
+        filterState,
+        { especie: (row) => row.pet.especie, raca: (row) => row.pet.raca },
+        {},
+      ),
+    [petRows, filterState],
+  );
 
-  const handleFilter = () => {
-    // abrir modal de filtro
-  };
+  const searchedRows = useSearchFilter(filteredRows, search);
+
+  const visibleRows = useMemo(
+    () =>
+      applySort(searchedRows, sortState, {
+        nome: sortByString((row) => row.pet.nome, sortState.direction),
+        idade: sortByDate((row) => row.pet.dataNascimento, sortState.direction),
+        tutor: sortByString((row) => row.tutor?.nomeCompleto, sortState.direction),
+      }),
+    [searchedRows, sortState],
+  );
+
+  const handleFilter = () => setFilterVisible(true);
 
   const handleCardPress = (id: string) => {
     router.push({
@@ -71,24 +106,62 @@ export default function PetsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Pets" syncStatus="synced" />
-      <SearchBar value={search} onChangeText={setSearch} />
-      <View
-        onViewPress={handleView}
-        onSortPress={handleSort}
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Pesquisar por pet, raça ou tutor..."
+      />
+      <ViewSortFilterBar
+        onViewPress={() => {}}
+        onSortPress={() => setSortVisible(true)}
         onFilterPress={handleFilter}
+        filterActive={isFilterActive(filterState)}
       />
 
       <FlatList
-        data={filteredPets}
+        data={visibleRows}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PetCardContainer pet={item} onPress={handleCardPress} />
+          <PetCard data={toPetCardData(item)} onPress={handleCardPress} />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          search.trim() || isFilterActive(filterState) ? (
+            <EmptyListMessage
+              title="Nenhum pet encontrado"
+              subtitle="Ajuste a pesquisa ou os filtros aplicados."
+            />
+          ) : (
+            <EmptyListMessage
+              icon="paw"
+              title="Nenhum pet cadastrado"
+              subtitle="Toque no botão + para cadastrar o primeiro pet."
+            />
+          )
+        }
       />
 
       <FloatingActionButton onPress={handleAddPress} />
+
+      <SortSheet
+        visible={sortVisible}
+        options={SORT_OPTIONS}
+        value={sortState}
+        onChange={setSortState}
+        onClose={() => setSortVisible(false)}
+      />
+
+      <FilterSheet
+        visible={filterVisible}
+        chipGroups={filterGroups}
+        toggles={[]}
+        value={filterState}
+        onChange={setFilterState}
+        onClear={() => setFilterState(makeEmptyFilterState())}
+        onClose={() => setFilterVisible(false)}
+      />
     </SafeAreaView>
   );
 }
