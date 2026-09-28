@@ -1,27 +1,34 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '@/contexts/AuthContext';
 
+// Componente Logo modificado para exibir a imagem do exemplo (gatinho e cachorro)
+// Você precisará salvar a imagem de exemplo como 'pet_logo.png' na sua pasta assets.
 function Logo() {
   return (
-    <Image source={require('../../../assets/logo.png')} />
+    <View style={styles.logoContainer}>
+       <Image 
+        source={require('../../../assets/pet_logo.png')}
+        style={[styles.petImage, { width: 500, height: 500 }]}  
+        resizeMode="contain"
+      />
+    </View>
   );
 }
 
-export default function LoginScreen() {
+export default function WelcomeScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -48,61 +55,55 @@ export default function LoginScreen() {
   };
 
   const handleCadastrar = () => {
-    router.push('/register')
+    router.push('/register');
+  };
+
+  const handleLoginPress = () => {
+    router.push('/login'); // Navega para a tela de login via Expo Router
   };
 
   return (
+    // Fundo alterado para branco, como no exemplo
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#BFE6E6" />
+      {/* Cor da barra de status alterada para branco (dark-content) */}
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Top drag handle, purely decorative to match the mock */}
-        <View style={styles.handle} />
+        {/* Removida a alça superior decorativa, pois não está no exemplo */}
 
         <View style={styles.content}>
           <Logo />
 
-          <Text style={styles.title}>Login</Text>
+          {/* Título e texto descritivo adicionados/alterados para combinar com o exemplo */}
+          <Text style={styles.title}>Com ou sem internet{"\n"}Sempre Conectado!</Text>
+          
+          <Text style={styles.subtitle}>
+            Realize seu atendimento veterinário{"\n"}
+            com a disponibilidade do Roadvet{"\n"}
+          </Text>
 
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#8A8F98"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="next"
-            />
+          {/* Formulário removido, pois o exemplo não possui campos de input, apenas botões */}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Senha"
-              placeholderTextColor="#8A8F98"
-              value={senha}
-              onChangeText={setSenha}
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-            />
-
-            {error && <Text style={styles.errorText}>{error}</Text>}
-
+          <View style={styles.buttonContainer}>
+            {/* Botão 'Create Account' - cores mantidas, mas com estilo do exemplo */}
             <TouchableOpacity
-              style={[styles.loginButton, submitting && styles.disabledButton]}
+              style={[styles.primaryButton, submitting && styles.disabledButton]}
               activeOpacity={0.85}
-              onPress={handleLogin}
+              onPress={handleCadastrar} // Alterado para levar ao cadastro, como no exemplo
               disabled={submitting}
             >
-              {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.loginButtonText}>Login</Text>}
+              {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryButtonText}>Criar Conta</Text>}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleCadastrar} activeOpacity={0.7}>
-              <Text style={styles.cadastrar}>Cadastrar</Text>
+            {/* Botão 'Sign In' - estilo do exemplo (borda e cor do texto) */}
+            <TouchableOpacity
+                onPress={handleLoginPress}
+                activeOpacity={0.7}
+                style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -111,105 +112,85 @@ export default function LoginScreen() {
   );
 }
 
-const TEAL_BG = '#b6e0e4';
-const NAVY = '#0F1E3D';
-const CYAN = '#12B4C4';
+// Paleta de cores baseada no exemplo
+const TEAL_PRIMARY = '#12B4C4'; // Cor principal dos botões
+const TEXT_DARK = '#0F1E3D'; // Cor do texto principal
+const TEXT_MUTED = '#6c757d'; // Cor do texto secundário
+const WHITE_BG = '#b6e0e4'; // Cor de fundo
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: TEAL_BG,
+    backgroundColor: WHITE_BG, // Fundo branco
   },
   flex: {
     flex: 1,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#9AC7C7',
-    marginTop: 8,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 28,
-    paddingTop: 48,
+    // Ajuste de padding para centralizar o conteúdo verticalmente
+    justifyContent: 'center', 
   },
-  logoBadge: {
-    width: 96,
-    height: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
+  logoContainer: {
+      width: '100%',
+      alignItems: 'center',
+      marginBottom: 40, // Espaçamento abaixo do logo
   },
-  logoEmoji: {
-    fontSize: 56,
-    position: 'absolute',
-  },
-  logoDog: {
-    fontSize: 26,
-    position: 'absolute',
-    top: -8,
-  },
-  brand: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: NAVY,
-    marginTop: 4,
-    marginBottom: 56,
-    letterSpacing: 0.2,
+  petImage: {
+      width: 280, // Tamanho ajustado para a imagem do exemplo
+      height: 280,
   },
   title: {
-    fontSize: 22,
-    color: '#3E4653',
-    paddingTop: 20,
-    marginBottom: 28,
+    fontSize: 28, // Tamanho de fonte maior, em negrito
+    fontWeight: 'bold',
+    color: TEXT_DARK,
+    textAlign: 'center',
+    marginTop: -120,
+    marginBottom: 16,
+    lineHeight: 36, // Altura de linha para o título
   },
-  form: {
+  subtitle: {
+      fontSize: 16,
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      marginBottom: 60, // Espaçamento maior antes dos botões
+      lineHeight: 24,
+  },
+  buttonContainer: {
     width: '100%',
     alignItems: 'center',
   },
-  input: {
+  primaryButton: {
     width: '100%',
-    height: 52,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 26,
-    paddingHorizontal: 22,
-    fontSize: 16,
-    color: NAVY,
-    marginBottom: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  loginButton: {
-    width: '100%',
-    height: 52,
-    backgroundColor: CYAN,
-    borderRadius: 26,
+    height: 56, // Botão mais alto
+    backgroundColor: TEAL_PRIMARY, // Cor de fundo do botão primário
+    borderRadius: 28, // Borda mais arredondada
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 16, // Espaçamento entre botões
+    elevation: 3, // Sombra leve para Android
   },
-  loginButtonText: {
+  primaryButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 18, // Fonte maior
     fontWeight: '600',
   },
-  cadastrar: {
-    color: CYAN,
-    fontSize: 15,
-    fontWeight: '700',
+  secondaryButton: {
+      width: '100%',
+      height: 56,
+      backgroundColor: WHITE_BG,
+      borderColor: TEAL_PRIMARY, // Cor da borda
+      borderWidth: 2, // Espessura da borda
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
   },
-  errorText: {
-    color: '#D64545',
-    fontSize: 13,
-    marginBottom: 12,
-    textAlign: 'center',
+  secondaryButtonText: {
+    color: TEAL_PRIMARY, // Cor do texto igual à primária
+    fontSize: 18,
+    fontWeight: '600',
   },
   disabledButton: {
     opacity: 0.7,
