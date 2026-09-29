@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import Tutor from '@/database/models/Tutor';
+import { persistAvatarFile } from '@/database/repositories/avatars';
 import { createTutor } from '@/database/repositories/tutores';
 import { useAuth } from '@/contexts/AuthContext';
-import { AvatarPicker } from './AvatarPicker'; // Ajuste os imports
+import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { EditableAvatar } from './EditableAvatar';
 import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
 import { FormRow } from './FormRow';
@@ -29,7 +31,16 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
   const [uf, setUf] = useState('');
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const handlePickAvatar = async () => {
+    const picked = await pickAvatarImage();
+    if (!picked) return;
+    setAvatarUri(picked.uri);
+    setAvatarFileName(picked.fileName);
+  };
 
   const handleSalvar = async () => {
     if (!nomeCompleto.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
@@ -40,6 +51,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
 
     setSaving(true);
     try {
+      const avatarUrl = avatarUri ? await persistAvatarFile(avatarUri, avatarFileName!) : null;
       const tutor = await createTutor(veterinario.id, {
         nomeCompleto: nomeCompleto.trim(),
         cpf: cpf.trim(),
@@ -54,6 +66,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         uf: uf.trim().toUpperCase(),
         telefone1: telefone1.trim(),
         telefone2: telefone2.trim() || null,
+        avatarUrl,
       });
       onSave(tutor);
     } finally {
@@ -68,10 +81,10 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AvatarPicker />
+        <EditableAvatar photoUrl={avatarUri ?? undefined} editable onPress={handlePickAvatar} />
 
         <LabeledInput
-          placeholder="Nome completo*"
+          placeholder="Nome completo do tutor*"
           value={nomeCompleto}
           onChangeText={setNomeCompleto}
           style={styles.fullInput}

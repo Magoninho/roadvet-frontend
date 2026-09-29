@@ -57,10 +57,16 @@ export async function deleteTutor(tutor: Tutor): Promise<void> {
   await database.write(() => cascadeDeleteTutor(tutor));
 }
 
+/** Columns whose edits must refresh a tutor list (displayed or searched on). */
+export const TUTOR_LIST_COLUMNS = [
+  'nome_completo', 'cpf', 'email', 'telefone1', 'telefone2',
+  'endereco', 'bairro', 'cidade', 'uf', 'avatar_url',
+];
+
 export function observeTutores(veterinarioId: string) {
   return tutoresCollection()
     .query(Q.where('veterinario_id', veterinarioId), Q.sortBy('nome_completo', Q.asc))
-    .observe();
+    .observeWithColumns(TUTOR_LIST_COLUMNS);
 }
 
 export function observeTutoresWhereNome(veterinarioId: string, search: string) {

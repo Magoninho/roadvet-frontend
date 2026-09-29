@@ -47,10 +47,13 @@ export function observePetsByTutor(tutorId: string) {
     .observe();
 }
 
+/** Columns whose edits must refresh a pet list (displayed or searched on). */
+export const PET_LIST_COLUMNS = ['tutor_id', 'nome', 'especie', 'raca', 'data_nascimento', 'avatar_url'];
+
 export function observePetsByVeterinario(veterinarioId: string) {
   return petsCollection()
     .query(Q.on('tutores', 'veterinario_id', veterinarioId), Q.sortBy('nome', Q.asc))
-    .observe();
+    .observeWithColumns(PET_LIST_COLUMNS);
 }
 
 export function observePet(id: string) {

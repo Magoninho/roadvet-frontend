@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import {
   clearAuthTokens,
   getAuthToken,
@@ -114,7 +115,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return data as T;
 }
 
-/** Uploads a single file as multipart/form-data (used for anexo uploads). */
+/** Uploads a single file as multipart/form-data (used for anexo and avatar uploads). */
 export async function apiUpload<T>(
   path: string,
   file: { uri: string; name: string; type?: string },
@@ -126,11 +127,19 @@ export async function apiUpload<T>(
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const form = new FormData();
-  form.append('file', {
-    uri: file.uri,
-    name: file.name,
-    type: file.type ?? 'application/octet-stream',
-  } as unknown as Blob);
+  if (Platform.OS === 'web') {
+    // Web's FormData/fetch require a real Blob/File -- the `{ uri, name, type }`
+    // object below is a React Native-only fetch polyfill convention that
+    // silently serializes to a useless string on web instead of file bytes.
+    const blob = await (await fetch(file.uri)).blob();
+    form.append('file', blob, file.name);
+  } else {
+    form.append('file', {
+      uri: file.uri,
+      name: file.name,
+      type: file.type ?? 'application/octet-stream',
+    } as unknown as Blob);
+  }
 
   const response = await fetch(url.toString(), { method: 'POST', headers, body: form });
 

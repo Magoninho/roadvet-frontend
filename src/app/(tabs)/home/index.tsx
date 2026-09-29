@@ -2,6 +2,7 @@ import { Header } from "@/app/components/Header";
 import { SearchBar } from "@/app/components/SearchBar";
 import { SortFilterBar } from "@/app/components/SortFilterBar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConnectionIndicator } from "@/database/sync";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
@@ -20,8 +21,8 @@ const COLORS = {
   textDark: "#2b2b2b",
   textMuted: "#8a8a8a",
   blue: "#5b8def",
-  orange: "#e8a838",
-  green: "#7ac2a5",
+  orange: "#ffb700",
+  green: "#00c274",
   border: "#e5e5e5",
   navActiveBg: "#dbe9ff",
   navActive: "#5b8def",
@@ -31,11 +32,10 @@ const COLORS = {
 const ROWS = 3;
 const COLS = 6;
 
-let online = true;
-
 export default function HomeScreen() {
   const router = useRouter();
   const { veterinario, logout } = useAuth();
+  const syncStatus = useConnectionIndicator();
 
   const handleNewProntuarioPress = () => {
     router.navigate("/prontuarios/select");
@@ -58,7 +58,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" />
       <View style={styles.content}>
         {/* Header */}
-        <Header title="RoadVet" syncStatus="synced" />
+        <Header title="RoadVet" syncStatus={syncStatus} />
         <View style={{paddingHorizontal: 16}}>
           {/* Greeting */}
           <View style={styles.greetingRow}>
