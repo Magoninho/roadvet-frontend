@@ -1,6 +1,4 @@
 import { Header } from "@/app/components/Header";
-import { SearchBar } from "@/app/components/SearchBar";
-import { SortFilterBar } from "@/app/components/SortFilterBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConnectionIndicator } from "@/database/sync";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -62,10 +60,23 @@ export default function HomeScreen() {
         <View style={{paddingHorizontal: 16}}>
           {/* Greeting */}
           <View style={styles.greetingRow}>
-            <Text style={styles.greeting}>Olá, {veterinario?.nome ?? ''}</Text>
+            <View style={styles.greetingContainer}>
+              <Ionicons name="person-circle-outline" size={28} color={COLORS.blue} style={styles.greetingIcon} />
+              <Text style={styles.greeting}>Olá, {veterinario?.nome ?? ''}</Text>
+            </View>
             <TouchableOpacity onPress={handleLogout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Ionicons name="log-out-outline" size={22} color={COLORS.textMuted} />
             </TouchableOpacity>
+          </View>
+          
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <MaterialCommunityIcons name="information-outline" size={20} color={COLORS.blue} />
+              <Text style={styles.cardTitle}>Resumo do Dia</Text>
+            </View>
+            <Text style={styles.cardDescription}>
+              Modo offline ativo. Todos os dados serão sincronizados automaticamente assim que houver conexão.
+            </Text>
           </View>
 
           {/* Primary action */}
@@ -155,14 +166,52 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  greetingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  greetingIcon: {
+    marginRight: 8,
   },
   greeting: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     color: COLORS.textDark,
-    marginTop: 24,
-    marginBottom: 24,
   },
+  // --- ESTILOS DO CARD ---
+  card: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.textDark,
+    marginLeft: 8,
+  },
+  cardDescription: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    lineHeight: 18,
+  },
+  // ---------------------------
   primaryButton: {
     backgroundColor: COLORS.blue,
     borderRadius: 12,
@@ -170,7 +219,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 3,
   },
   primaryButtonText: {
     color: "#fff",
