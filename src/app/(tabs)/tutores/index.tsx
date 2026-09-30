@@ -10,6 +10,7 @@ import { useSearchFilter } from '@/hooks/useSearchFilter';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
 import { applySort, makeSortState, sortByNumber, sortByString, type SortOption, type SortState } from '@/utils/sort';
+import { GRID_COLUMNS, padGridRows, type GridItem } from '@/utils/grid';
 import { EmptyListMessage } from '../../components/EmptyListMessage';
 import { FilterSheet } from '../../components/FilterSheet';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
@@ -17,9 +18,7 @@ import { Header } from '../../components/Header';
 import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortSheet } from '../../components/SortSheet';
-import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
-
-const NUM_COLUMNS = 3;
+import { ViewSortFilterBar, type ViewMode } from '../../components/ViewSortFilterBar';
 
 const SORT_OPTIONS: SortOption[] = [
   { key: 'nome', label: 'Nome', ascLabel: 'Nome (A-Z)', descLabel: 'Nome (Z-A)', defaultDirection: 'asc' },
@@ -32,21 +31,6 @@ const SORT_OPTIONS: SortOption[] = [
   },
   { key: 'cidade', label: 'Cidade', ascLabel: 'Cidade (A-Z)', descLabel: 'Cidade (Z-A)', defaultDirection: 'asc' },
 ];
-
-type ListItem = { id: string; row: TutorRow } | { id: string; empty: true };
-
-function fillWithEmptyItems(rows: TutorRow[]): ListItem[] {
-  const data: ListItem[] = rows.map((row) => ({ id: row.id, row }));
-  const remainder = data.length % NUM_COLUMNS;
-  if (remainder === 0) return data;
-
-  const emptyItemsCount = NUM_COLUMNS - remainder;
-  const emptyItems: ListItem[] = Array.from({ length: emptyItemsCount }).map(
-    (_, index) => ({ id: `empty-${index}`, empty: true })
-  );
-
-  return [...data, ...emptyItems];
-}
 
 function toOwnerCardData({ tutor, pets }: TutorRow): OwnerCardData {
   return {
@@ -65,7 +49,9 @@ export default function TutoresScreen() {
   const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
   const [sortVisible, setSortVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const router = useRouter();
+  const isGrid = viewMode === 'grid';
 
   const tutorRows = useObservable<TutorRow[]>(
     () => (veterinario ? observeTutorRows(veterinario.id) : of([])),
@@ -104,7 +90,10 @@ export default function TutoresScreen() {
     [searchedRows, sortState],
   );
 
-  const listData = useMemo(() => fillWithEmptyItems(visibleRows), [visibleRows]);
+  const listData = useMemo<GridItem<TutorRow>[]>(
+    () => (isGrid ? padGridRows(visibleRows) : visibleRows.map((row) => ({ id: row.id, row }))),
+    [visibleRows, isGrid],
+  );
 
   const handleCardPress = (id: string) => {
     router.push({
@@ -125,25 +114,28 @@ export default function TutoresScreen() {
         placeholder="Pesquisar por nome, CPF, telefone ou pet..."
       />
       <ViewSortFilterBar
-        onViewPress={() => {}}
+        viewMode={viewMode}
+        onViewPress={() => setViewMode(isGrid ? 'list' : 'grid')}
         onSortPress={() => setSortVisible(true)}
         onFilterPress={() => setFilterVisible(true)}
         filterActive={isFilterActive(filterState)}
       />
 
       <FlatList
+        // FlatList can't change numColumns on the fly; a new key remounts it for the other layout.
+        key={viewMode}
         data={listData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) =>
           'empty' in item ? (
             <View style={styles.emptyCard} />
           ) : (
-            <OwnerCard data={toOwnerCardData(item.row)} onPress={handleCardPress} />
+            <OwnerCard data={toOwnerCardData(item.row)} onPress={handleCardPress} layout={viewMode} />
           )
         }
-        numColumns={NUM_COLUMNS}
-        contentContainerStyle={styles.listContent}
-        columnWrapperStyle={styles.row}
+        numColumns={isGrid ? GRID_COLUMNS : 1}
+        contentContainerStyle={isGrid ? styles.gridContent : styles.listContent}
+        columnWrapperStyle={isGrid ? styles.row : undefined}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
@@ -190,10 +182,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
-  listContent: {
+  gridContent: {
     paddingHorizontal: 10,
     paddingBottom: 100,
     paddingTop: 10
+  },
+  listContent: {
+    paddingBottom: 100,
   },
   row: {
     justifyContent: 'flex-start',

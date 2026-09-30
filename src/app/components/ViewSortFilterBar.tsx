@@ -2,7 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+export type ViewMode = 'grid' | 'list';
+
 interface ViewSortFilterBarProps {
+  /** Current layout of the list below; the button shows (and switches to) the other one. */
+  viewMode: ViewMode;
   onViewPress: () => void;
   onSortPress: () => void;
   onFilterPress: () => void;
@@ -10,6 +14,7 @@ interface ViewSortFilterBarProps {
 }
 
 export function ViewSortFilterBar({
+  viewMode,
   onViewPress,
   onSortPress,
   onFilterPress,
@@ -17,8 +22,12 @@ export function ViewSortFilterBar({
 }: ViewSortFilterBarProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={onViewPress}>
-        <Icon name="view-list" size={16} color="#5A5A5A" />
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onViewPress}
+        accessibilityLabel={viewMode === 'grid' ? 'Visualizar em lista' : 'Visualizar em grade'}
+      >
+        <Icon name={viewMode === 'grid' ? 'view-list' : 'view-grid'} size={16} color="#5A5A5A" />
         <Text style={styles.text}>Visualização</Text>
       </TouchableOpacity>
 

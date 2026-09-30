@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import { observePetRows, PetRow } from '@/database/repositories/lists';
@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatAge, speciesToIcon } from '@/utils/format';
 import { applyFilters, distinctChipOptions, isFilterActive, makeEmptyFilterState, type FilterState } from '@/utils/filter';
 import { applySort, makeSortState, sortByDate, sortByString, type SortOption, type SortState } from '@/utils/sort';
+import { GRID_COLUMNS, padGridRows, type GridItem } from '@/utils/grid';
 import { EmptyListMessage } from '../../components/EmptyListMessage';
 import { FilterSheet } from '../../components/FilterSheet';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
@@ -18,7 +19,7 @@ import { Header } from '../../components/Header';
 import { PetCard, PetCardData } from '../../components/PetCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortSheet } from '../../components/SortSheet';
-import { ViewSortFilterBar } from '../../components/ViewSortFilterBar';
+import { ViewSortFilterBar, type ViewMode } from '../../components/ViewSortFilterBar';
 
 const SORT_OPTIONS: SortOption[] = [
   { key: 'nome', label: 'Nome', ascLabel: 'Nome (A-Z)', descLabel: 'Nome (Z-A)', defaultDirection: 'asc' },
@@ -53,7 +54,9 @@ export default function PetsScreen() {
   const [filterState, setFilterState] = useState<FilterState>(makeEmptyFilterState);
   const [sortVisible, setSortVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const router = useRouter();
+  const isGrid = viewMode === 'grid';
 
   const petRows = useObservable<PetRow[]>(
     () => (veterinario ? observePetRows(veterinario.id) : of([])),
@@ -92,6 +95,11 @@ export default function PetsScreen() {
     [searchedRows, sortState],
   );
 
+  const listData = useMemo<GridItem<PetRow>[]>(
+    () => (isGrid ? padGridRows(visibleRows) : visibleRows.map((row) => ({ id: row.id, row }))),
+    [visibleRows, isGrid],
+  );
+
   const handleFilter = () => setFilterVisible(true);
 
   const handleCardPress = (id: string) => {
@@ -114,19 +122,28 @@ export default function PetsScreen() {
         placeholder="Pesquisar por pet, raça ou tutor..."
       />
       <ViewSortFilterBar
-        onViewPress={() => {}}
+        viewMode={viewMode}
+        onViewPress={() => setViewMode(isGrid ? 'list' : 'grid')}
         onSortPress={() => setSortVisible(true)}
         onFilterPress={handleFilter}
         filterActive={isFilterActive(filterState)}
       />
 
       <FlatList
-        data={visibleRows}
+        // FlatList can't change numColumns on the fly; a new key remounts it for the other layout.
+        key={viewMode}
+        data={listData}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PetCard data={toPetCardData(item)} onPress={handleCardPress} />
-        )}
-        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) =>
+          'empty' in item ? (
+            <View style={styles.emptyCard} />
+          ) : (
+            <PetCard data={toPetCardData(item.row)} onPress={handleCardPress} layout={viewMode} />
+          )
+        }
+        numColumns={isGrid ? GRID_COLUMNS : 1}
+        contentContainerStyle={isGrid ? styles.gridContent : styles.listContent}
+        columnWrapperStyle={isGrid ? styles.row : undefined}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
@@ -175,5 +192,17 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 100,
+  },
+  gridContent: {
+    paddingHorizontal: 10,
+    paddingBottom: 100,
+    paddingTop: 10,
+  },
+  row: {
+    justifyContent: 'flex-start',
+  },
+  emptyCard: {
+    width: '31%',
+    marginHorizontal: '1.16%',
   },
 });

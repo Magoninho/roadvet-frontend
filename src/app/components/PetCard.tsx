@@ -18,23 +18,47 @@ interface PetCardProps {
   data: PetCardData;
   onPress?: (id: string) => void;
   showSyncDot?: boolean;
+  /** `list`: full-width row. `grid`: compact tile for a multi-column list. */
+  layout?: 'grid' | 'list';
 }
 
-function PetAvatar({ photoUrl, species }: { photoUrl?: string; species: 'dog' | 'cat' }) {
+function PetAvatar({ photoUrl, species, large = false }: { photoUrl?: string; species: 'dog' | 'cat'; large?: boolean }) {
   if (photoUrl) {
-    return <Image source={{ uri: photoUrl }} style={styles.avatarImage} />;
+    return <Image source={{ uri: photoUrl }} style={large ? styles.gridAvatarImage : styles.avatarImage} />;
   }
 
   return (
-    <View style={styles.avatarFallback}>
-      <Icon name={species === 'cat' ? 'cat' : 'dog'} size={18} color="#5A5A5A" />
+    <View style={large ? styles.gridAvatarFallback : styles.avatarFallback}>
+      <Icon name={species === 'cat' ? 'cat' : 'dog'} size={large ? 28 : 18} color="#5A5A5A" />
     </View>
   );
 }
 
-export function PetCard({ data, onPress, showSyncDot = true }: PetCardProps) {
+export function PetCard({ data, onPress, showSyncDot = true, layout = 'list' }: PetCardProps) {
   const { id, name, age, breed, ownerName, species = 'dog', synced, photoUrl } = data;
   const info = [age, breed].filter(Boolean).join(' | ');
+
+  if (layout === 'grid') {
+    return (
+      <TouchableOpacity
+        style={styles.gridCard}
+        activeOpacity={0.8}
+        onPress={() => onPress?.(id)}
+      >
+        <PetAvatar photoUrl={photoUrl} species={species} large />
+
+        <Text style={styles.gridName} numberOfLines={2}>{name}</Text>
+        {!!info && <Text style={styles.gridInfo} numberOfLines={2}>{info}</Text>}
+
+        {!!ownerName && (
+          <View style={styles.gridOwnerRow}>
+            <Icon name="account" size={12} color="#8A8A8A" />
+            <Text style={styles.gridOwnerName} numberOfLines={1}>{ownerName}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -114,5 +138,57 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 12,
     color: '#5A5A5A',
+  },
+  gridCard: {
+    width: '31%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    marginHorizontal: '1.16%',
+    marginBottom: 12,
+  },
+  gridAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginBottom: 8,
+  },
+  gridAvatarFallback: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F2F2F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  gridName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    textAlign: 'center',
+  },
+  gridInfo: {
+    fontSize: 12,
+    color: '#9A9A9A',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  gridOwnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  gridOwnerName: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#8A8A8A',
+    flexShrink: 1,
   },
 });
