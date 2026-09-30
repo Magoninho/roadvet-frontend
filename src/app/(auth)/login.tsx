@@ -11,6 +11,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,11 +27,19 @@ function Logo() {
 }
 
 
+// A largura acompanha a tela (descontado o padding lateral do conteúdo, limitada a 500) e a altura
+// segue a proporção do arquivo (1352x875), evitando overflow lateral em celulares.
+const DOG_MAX_WIDTH = 500;
+const DOG_ASPECT_RATIO = 875 / 1352;
+
 function Dog() {
+  const { width: windowWidth } = useWindowDimensions();
+  const dogWidth = Math.min(windowWidth - CONTENT_PADDING * 2, DOG_MAX_WIDTH);
+
   return (
     <Image 
       source={require('../../../assets/brownDog.png')} 
-      style={[styles.logoImage, { width: 500, height: 500 }]}  
+      style={[styles.logoImage, { width: dogWidth, height: dogWidth * DOG_ASPECT_RATIO }]}  
       pointerEvents="none"
     />
   );
@@ -130,6 +139,7 @@ export default function LoginScreen() {
 const TEAL_BG = '#b6e0e4';
 const NAVY = '#0F1E3D';
 const CYAN = '#12B4C4';
+const CONTENT_PADDING = 28;
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -150,12 +160,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 28,
+    paddingHorizontal: CONTENT_PADDING,
     paddingTop: 24, // Ajustado levemente para dar espaço à logo no topo
     zIndex: 1,
   },
   logoImage: {
-    marginTop: -100,
+    // A caixa agora tem a altura exata da imagem; antes, a faixa transparente de ~88px acima dela
+    // compensava parte dos -100 originais.
+    marginTop: -12,
     marginBottom: 10, // Espaço entre a logo e o texto "Login"
     resizeMode: 'contain',
   },
