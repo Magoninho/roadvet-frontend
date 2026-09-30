@@ -59,6 +59,7 @@ export default function ProntuarioDetalhe() {
   const [anamnesis, setAnamnesis] = useState('');
   const [physicalExam, setPhysicalExam] = useState('');
   const [prescription, setPrescription] = useState('');
+  const [vaccines, setVaccines] = useState('');
   const [examRequestNotes, setExamRequestNotes] = useState('');
   const [examResultsNotes, setExamResultsNotes] = useState('');
   const [newRequestFiles, setNewRequestFiles] = useState<AttachmentFile[]>([]);
@@ -71,6 +72,7 @@ export default function ProntuarioDetalhe() {
     setAnamnesis(record.anamnesis ?? '');
     setPhysicalExam(record.physicalExam ?? '');
     setPrescription(record.prescription ?? '');
+    setVaccines(record.vaccines ?? '');
     setExamRequestNotes(record.examRequestNotes ?? '');
     setExamResultsNotes(record.examResultsNotes ?? '');
   };
@@ -127,6 +129,7 @@ export default function ProntuarioDetalhe() {
         anamnesis: anamnesis.trim() || null,
         physicalExam: physicalExam.trim() || null,
         prescription: prescription.trim() || null,
+        vaccines: vaccines.trim() || null,
         examRequestNotes: examRequestNotes.trim() || null,
         examResultsNotes: examResultsNotes.trim() || null,
       });
@@ -212,6 +215,13 @@ export default function ProntuarioDetalhe() {
           <TextAreaField value={prescription} onChangeText={setPrescription} />
         ) : (
           <ReadOnlyField value={prontuario.prescription ?? ''} />
+        )}
+
+        <FormSectionTitle text="Vacinas" />
+        {editMode ? (
+          <TextAreaField value={vaccines} onChangeText={setVaccines} placeholder="Descreva as vacinas aplicadas..." />
+        ) : (
+          <ReadOnlyField value={prontuario.vaccines ?? ''} />
         )}
 
         <FormSectionTitle text="Solicitação de exames" />

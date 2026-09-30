@@ -11,6 +11,7 @@ export interface ProntuarioInput {
   anamnesis?: string | null;
   physicalExam?: string | null;
   prescription?: string | null;
+  vaccines?: string | null;
   examRequestNotes?: string | null;
   examResultsNotes?: string | null;
 }
@@ -25,6 +26,7 @@ function applyProntuarioInput(prontuario: Prontuario, input: Partial<ProntuarioI
   if (input.anamnesis !== undefined) prontuario.anamnesis = input.anamnesis ?? null;
   if (input.physicalExam !== undefined) prontuario.physicalExam = input.physicalExam ?? null;
   if (input.prescription !== undefined) prontuario.prescription = input.prescription ?? null;
+  if (input.vaccines !== undefined) prontuario.vaccines = input.vaccines ?? null;
   if (input.examRequestNotes !== undefined) prontuario.examRequestNotes = input.examRequestNotes ?? null;
   if (input.examResultsNotes !== undefined) prontuario.examResultsNotes = input.examResultsNotes ?? null;
 }
@@ -66,7 +68,7 @@ export function observeProntuariosByPet(petId: string) {
 /** Columns whose edits must refresh a prontuário list (displayed or searched on). */
 export const PRONTUARIO_LIST_COLUMNS = [
   'pet_id', 'date', 'weight', 'anamnesis', 'physical_exam',
-  'prescription', 'exam_request_notes', 'exam_results_notes',
+  'prescription', 'vaccines', 'exam_request_notes', 'exam_results_notes',
 ];
 
 export function observeProntuariosByVeterinario(veterinarioId: string) {

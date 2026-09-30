@@ -35,6 +35,7 @@ const SORT_OPTIONS: SortOption[] = [
 function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
   const badges: RecordCardData['badges'] = [];
   if (prontuario.prescription) badges.push('medication');
+  if (prontuario.vaccines) badges.push('vaccine');
   if (prontuario.examRequestNotes) badges.push('exam');
 
   return {

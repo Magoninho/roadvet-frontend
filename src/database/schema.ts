@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'tutores',
@@ -51,6 +51,7 @@ export const schema = appSchema({
         { name: 'anamnesis', type: 'string', isOptional: true },
         { name: 'physical_exam', type: 'string', isOptional: true },
         { name: 'prescription', type: 'string', isOptional: true },
+        { name: 'vaccines', type: 'string', isOptional: true },
         { name: 'exam_request_notes', type: 'string', isOptional: true },
         { name: 'exam_results_notes', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },

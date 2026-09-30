@@ -66,6 +66,7 @@ export function PetDetalheScreen() {
   const records: RecordCardData[] = prontuarios.map((prontuario) => {
     const badges: RecordCardData['badges'] = [];
     if (prontuario.prescription) badges.push('medication');
+    if (prontuario.vaccines) badges.push('vaccine');
     if (prontuario.examRequestNotes) badges.push('exam');
 
     return {

@@ -22,6 +22,7 @@ export default class Prontuario extends Model {
   @text('anamnesis') anamnesis!: string | null;
   @text('physical_exam') physicalExam!: string | null;
   @text('prescription') prescription!: string | null;
+  @text('vaccines') vaccines!: string | null;
   @text('exam_request_notes') examRequestNotes!: string | null;
   @text('exam_results_notes') examResultsNotes!: string | null;
 

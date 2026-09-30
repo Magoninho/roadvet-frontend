@@ -141,6 +141,7 @@ export function observeProntuarioRows(veterinarioId: string): Observable<Prontua
             prontuario.anamnesis,
             prontuario.physicalExam,
             prontuario.prescription,
+            prontuario.vaccines,
             prontuario.examRequestNotes,
             prontuario.examResultsNotes,
           ]),

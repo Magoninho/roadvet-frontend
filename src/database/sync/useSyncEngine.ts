@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { getIsOnline, isOnline$ } from './connectivity';
 import { synchronizeDatabase } from './engine';
-import { syncStatus$ } from './status';
+import { getSyncStatus, syncStatus$ } from './status';
 import { uploadPendingAttachments } from './attachmentUpload';
 import { uploadPendingAvatars } from './avatarUpload';
 
 const RETRY_INTERVAL_MS = 10000;
+const HEALTHY_SYNC_INTERVAL_MS = 15000;
 
 function runSyncCycle(veterinarioId: string) {
   synchronizeDatabase()
@@ -20,8 +21,9 @@ function runSyncCycle(veterinarioId: string) {
  * failed — e.g. the API is unreachable even though the device has a network
  * connection. That last case keeps retrying on an interval instead of
  * leaving the user stuck on a failed sync until the next foreground/reconnect
- * event. Pass `veterinarioId: null` to disable entirely, e.g. while no one
- * is logged in.
+ * event. While healthy, it also re-syncs periodically so the API going down
+ * is noticed without waiting for one of those events. Pass
+ * `veterinarioId: null` to disable entirely, e.g. while no one is logged in.
  */
 export function useSyncEngine(veterinarioId: string | null): void {
   const wasOfflineRef = useRef(!getIsOnline());
@@ -56,11 +58,22 @@ export function useSyncEngine(veterinarioId: string | null): void {
       }
     });
 
+    // Once a sync succeeds, none of the triggers above fire again while the app stays in the
+    // foreground, so the API going down afterwards went unnoticed and the header kept claiming
+    // "Online". A periodic cycle while healthy surfaces that as `error` (shown as "Sincronizando...")
+    // and hands over to the retry timer above; it also pushes local edits made since the last sync.
+    const healthTimer = setInterval(() => {
+      if (AppState.currentState === 'active' && getIsOnline() && getSyncStatus().state !== 'error') {
+        runSyncCycle(veterinarioId);
+      }
+    }, HEALTHY_SYNC_INTERVAL_MS);
+
     return () => {
       appStateSubscription.remove();
       connectivitySubscription.unsubscribe();
       statusSubscription.unsubscribe();
       if (retryTimer) clearInterval(retryTimer);
+      clearInterval(healthTimer);
     };
   }, [veterinarioId]);
 }

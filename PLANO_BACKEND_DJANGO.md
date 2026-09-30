@@ -17,7 +17,7 @@ Hoje o aplicativo funciona inteiramente sem backend. Cadastro de veterinário, l
 
 Estes são os fatos do código-fonte do aplicativo que determinam o contrato da API. O engenheiro backend deve tratá-los como requisitos fixos, não como sugestões.
 
-1. Versão do schema local: 2 (`src/database/schema.ts`). Existe uma migração registrada em `src/database/migrations.ts`, aplicada automaticamente pelo WatermelonDB nos dispositivos que ainda tinham a versão 1.
+1. Versão do schema local: 3 (`src/database/schema.ts`). Há duas migrações registradas em `src/database/migrations.ts`, aplicadas automaticamente pelo WatermelonDB nos dispositivos com versão anterior: a da versão 1 para 2 (`veterinario_id` em `tutores`) e a da versão 2 para 3 (`vaccines` em `prontuarios`).
 2. Os identificadores (`id`) de todos os registros são gerados no próprio dispositivo pelo WatermelonDB (strings curtas, alfanuméricas). O backend nunca deve gerar um id novo para um registro sincronizado nem usar chave primária autoincremental. O `id` recebido do cliente é a chave primária no banco do servidor.
 3. Os campos `created_at` e `updated_at` existem em todas as tabelas, são somente leitura no cliente (`@readonly`) e trafegam como número inteiro de milissegundos desde a época Unix, nunca como texto ISO 8601.
 4. A engine de sincronização do cliente (`src/database/sync/engine.ts`) chama `synchronize()` da biblioteca WatermelonDB com a opção `sendCreatedAsUpdated: true`. Isso significa que, na prática, o backend deve tratar os buckets `created` e `updated` do push da mesma forma: como um upsert por id. Não é seguro assumir que um registro em `created` ainda não existe no servidor, porque reenvios após falha de rede recolocam o mesmo registro nesse fluxo.
@@ -79,7 +79,7 @@ Relacionamento: um pet pertence a um tutor e possui muitos prontuários (`prontu
 2. `veterinario`: ForeignKey para Veterinario, coluna `veterinario_id`, indexado.
 3. `date`: BigIntegerField (data da consulta, milissegundos).
 4. `weight`, `temperature`, `heart_rate`: CharField, nulos (valores do exame físico, texto livre).
-5. `anamnesis`, `physical_exam`, `prescription`, `exam_request_notes`, `exam_results_notes`: TextField, nulos.
+5. `anamnesis`, `physical_exam`, `prescription`, `vaccines`, `exam_request_notes`, `exam_results_notes`: TextField, nulos. `vaccines` (vacinas aplicadas, texto livre) existe no cliente desde a versão 3 do schema.
 
 Relacionamento: um prontuário pertence a um pet e a um veterinário, e possui muitos anexos (`anexos_prontuario.prontuario_id`).
 
@@ -106,7 +106,7 @@ O WatermelonDB define um contrato fixo de sincronização, documentado em https:
 Parâmetros de query recebidos do cliente:
 
 1. `last_pulled_at`: inteiro em milissegundos, ausente na primeira sincronização de um dispositivo.
-2. `schema_version`: inteiro, hoje sempre 2 (seção 3, item 1).
+2. `schema_version`: inteiro, hoje sempre 3 (seção 3, item 1).
 3. `migration`: JSON opcional, usado apenas quando o cliente detecta que sua versão de schema mudou desde o último pull. Nenhum dispositivo em campo ainda sincronizou pela versão 1, então este parâmetro pode continuar sendo ignorado por enquanto, mas deve ser aceito sem erro.
 
 Resposta esperada, formato JSON:
@@ -200,7 +200,7 @@ O disparo desse upload a partir do aplicativo (detectar que um anexo tem uma `ur
 1. Alinhamento de autenticação com o frontend: o aplicativo hoje não chama nenhum endpoint HTTP de login ou cadastro. A seção 7 depende de uma mudança no cliente para de fato acontecer.
 2. Fluxo de upload de anexos: a seção 8 depende de uma mudança no cliente para disparar o upload do arquivo após a criação do registro de metadados.
 3. Retenção de tombstones: definir por quanto tempo manter registros com `deleted_at` preenchido antes de uma purga física, considerando a frequência esperada de sincronização dos dispositivos em campo.
-4. Migrações de schema futuras: o parâmetro `migration` do pull (seção 5.1) só precisa de implementação real quando o schema do cliente evoluir além da versão 2.
+4. Migrações de schema futuras: o parâmetro `migration` do pull (seção 5.1) continua dispensável na versão 3, pois ela só acrescenta a coluna opcional `vaccines`, sem dado histórico a reenviar; ele passa a exigir implementação real quando uma migração futura depender de reenviar registros já sincronizados.
 
 ## 11. Ordem sugerida de implementação
 

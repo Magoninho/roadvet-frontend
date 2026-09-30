@@ -11,5 +11,14 @@ export const migrations = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: 'prontuarios',
+          columns: [{ name: 'vaccines', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });
