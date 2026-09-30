@@ -27,7 +27,7 @@ export async function createAnexo(prontuarioId: string, input: AnexoInput): Prom
 }
 
 export async function deleteAnexo(anexo: AnexoProntuario): Promise<void> {
-  await database.write(() => cascadeDeleteAnexo(anexo));
+  await cascadeDeleteAnexo(anexo);
 }
 
 export function observeAnexosByProntuario(prontuarioId: string) {

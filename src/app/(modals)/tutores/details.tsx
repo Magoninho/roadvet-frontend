@@ -5,11 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Tutor from '@/database/models/Tutor';
 import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/avatars';
-import { deleteTutor, observeTutor, updateTutor } from '@/database/repositories/tutores';
+import { deleteTutor, getTutorDeletionImpact, observeTutor, updateTutor } from '@/database/repositories/tutores';
 import { observePetsByTutor } from '@/database/repositories/pets';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
+import { deletionWarnings } from '@/utils/deletion';
 import { formatAge, formatDateBR } from '@/utils/format';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
@@ -48,6 +51,12 @@ export function TutorDetalheScreen() {
   const [telefone2, setTelefone2] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
+
+  const deletion = useDeleteConfirmation({
+    measure: () => getTutorDeletionImpact(tutor!),
+    remove: () => deleteTutor(tutor!),
+    onDeleted: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/tutores')),
+  });
 
   if (!tutor) {
     return <SafeAreaView style={styles.container} />;
@@ -122,20 +131,6 @@ export function TutorDetalheScreen() {
     }
   };
 
-  const handleDelete = () => {
-    Alert.alert('Excluir tutor', `Tem certeza que deseja excluir ${tutor.nomeCompleto}? Todos os pets e prontuários vinculados também serão excluídos.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteTutor(tutor);
-          router.back();
-        },
-      },
-    ]);
-  };
-
   const handlePetPress = (petId: string) => {
     router.push({ pathname: '/(modals)/pets/details', params: { petId } });
   };
@@ -166,7 +161,7 @@ export function TutorDetalheScreen() {
       <DetailTopBar
         onBackPress={handleBack}
         onEditPress={editMode ? undefined : handleEnableEdit}
-        onDeletePress={editMode ? undefined : handleDelete}
+        onDeletePress={editMode ? undefined : deletion.open}
       />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -263,6 +258,17 @@ export function TutorDetalheScreen() {
         tutorName={tutor.nomeCompleto}
         tutorId={tutor.id}
         showTutorSection={false}
+      />
+
+      <ConfirmDialog
+        visible={deletion.visible}
+        title="Excluir tutor"
+        message={`Tem certeza que deseja excluir ${tutor.nomeCompleto}? Excluir um tutor também exclui todos os pets vinculados a ele e todos os prontuários desses pets.`}
+        warnings={deletionWarnings(deletion.impact, pets.map((pet) => pet.nome))}
+        loading={deletion.deleting}
+        error={deletion.error}
+        onConfirm={deletion.confirm}
+        onCancel={deletion.cancel}
       />
     </SafeAreaView>
   );

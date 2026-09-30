@@ -1,7 +1,7 @@
 import { Q } from '@nozbe/watermelondb';
 import { database } from '../index';
 import Pet from '../models/Pet';
-import { deletePet as cascadeDeletePet } from './cascade';
+import { deletePet as cascadeDeletePet, measurePetDeletion } from './cascade';
 
 export interface PetInput {
   nome: string;
@@ -38,7 +38,12 @@ export async function updatePet(pet: Pet, input: Partial<PetInput>): Promise<Pet
 
 export async function deletePet(pet: Pet): Promise<void> {
   // Cascades to prontuarios -> anexos_prontuario, deleting attachment files too.
-  await database.write(() => cascadeDeletePet(pet));
+  await cascadeDeletePet(pet);
+}
+
+/** What `deletePet` would take with it (prontuarios and their anexos). */
+export function getPetDeletionImpact(pet: Pet) {
+  return measurePetDeletion(pet);
 }
 
 export function observePetsByTutor(tutorId: string) {

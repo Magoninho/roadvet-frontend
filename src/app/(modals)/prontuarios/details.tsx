@@ -1,15 +1,24 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Prontuario from '@/database/models/Prontuario';
 import Pet from '@/database/models/Pet';
-import { observeProntuario, updateProntuario } from '@/database/repositories/prontuarios';
+import {
+  deleteProntuario,
+  getProntuarioDeletionImpact,
+  observeProntuario,
+  updateProntuario,
+} from '@/database/repositories/prontuarios';
 import { createAnexo, observeAnexosByProntuarioAndType } from '@/database/repositories/anexos';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
+import { deletionWarnings } from '@/utils/deletion';
+import { formatDateBR } from '@/utils/format';
 import { BackHeader } from '../../components/BackHeader';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { FormFooter } from '../../components/FormFooter';
 import { FormSectionTitle } from '../../components/FormSectionTitle';
 import { ReadOnlyField } from '../../components/ReadOnlyField';
@@ -78,6 +87,12 @@ export default function ProntuarioDetalhe() {
     uri: anexo.uri,
     mimeType: anexo.mimeType ?? undefined,
   }));
+
+  const deletion = useDeleteConfirmation({
+    measure: () => getProntuarioDeletionImpact(prontuario!),
+    remove: () => deleteProntuario(prontuario!),
+    onDeleted: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/prontuarios')),
+  });
 
   if (!prontuario) {
     return <SafeAreaView style={styles.container} />;
@@ -148,9 +163,14 @@ export default function ProntuarioDetalhe() {
         onBackPress={handleBack}
         rightElement={
           !editMode && (
-            <TouchableOpacity onPress={handleEnableEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="pencil-outline" size={22} color="#2FA9E8" />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity onPress={handleEnableEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Icon name="pencil-outline" size={22} color="#2FA9E8" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={deletion.open} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Icon name="trash-can-outline" size={22} color="#E85C5C" />
+              </TouchableOpacity>
+            </View>
           )
         }
       />
@@ -232,6 +252,17 @@ export default function ProntuarioDetalhe() {
       </ScrollView>
 
       {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+
+      <ConfirmDialog
+        visible={deletion.visible}
+        title="Excluir prontuário"
+        message={`Tem certeza que deseja excluir o prontuário${pet ? ` de ${pet.nome}` : ''} do dia ${formatDateBR(prontuario.date)}? Os anexos de exames deste prontuário também serão excluídos.`}
+        warnings={deletionWarnings(deletion.impact)}
+        loading={deletion.deleting}
+        error={deletion.error}
+        onConfirm={deletion.confirm}
+        onCancel={deletion.cancel}
+      />
     </SafeAreaView>
   );
 }
@@ -240,5 +271,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
   },
 });

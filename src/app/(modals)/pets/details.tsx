@@ -6,11 +6,14 @@ import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
 import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/avatars';
-import { deletePet, observePet, updatePet } from '@/database/repositories/pets';
+import { deletePet, getPetDeletionImpact, observePet, updatePet } from '@/database/repositories/pets';
 import { observeProntuariosByPet } from '@/database/repositories/prontuarios';
 import { useObservable } from '@/database/hooks/useObservable';
+import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
+import { deletionWarnings } from '@/utils/deletion';
 import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
@@ -47,6 +50,12 @@ export function PetDetalheScreen() {
   const [raca, setRaca] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
+
+  const deletion = useDeleteConfirmation({
+    measure: () => getPetDeletionImpact(pet!),
+    remove: () => deletePet(pet!),
+    onDeleted: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/pets')),
+  });
 
   if (!pet) {
     return <SafeAreaView style={styles.container} />;
@@ -130,19 +139,6 @@ export function PetDetalheScreen() {
     setAvatarFileName(picked.fileName);
   };
 
-  const handleDelete = () => {
-    Alert.alert('Excluir pet', `Tem certeza que deseja excluir ${pet.nome}? Todos os prontuários vinculados também serão excluídos.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          await deletePet(pet);
-          router.back();
-        },
-      },
-    ]);
-  };
   const handleRecordPress = (id: string) => {
     router.push({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: id } });
   };
@@ -152,7 +148,7 @@ export function PetDetalheScreen() {
       <DetailTopBar
         onBackPress={handleBack}
         onEditPress={editMode ? undefined : handleEnableEdit}
-        onDeletePress={editMode ? undefined : handleDelete}
+        onDeletePress={editMode ? undefined : deletion.open}
       />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -207,6 +203,17 @@ export function PetDetalheScreen() {
       </ScrollView>
 
       {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+
+      <ConfirmDialog
+        visible={deletion.visible}
+        title="Excluir pet"
+        message={`Tem certeza que deseja excluir ${pet.nome}? Excluir um pet também exclui todos os prontuários dele, incluindo os anexos de exames.`}
+        warnings={deletionWarnings(deletion.impact)}
+        loading={deletion.deleting}
+        error={deletion.error}
+        onConfirm={deletion.confirm}
+        onCancel={deletion.cancel}
+      />
     </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import { Q } from '@nozbe/watermelondb';
 import { database } from '../index';
 import Tutor from '../models/Tutor';
-import { deleteTutor as cascadeDeleteTutor } from './cascade';
+import { deleteTutor as cascadeDeleteTutor, measureTutorDeletion } from './cascade';
 
 export interface TutorInput {
   nomeCompleto: string;
@@ -54,7 +54,12 @@ export async function updateTutor(tutor: Tutor, input: Partial<TutorInput>): Pro
 
 export async function deleteTutor(tutor: Tutor): Promise<void> {
   // Cascades to pets -> prontuarios -> anexos_prontuario, deleting attachment files too.
-  await database.write(() => cascadeDeleteTutor(tutor));
+  await cascadeDeleteTutor(tutor);
+}
+
+/** What `deleteTutor` would take with it (pets, their prontuarios and anexos). */
+export function getTutorDeletionImpact(tutor: Tutor) {
+  return measureTutorDeletion(tutor);
 }
 
 /** Columns whose edits must refresh a tutor list (displayed or searched on). */
