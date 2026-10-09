@@ -6,9 +6,10 @@ export interface SyncStatus {
   state: SyncState;
   lastSyncedAt: number | null;
   error: string | null;
+  isFatal?: boolean;
 }
 
-const initialStatus: SyncStatus = { state: 'idle', lastSyncedAt: null, error: null };
+const initialStatus: SyncStatus = { state: 'idle', lastSyncedAt: null, error: null, isFatal: false };
 
 const syncStatusSubject = new BehaviorSubject<SyncStatus>(initialStatus);
 
@@ -21,3 +22,8 @@ export function getSyncStatus(): SyncStatus {
 export function setSyncStatus(status: SyncStatus): void {
   syncStatusSubject.next(status);
 }
+
+export function resetSyncStatus(): void {
+  syncStatusSubject.next(initialStatus);
+}
+

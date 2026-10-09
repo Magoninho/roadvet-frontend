@@ -1,11 +1,11 @@
 import React from 'react';
-import { TextInput, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { TextInput, StyleSheet, StyleProp, TextStyle } from 'react-native';
 
 interface LabeledInputProps {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>;
   keyboardType?: 'default' | 'numeric';
 }
 

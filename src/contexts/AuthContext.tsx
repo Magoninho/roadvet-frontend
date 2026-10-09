@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { database, resetDatabase } from '@/database';
 import Veterinario from '@/database/models/Veterinario';
+import { cleanupAllLocalFiles } from '@/database/repositories/localFileStorage';
 import { hashPassword } from '@/database/repositories/password';
 import {
   authenticateVeterinario,
@@ -11,11 +13,12 @@ import {
   upsertVeterinarioFromRemote,
   VeterinarioInput,
 } from '@/database/repositories/veterinarios';
-import { synchronizeDatabase } from '@/database/sync';
+import { resetSyncStatus, synchronizeDatabase } from '@/database/sync';
 import { apiRequest, ApiError } from '@/services/api/client';
 import { clearAuthTokens, setAuthTokens } from '@/services/auth/tokenStore';
 
 const SESSION_KEY = 'roadvet.session.veterinarioId';
+const LAST_USER_ID_KEY = 'roadvet.session.lastUserId';
 
 export interface RegisterInput extends VeterinarioInput {
   senha: string;
@@ -58,14 +61,39 @@ function messageFromApiError(error: ApiError, fallback: string): string {
 }
 
 async function completeRemoteAuth(response: RemoteAuthResponse, senhaHash?: string): Promise<Veterinario> {
+  const newUserId = response.veterinario.id;
+  const lastUserId = await AsyncStorage.getItem(LAST_USER_ID_KEY);
+
+  let existingVets: Veterinario[] = [];
+  try {
+    existingVets = await database.get<Veterinario>('veterinarios').query().fetch();
+  } catch {
+    existingVets = [];
+  }
+
+  const isDifferentUser = (lastUserId && lastUserId !== newUserId) || existingVets.some((v) => v.id !== newUserId);
+
+  if (isDifferentUser) {
+    console.log(
+      `[AuthContext] Troca de usuário detectada (anterior: ${lastUserId ?? 'desconhecido'}, novo: ${newUserId}). Resetando banco de dados local...`,
+    );
+    await resetDatabase();
+    await cleanupAllLocalFiles();
+    resetSyncStatus();
+  }
+
   await setAuthTokens({ access: response.access, refresh: response.refresh });
   const vet = await upsertVeterinarioFromRemote(response.veterinario, senhaHash);
+
+  await AsyncStorage.setItem(SESSION_KEY, vet.id);
+  await AsyncStorage.setItem(LAST_USER_ID_KEY, vet.id);
+
   try {
     await synchronizeDatabase();
   } catch {
     // Best-effort: useSyncEngine retries once logged in and online.
   }
-  await AsyncStorage.setItem(SESSION_KEY, vet.id);
+
   return vet;
 }
 
@@ -78,9 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const savedId = await AsyncStorage.getItem(SESSION_KEY);
       if (savedId) {
         try {
-          setVeterinario(await findVeterinarioById(savedId));
+          const vet = await findVeterinarioById(savedId);
+          setVeterinario(vet);
+          await AsyncStorage.setItem(LAST_USER_ID_KEY, vet.id);
         } catch {
-          await AsyncStorage.removeItem(SESSION_KEY);
+          await AsyncStorage.multiRemove([SESSION_KEY, LAST_USER_ID_KEY]);
         }
       }
       setIsLoading(false);
@@ -111,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { ok: false, error: 'Sem conexão com o servidor e nenhum cadastro local encontrado para este email.' };
       }
       await AsyncStorage.setItem(SESSION_KEY, vet.id);
+      await AsyncStorage.setItem(LAST_USER_ID_KEY, vet.id);
       setVeterinario(vet);
       return { ok: true };
     }
@@ -152,9 +183,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await clearAuthTokens();
-    await AsyncStorage.removeItem(SESSION_KEY);
-    setVeterinario(null);
+    try {
+      await resetDatabase();
+      await cleanupAllLocalFiles();
+    } catch (error) {
+      console.error('[AuthContext] Erro ao resetar o banco de dados durante o logout:', error);
+    } finally {
+      await clearAuthTokens();
+      await AsyncStorage.multiRemove([SESSION_KEY, LAST_USER_ID_KEY]);
+      resetSyncStatus();
+      setVeterinario(null);
+    }
   };
 
   const value = useMemo(
@@ -172,3 +211,4 @@ export function useAuth(): AuthContextValue {
   }
   return ctx;
 }
+

@@ -47,8 +47,19 @@ export function useSyncEngine(veterinarioId: string | null): void {
     });
 
     let retryTimer: ReturnType<typeof setInterval> | null = null;
-    const statusSubscription = syncStatus$.subscribe(({ state }) => {
+    const statusSubscription = syncStatus$.subscribe(({ state, isFatal, error }) => {
       if (state === 'error' && getIsOnline()) {
+        if (isFatal) {
+          // Permanent or client validation error (e.g. 400 Bad Request, 401 Unauthorized, 403 Forbidden).
+          // Stop retrying automatically to avoid hammering the backend in an endless loop.
+          if (retryTimer) {
+            clearInterval(retryTimer);
+            retryTimer = null;
+          }
+          console.warn('[useSyncEngine] Sincronização falhou com erro permanente/autorização; loop automático interrompido:', error);
+          return;
+        }
+
         if (!retryTimer) {
           retryTimer = setInterval(() => runSyncCycle(veterinarioId), RETRY_INTERVAL_MS);
         }
@@ -63,7 +74,13 @@ export function useSyncEngine(veterinarioId: string | null): void {
     // "Online". A periodic cycle while healthy surfaces that as `error` (shown as "Sincronizando...")
     // and hands over to the retry timer above; it also pushes local edits made since the last sync.
     const healthTimer = setInterval(() => {
-      if (AppState.currentState === 'active' && getIsOnline() && getSyncStatus().state !== 'error') {
+      const current = getSyncStatus();
+      if (
+        AppState.currentState === 'active' &&
+        getIsOnline() &&
+        current.state !== 'error' &&
+        !current.isFatal
+      ) {
         runSyncCycle(veterinarioId);
       }
     }, HEALTHY_SYNC_INTERVAL_MS);

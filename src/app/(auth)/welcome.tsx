@@ -77,12 +77,10 @@ export default function WelcomeScreen() {
           <Logo />
 
           {/* Título e texto descritivo adicionados/alterados para combinar com o exemplo */}
-          <Text style={styles.title}>From Bowl to Soul{"\n"}We've Got It All!</Text>
+          <Text style={styles.title}>{"From Bowl to Soul\nWe've Got It All!"}</Text>
           
           <Text style={styles.subtitle}>
-            Buy the best pet food packed{"\n"}
-            with health and nutrition for{"\n"}
-            your beloved pet
+            {"Buy the best pet food packed\nwith health and nutrition for\nyour beloved pet"}
           </Text>
 
           {/* Formulário removido, pois o exemplo não possui campos de input, apenas botões */}

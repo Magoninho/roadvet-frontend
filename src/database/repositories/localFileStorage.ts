@@ -67,3 +67,26 @@ export async function deleteLocalFile(uri: string | null | undefined): Promise<v
     console.warn('[localFileStorage] Falha ao remover arquivo:', error);
   }
 }
+
+/**
+ * Removes all cached native files in application subdirectories (e.g. anexos, avatares).
+ * Used during logout or when switching accounts to prevent data leakage between users.
+ */
+export async function cleanupAllLocalFiles(): Promise<void> {
+  if (Platform.OS === 'web' || !FileSystem.documentDirectory) {
+    return;
+  }
+
+  try {
+    for (const subdir of ['anexos', 'avatares']) {
+      const dir = `${FileSystem.documentDirectory}${subdir}/`;
+      const info = await FileSystem.getInfoAsync(dir);
+      if (info.exists) {
+        await FileSystem.deleteAsync(dir, { idempotent: true });
+      }
+    }
+  } catch (error) {
+    console.warn('[localFileStorage] Falha ao limpar arquivos locais:', error);
+  }
+}
+

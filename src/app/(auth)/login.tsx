@@ -21,7 +21,7 @@ function Logo() {
   return (
     <Image 
       source={require('../../../assets/logo.png')} 
-      style={[styles.logo, { width: 120, height: 120 }]}  
+      style={{ width: 120, height: 120, resizeMode: 'contain' }}  
     />
   );
 }
@@ -37,11 +37,12 @@ function Dog() {
   const dogWidth = Math.min(windowWidth - CONTENT_PADDING * 2, DOG_MAX_WIDTH);
 
   return (
-    <Image 
-      source={require('../../../assets/brownDog.png')} 
-      style={[styles.logoImage, { width: dogWidth, height: dogWidth * DOG_ASPECT_RATIO }]}  
-      pointerEvents="none"
-    />
+    <View pointerEvents="none">
+      <Image 
+        source={require('../../../assets/brownDog.png')} 
+        style={[styles.logoImage, { width: dogWidth, height: dogWidth * DOG_ASPECT_RATIO }]}  
+      />
+    </View>
   );
 }
 
