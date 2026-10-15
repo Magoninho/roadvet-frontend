@@ -19,6 +19,7 @@ import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortFilterBar } from '../../components/SortFilterBar';
 import { SortSheet } from '../../components/SortSheet';
+import { COLORS } from '@/theme';
 
 const SORT_OPTIONS: SortOption[] = [
   {
@@ -110,7 +111,7 @@ export default function ProntuariosScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <Header title="Prontuários" syncStatus={syncStatus} />
       <SearchBar
         value={search}
@@ -177,9 +178,10 @@ export default function ProntuariosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: COLORS.bg,
   },
   listContent: {
+    paddingTop: 4,
     paddingBottom: 100,
   },
 });

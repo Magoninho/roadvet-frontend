@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS } from '@/theme';
 
 interface BulletListProps {
   items: string[];
@@ -29,11 +30,11 @@ const styles = StyleSheet.create({
   },
   bullet: {
     fontSize: 13,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     marginRight: 6,
   },
   text: {
     fontSize: 13,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
 });

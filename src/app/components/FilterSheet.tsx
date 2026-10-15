@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable, ScrollView,
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { FilterChipGroupConfig, FilterState, FilterToggleConfig } from '@/utils/filter';
 import { setToggle, toggleChip } from '@/utils/filter';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface FilterSheetProps {
   visible: boolean;
@@ -32,7 +33,7 @@ export function FilterSheet({
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="close" size={22} color="#5A5A5A" />
+              <Icon name="close" size={22} color={COLORS.textDark} />
             </TouchableOpacity>
           </View>
 
@@ -53,7 +54,7 @@ export function FilterSheet({
                           activeOpacity={0.7}
                           onPress={() => onChange(toggleChip(value, group.key, option.value))}
                         >
-                          {selected && <Icon name="check" size={14} color="#FFFFFF" style={styles.chipIcon} />}
+                          {selected && <Icon name="check" size={14} color={COLORS.onBrand} style={styles.chipIcon} />}
                           <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>
                             {option.label}
                           </Text>
@@ -71,8 +72,8 @@ export function FilterSheet({
                 <Switch
                   value={!!value.toggles[toggle.key]}
                   onValueChange={(active) => onChange(setToggle(value, toggle.key, active))}
-                  trackColor={{ false: '#E5E5E5', true: '#9CE0E6' }}
-                  thumbColor={value.toggles[toggle.key] ? '#12b4c4' : '#FFFFFF'}
+                  trackColor={{ false: COLORS.divider, true: '#9CE0E6' }}
+                  thumbColor={value.toggles[toggle.key] ? COLORS.brand : COLORS.bg}
                 />
               </View>
             ))}
@@ -99,11 +100,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingHorizontal: 20,
+    backgroundColor: COLORS.bg,
+    borderTopLeftRadius: RADIUS.sheet,
+    borderTopRightRadius: RADIUS.sheet,
+    paddingTop: SPACING.section,
+    paddingHorizontal: SPACING.gutter,
     maxHeight: '80%',
   },
   header: {
@@ -115,25 +116,25 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   scroll: {
     flexGrow: 0,
   },
   section: {
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: COLORS.divider,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#5A5A5A',
-    marginBottom: 10,
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textDark,
+    marginBottom: 12,
   },
   emptyText: {
     fontSize: 13,
-    color: '#B0B0B0',
+    color: COLORS.textMuted,
   },
   chipsWrap: {
     flexDirection: 'row',
@@ -143,38 +144,36 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 20,
-    paddingVertical: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 10,
     paddingHorizontal: 14,
   },
   chipSelected: {
-    backgroundColor: '#12b4c4',
-    borderColor: '#12b4c4',
+    backgroundColor: COLORS.brand,
   },
   chipIcon: {
     marginRight: 4,
   },
   chipLabel: {
     fontSize: 13,
-    color: '#5A5A5A',
-    fontWeight: '500',
+    color: COLORS.textDark,
+    fontWeight: '600',
   },
   chipLabelSelected: {
-    color: '#FFFFFF',
+    color: COLORS.onBrand,
   },
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: COLORS.divider,
   },
   toggleLabel: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     flexShrink: 1,
     marginRight: 12,
   },
@@ -187,27 +186,26 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 24,
-    paddingVertical: 13,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
   },
   clearLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5A5A5A',
+    color: COLORS.textDark,
   },
   applyButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#12b4c4',
-    borderRadius: 24,
-    paddingVertical: 13,
+    backgroundColor: COLORS.brand,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
   },
   applyLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.onBrand,
   },
 });

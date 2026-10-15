@@ -1,40 +1,38 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS } from '@/theme';
 
 interface OwnerReferenceProps {
   ownerName: string;
 }
 
+/** "Tutor: <name>" line shown under a pet's name on the brand header. */
 export function OwnerReference({ ownerName }: OwnerReferenceProps) {
   return (
-    <View style={styles.wrapper}>
-      <Text style={styles.deText}>de</Text>
-      <View style={styles.row}>
-        <Icon name="account" size={14} color="#5A5A5A" />
-        <Text style={styles.name}>{ownerName}</Text>
-      </View>
+    <View style={styles.row}>
+      <Icon name="account-outline" size={16} color={COLORS.onBrandMuted} />
+      <Text style={styles.text} numberOfLines={1}>
+        Tutor: <Text style={styles.name}>{ownerName}</Text>
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  deText: {
-    fontSize: 12,
-    color: '#9A9A9A',
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
+    marginTop: 6,
+  },
+  text: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: COLORS.onBrandMuted,
+    flexShrink: 1,
   },
   name: {
-    marginLeft: 4,
-    fontSize: 13,
-    color: '#5A5A5A',
+    fontWeight: '600',
+    color: COLORS.onBrand,
   },
 });

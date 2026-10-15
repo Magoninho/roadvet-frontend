@@ -7,21 +7,12 @@ import { formatDateBR, speciesToIcon } from "@/utils/format";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, type Href } from "expo-router";
 import { useMemo, useState, type ComponentProps } from "react";
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { of } from "rxjs";
+import { COLORS, RADIUS, SPACING } from "@/theme";
+import { ScreenHero } from "../../components/ScreenHero";
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
-
-const COLORS = {
-  brand: "#12B4C4",
-  brandOverlay: "rgba(255, 255, 255, 0.22)",
-  bg: "#FFFFFF",
-  textDark: "#0F1E3D",
-  textMuted: "#8A8A8A",
-  actionBg: "#F0F2F5",
-  divider: "#EEEEEE",
-};
 
 // Fade built from thin strips of rising opacity instead of a gradient, so it needs no native module.
 const EDGE_SHADOW_STEPS = 24;
@@ -88,7 +79,6 @@ function syncDescription(status: ConnectionIndicatorStatus, lastSyncedAt: number
 
 export default function HomeScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { veterinario, logout } = useAuth();
   const syncStatus = useConnectionIndicator();
   const { lastSyncedAt } = useSyncStatus();
@@ -134,26 +124,24 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.brand} />
-
-      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
+      <ScreenHero style={styles.hero}>
         <View style={styles.heroTopRow}>
           <View style={styles.avatar}>
             {veterinario ? (
               <Text style={styles.avatarText}>{initialsOf(veterinario.nome)}</Text>
             ) : (
-              <MaterialCommunityIcons name="account-outline" size={24} color="#FFFFFF" />
+              <MaterialCommunityIcons name="account-outline" size={24} color={COLORS.onBrand} />
             )}
           </View>
           <View style={styles.heroIcons}>
-            <MaterialCommunityIcons name={SYNC_ICON[syncStatus]} size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name={SYNC_ICON[syncStatus]} size={24} color={COLORS.onBrand} />
             <TouchableOpacity onPress={logout} hitSlop={10} accessibilityLabel="Sair">
-              <MaterialCommunityIcons name="logout" size={24} color="#FFFFFF" />
+              <MaterialCommunityIcons name="logout" size={24} color={COLORS.onBrand} />
             </TouchableOpacity>
           </View>
         </View>
         <Text style={styles.greeting}>Olá, {firstName}</Text>
-      </View>
+      </ScreenHero>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         <TouchableOpacity
@@ -261,8 +249,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
   },
   hero: {
-    backgroundColor: COLORS.brand,
-    paddingHorizontal: 20,
     paddingBottom: 24,
   },
   heroTopRow: {
@@ -279,7 +265,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    color: "#FFFFFF",
+    color: COLORS.onBrand,
     fontSize: 16,
     fontWeight: "700",
   },
@@ -292,11 +278,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
     fontSize: 20,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: COLORS.onBrand,
   },
   section: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingHorizontal: SPACING.gutter,
+    paddingTop: SPACING.section,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -324,10 +310,10 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   actionsWrapper: {
-    marginTop: 28,
+    marginTop: SPACING.block,
   },
   actionsRow: {
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.gutter,
     gap: 14,
   },
   actionsEdgeShadow: {
@@ -350,7 +336,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.actionBg,
+    backgroundColor: COLORS.surface,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -365,12 +351,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginHorizontal: 20,
-    marginTop: 28,
+    marginHorizontal: SPACING.gutter,
+    marginTop: SPACING.block,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: COLORS.actionBg,
+    borderRadius: RADIUS.control,
+    backgroundColor: COLORS.surface,
   },
   pillText: {
     fontSize: 14,
@@ -380,7 +366,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: COLORS.divider,
-    marginTop: 28,
+    marginTop: SPACING.block,
   },
   recentRow: {
     flexDirection: "row",

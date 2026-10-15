@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StatusBadge, BadgeType } from './StatusBadge';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 export interface RecordCardData {
   id: string;
@@ -28,7 +29,7 @@ export function RecordCard({ data, onPress }: RecordCardProps) {
       onPress={() => onPress?.(id)}
     >
       <View style={styles.headerRow}>
-        <Icon name={ species || "paw" } size={18} color="#1A1A1A" />
+        <Icon name={ species || "paw" } size={20} color={COLORS.brand} />
         <Text style={styles.petName}>{petName}</Text>
       </View>
 
@@ -58,31 +59,26 @@ export function RecordCard({ data, onPress }: RecordCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
     padding: 16,
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.gutter,
     marginTop: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   petName: {
-    marginLeft: 6,
+    marginLeft: 8,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: COLORS.textDark,
   },
   description: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 13,
-    color: '#9A9A9A',
+    color: COLORS.textMuted,
     lineHeight: 18,
   },
   footerRow: {
@@ -101,6 +97,6 @@ const styles = StyleSheet.create({
   dateText: {
     marginLeft: 4,
     fontSize: 12,
-    color: '#8A8A8A',
+    color: COLORS.textMuted,
   },
 });

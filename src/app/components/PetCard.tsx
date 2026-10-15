@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SyncDot } from './SyncDot';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 export interface PetCardData {
   id: string;
@@ -29,7 +30,7 @@ function PetAvatar({ photoUrl, species, large = false }: { photoUrl?: string; sp
 
   return (
     <View style={large ? styles.gridAvatarFallback : styles.avatarFallback}>
-      <Icon name={species === 'cat' ? 'cat' : 'dog'} size={large ? 28 : 18} color="#5A5A5A" />
+      <Icon name={species === 'cat' ? 'cat' : 'dog'} size={large ? 28 : 18} color={COLORS.textDark} />
     </View>
   );
 }
@@ -52,7 +53,7 @@ export function PetCard({ data, onPress, showSyncDot = true, layout = 'list' }: 
 
         {!!ownerName && (
           <View style={styles.gridOwnerRow}>
-            <Icon name="account" size={12} color="#8A8A8A" />
+            <Icon name="account" size={12} color={COLORS.textMuted} />
             <Text style={styles.gridOwnerName} numberOfLines={1}>{ownerName}</Text>
           </View>
         )}
@@ -76,7 +77,7 @@ export function PetCard({ data, onPress, showSyncDot = true, layout = 'list' }: 
       </View>
 
       <View style={styles.ownerRow}>
-        <Icon name="account" size={16} color="#5A5A5A" />
+        <Icon name="account" size={16} color={COLORS.textMuted} />
         <Text style={styles.ownerName}>{ownerName}</Text>
       </View>
     </TouchableOpacity>
@@ -88,17 +89,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 14,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.gutter,
     marginTop: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   leftContent: {
     flexDirection: 'row',
@@ -115,19 +111,19 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F2F2F5',
+    backgroundColor: COLORS.bg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   name: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: COLORS.textDark,
   },
   info: {
     fontSize: 12,
-    color: '#9A9A9A',
+    color: COLORS.textMuted,
     marginTop: 2,
   },
   ownerRow: {
@@ -137,14 +133,12 @@ const styles = StyleSheet.create({
   ownerName: {
     marginLeft: 4,
     fontSize: 12,
-    color: '#5A5A5A',
+    color: COLORS.textMuted,
   },
   gridCard: {
     width: '31%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 8,
@@ -161,20 +155,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F2F2F5',
+    backgroundColor: COLORS.bg,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   gridName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: COLORS.textDark,
     textAlign: 'center',
   },
   gridInfo: {
     fontSize: 12,
-    color: '#9A9A9A',
+    color: COLORS.textMuted,
     marginTop: 2,
     textAlign: 'center',
   },
@@ -188,7 +182,7 @@ const styles = StyleSheet.create({
   gridOwnerName: {
     marginLeft: 4,
     fontSize: 12,
-    color: '#8A8A8A',
+    color: COLORS.textMuted,
     flexShrink: 1,
   },
 });

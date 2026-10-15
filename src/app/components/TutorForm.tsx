@@ -10,6 +10,7 @@ import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
 import { FormRow } from './FormRow';
 import { FormFooter } from './FormFooter';
+import { SPACING } from '@/theme';
 
 interface TutorFormProps {
   onCancel: () => void;
@@ -81,7 +82,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <EditableAvatar photoUrl={avatarUri ?? undefined} editable onPress={handlePickAvatar} />
+        <EditableAvatar photoUrl={avatarUri ?? undefined} editable onPress={handlePickAvatar} style={styles.avatar} />
 
         <LabeledInput
           placeholder="Nome completo do tutor*"
@@ -141,10 +142,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingHorizontal: SPACING.gutter,
+    paddingBottom: SPACING.section,
   },
-  fullInput: { marginBottom: 14 },
+  avatar: { marginTop: 8, marginBottom: SPACING.section },
+  fullInput: { marginBottom: 12 },
   flexInput: { flex: 1, minWidth: 0, flexShrink: 1 },
   flexInputLarge: { flex: 2, minWidth: 0, flexShrink: 1 },
   flexInputSmall: { flex: 1, minWidth: 0, flexShrink: 1 },

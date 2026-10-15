@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS } from '@/theme';
 
 interface SelectInputProps {
   value: string;
@@ -23,7 +24,7 @@ export function SelectInput({ value, onSelect, options, placeholder, style }: Se
         <Text style={value ? styles.text : styles.placeholder}>
           {value || placeholder}
         </Text>
-        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={18} color="#5A5A5A" />
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={18} color={COLORS.textDark} />
       </TouchableOpacity>
 
       {open && (
@@ -51,37 +52,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   text: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   placeholder: {
     fontSize: 14,
-    color: '#B0B0B0',
+    color: COLORS.placeholder,
   },
   optionsWrapper: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-    backgroundColor: '#FFFFFF',
-    marginTop: -1,
+    borderColor: COLORS.divider,
+    borderRadius: RADIUS.control,
+    backgroundColor: COLORS.bg,
+    marginTop: 6,
+    overflow: 'hidden',
   },
   option: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: COLORS.divider,
   },
   optionText: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
 });

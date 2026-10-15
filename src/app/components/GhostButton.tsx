@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface GhostButtonProps {
   label: string;
@@ -11,7 +12,7 @@ interface GhostButtonProps {
 export function GhostButton({ label, icon = 'plus', onPress }: GhostButtonProps) {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.8}>
-      <Icon name={icon} size={16} color="#2FA9E8" />
+      <Icon name={icon} size={20} color={COLORS.textDark} />
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
   );
@@ -22,16 +23,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#2FA9E8',
-    borderRadius: 24,
-    paddingVertical: 12,
+    marginHorizontal: SPACING.gutter,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
   },
   label: {
-    marginLeft: 6,
+    marginLeft: 8,
     fontSize: 14,
     fontWeight: '600',
-    color: '#2FA9E8',
+    color: COLORS.textDark,
   },
 });

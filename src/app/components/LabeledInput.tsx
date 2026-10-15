@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextInput, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { COLORS, RADIUS } from '@/theme';
 
 interface LabeledInputProps {
   placeholder: string;
@@ -20,7 +21,7 @@ export function LabeledInput({
     <TextInput
       style={[styles.input, style]}
       placeholder={placeholder}
-      placeholderTextColor="#B0B0B0"
+      placeholderTextColor={COLORS.placeholder}
       value={value}
       onChangeText={onChangeText}
       keyboardType={keyboardType}
@@ -30,12 +31,11 @@ export function LabeledInput({
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
 });

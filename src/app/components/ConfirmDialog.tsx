@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -41,7 +42,7 @@ export function ConfirmDialog({
       <Pressable style={styles.overlay} onPress={handleCancel}>
         <Pressable style={styles.card} onPress={() => {}}>
           <View style={styles.iconCircle}>
-            <Icon name="trash-can-outline" size={26} color="#E85C5C" />
+            <Icon name="trash-can-outline" size={26} color={COLORS.danger} />
           </View>
 
           <Text style={styles.title}>{title}</Text>
@@ -78,7 +79,7 @@ export function ConfirmDialog({
               activeOpacity={0.8}
               disabled={loading}
             >
-              {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.confirmText}>{confirmLabel}</Text>}
+              {loading ? <ActivityIndicator color={COLORS.onBrand} /> : <Text style={styles.confirmText}>{confirmLabel}</Text>}
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -98,16 +99,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: COLORS.bg,
+    borderRadius: RADIUS.sheet,
+    padding: SPACING.section,
     alignItems: 'center',
   },
   iconCircle: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FDECEC',
+    backgroundColor: COLORS.dangerSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -115,21 +116,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     textAlign: 'center',
   },
   message: {
     marginTop: 8,
     fontSize: 15,
-    color: '#5A5A5A',
+    lineHeight: 21,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   warningBox: {
     alignSelf: 'stretch',
     marginTop: 16,
     padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#FDECEC',
+    borderRadius: RADIUS.control,
+    backgroundColor: COLORS.dangerSoft,
   },
   warningRow: {
     flexDirection: 'row',
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 13,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     textAlign: 'center',
   },
   error: {
@@ -166,28 +168,27 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    borderWidth: 1.5,
-    borderColor: '#1A1A1A',
-    borderRadius: 24,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   cancelText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#E85C5C',
-    borderRadius: 24,
-    paddingVertical: 12,
+    backgroundColor: COLORS.danger,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   confirmText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.onBrand,
   },
   disabled: {
     opacity: 0.6,

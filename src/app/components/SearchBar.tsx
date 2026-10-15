@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface SearchBarProps {
   value?: string;
@@ -11,13 +12,13 @@ interface SearchBarProps {
 export function SearchBar({ value, onChangeText, placeholder = 'Pesquisar...' }: SearchBarProps) {
   return (
     <View style={styles.container}>
-      <Icon name="magnify" size={20} color="#9A9A9A" />
+      <Icon name="magnify" size={20} color={COLORS.textMuted} />
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#9A9A9A"
+        placeholderTextColor={COLORS.placeholder}
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
@@ -29,7 +30,7 @@ export function SearchBar({ value, onChangeText, placeholder = 'Pesquisar...' }:
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Limpar pesquisa"
         >
-          <Icon name="close-circle" size={18} color="#9A9A9A" />
+          <Icon name="close-circle" size={18} color={COLORS.textMuted} />
         </TouchableOpacity>
       )}
     </View>
@@ -40,17 +41,17 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F5',
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginHorizontal: 16,
-    marginTop: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: SPACING.gutter,
+    marginTop: SPACING.section,
   },
   input: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 10,
     fontSize: 15,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
 });

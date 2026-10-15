@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface ReadOnlyFieldProps {
   value: string;
@@ -18,22 +19,20 @@ export function ReadOnlyField({ value, emptyText = 'Não informado' }: ReadOnlyF
 
 const styles = StyleSheet.create({
   wrapper: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginHorizontal: SPACING.gutter,
   },
   text: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     lineHeight: 20,
   },
   emptyText: {
     fontSize: 14,
-    color: '#B0B0B0',
+    color: COLORS.placeholder,
     fontStyle: 'italic',
   },
 });

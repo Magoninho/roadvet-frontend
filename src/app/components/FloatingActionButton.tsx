@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, SPACING } from '@/theme';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -9,7 +10,7 @@ interface FloatingActionButtonProps {
 export function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
   return (
     <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.85}>
-      <Icon name="plus" size={26} color="#FFFFFF" />
+      <Icon name="plus" size={28} color={COLORS.onBrand} />
     </TouchableOpacity>
   );
 }
@@ -18,11 +19,11 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 24,
-    right: 20,
+    right: SPACING.gutter,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#F5A623',
+    backgroundColor: COLORS.brand,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

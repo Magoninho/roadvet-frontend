@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface FormFooterProps {
   onCancel: () => void;
@@ -33,7 +34,7 @@ export function FormFooter({
         activeOpacity={0.8}
         disabled={saving}
       >
-        {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveText}>{saveLabel}</Text>}
+        {saving ? <ActivityIndicator color={COLORS.onBrand} /> : <Text style={styles.saveText}>{saveLabel}</Text>}
       </TouchableOpacity>
     </View>
   );
@@ -42,34 +43,36 @@ export function FormFooter({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.gutter,
     paddingVertical: 16,
     gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.divider,
+    backgroundColor: COLORS.bg,
   },
   cancelButton: {
     flex: 1,
-    borderWidth: 1.5,
-    borderColor: '#1A1A1A',
-    borderRadius: 24,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   cancelText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#0FB5C8',
-    borderRadius: 24,
-    paddingVertical: 12,
+    backgroundColor: COLORS.brand,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   saveText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.onBrand,
   },
   disabled: {
     opacity: 0.6,

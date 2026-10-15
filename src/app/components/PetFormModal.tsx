@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Modal, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import Pet from '@/database/models/Pet';
 import { PetForm } from './PetForm';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface PetFormModalProps {
   visible: boolean;
@@ -46,17 +47,17 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
+    backgroundColor: COLORS.bg,
+    borderTopLeftRadius: RADIUS.sheet,
+    borderTopRightRadius: RADIUS.sheet,
+    paddingTop: SPACING.section,
     maxHeight: '85%', // Evita que o modal passe da tela
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     marginBottom: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.gutter,
   },
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { COLORS, RADIUS } from '@/theme';
 
 interface DateInputProps {
   value: Date | null;
@@ -37,7 +38,7 @@ export function DateInput({ value, onChange, placeholder = 'Data de nasc.', styl
         <Text style={value ? styles.text : styles.placeholder}>
           {value ? formatDate(value) : placeholder}
         </Text>
-        <Icon name="calendar" size={18} color="#5A5A5A" />
+        <Icon name="calendar" size={18} color={COLORS.textDark} />
       </TouchableOpacity>
 
       {showPicker && (
@@ -58,18 +59,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   text: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   placeholder: {
     fontSize: 14,
-    color: '#B0B0B0',
+    color: COLORS.placeholder,
   },
 });

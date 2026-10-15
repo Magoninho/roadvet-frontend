@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Pet from '@/database/models/Pet';
 import { BackHeader } from '../../components/BackHeader';
 import { PetForm } from '../../components/PetForm'; // Importa o formulário
+import { COLORS } from '@/theme';
 
 export function NovoPetScreen() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function NovoPetScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title="Novo Pet" onBackPress={handleCancelar} />
 
       <PetForm
@@ -39,6 +40,6 @@ export default NovoPetScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
 });

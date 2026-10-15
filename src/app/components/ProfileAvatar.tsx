@@ -1,23 +1,30 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS } from '@/theme';
+
+export type AvatarTone = 'default' | 'onBrand';
 
 interface ProfileAvatarProps {
   photoUrl?: string;
   size?: number;
   fallbackIcon?: string;
+  /** `onBrand`: translucent white fallback for avatars placed on the brand header. */
+  tone?: AvatarTone;
 }
 
-export function ProfileAvatar({ photoUrl, size = 120, fallbackIcon = 'account' }: ProfileAvatarProps) {
+export function ProfileAvatar({ photoUrl, size = 120, fallbackIcon = 'account', tone = 'default' }: ProfileAvatarProps) {
   const dimensionStyle = { width: size, height: size, borderRadius: size / 2 };
 
   if (photoUrl) {
     return <Image source={{ uri: photoUrl }} style={[styles.image, dimensionStyle]} />;
   }
 
+  const onBrand = tone === 'onBrand';
+
   return (
-    <View style={[styles.fallback, dimensionStyle]}>
-      <Icon name={fallbackIcon} size={size * 0.5} color="#5A5A5A" />
+    <View style={[styles.fallback, onBrand ? styles.fallbackOnBrand : styles.fallbackDefault, dimensionStyle]}>
+      <Icon name={fallbackIcon} size={size * 0.5} color={onBrand ? COLORS.onBrand : COLORS.textDark} />
     </View>
   );
 }
@@ -28,9 +35,13 @@ const styles = StyleSheet.create({
   },
   fallback: {
     alignSelf: 'center',
-    borderWidth: 1.5,
-    borderColor: '#D9D9D9',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fallbackDefault: {
+    backgroundColor: COLORS.surface,
+  },
+  fallbackOnBrand: {
+    backgroundColor: COLORS.brandOverlay,
   },
 });

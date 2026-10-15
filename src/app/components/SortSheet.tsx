@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { SortDirection, SortOption, SortState } from '@/utils/sort';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface SortSheetProps {
   visible: boolean;
@@ -24,7 +25,7 @@ export function SortSheet({ visible, title = 'Ordenar por', options, value, onCh
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="close" size={22} color="#5A5A5A" />
+              <Icon name="close" size={22} color={COLORS.textDark} />
             </TouchableOpacity>
           </View>
 
@@ -43,7 +44,7 @@ export function SortSheet({ visible, title = 'Ordenar por', options, value, onCh
                   <Icon
                     name={isActive ? 'radiobox-marked' : 'radiobox-blank'}
                     size={20}
-                    color={isActive ? '#12b4c4' : '#C7C7CC'}
+                    color={isActive ? COLORS.brand : COLORS.placeholder}
                   />
                   <Text style={[styles.rowLabel, isActive && styles.rowLabelActive]}>
                     {isActive ? directionLabel(option, direction) : option.label}
@@ -59,7 +60,7 @@ export function SortSheet({ visible, title = 'Ordenar por', options, value, onCh
                     <Icon
                       name="arrow-up"
                       size={16}
-                      color={isActive && direction === 'asc' ? '#FFFFFF' : '#9A9A9A'}
+                      color={isActive && direction === 'asc' ? COLORS.onBrand : COLORS.textMuted}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -70,7 +71,7 @@ export function SortSheet({ visible, title = 'Ordenar por', options, value, onCh
                     <Icon
                       name="arrow-down"
                       size={16}
-                      color={isActive && direction === 'desc' ? '#FFFFFF' : '#9A9A9A'}
+                      color={isActive && direction === 'desc' ? COLORS.onBrand : COLORS.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
@@ -90,12 +91,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
+    backgroundColor: COLORS.bg,
+    borderTopLeftRadius: RADIUS.sheet,
+    borderTopRightRadius: RADIUS.sheet,
+    paddingTop: SPACING.section,
     paddingBottom: 32,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.gutter,
   },
   header: {
     flexDirection: 'row',
@@ -106,15 +107,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: COLORS.divider,
   },
   rowLeft: {
     flexDirection: 'row',
@@ -124,17 +125,16 @@ const styles = StyleSheet.create({
   rowLabel: {
     marginLeft: 10,
     fontSize: 15,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     flexShrink: 1,
   },
   rowLabelActive: {
-    fontWeight: '600',
-    color: '#12b4c4',
+    fontWeight: '700',
   },
   directionToggle: {
     flexDirection: 'row',
-    backgroundColor: '#F2F2F5',
-    borderRadius: 10,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
     padding: 2,
   },
   directionButton: {
@@ -145,6 +145,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   directionButtonActive: {
-    backgroundColor: '#12b4c4',
+    backgroundColor: COLORS.brand,
   },
 });

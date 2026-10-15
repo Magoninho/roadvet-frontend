@@ -13,8 +13,7 @@ export function FormRow({ children, style }: FormRowProps) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    // marginHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 12,
     gap: 12,
   },
 });

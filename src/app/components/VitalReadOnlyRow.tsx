@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface VitalItem {
   label: string;
@@ -30,27 +31,25 @@ export function VitalReadOnlyRow({ items }: VitalReadOnlyRowProps) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 12,
+    marginHorizontal: SPACING.gutter,
     gap: 12,
   },
   item: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingVertical: 10,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 14,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
   label: {
-    fontSize: 11,
-    color: '#9A9A9A',
+    fontSize: 12,
+    color: COLORS.textMuted,
     marginBottom: 4,
   },
   value: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textDark,
   },
 });
