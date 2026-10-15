@@ -1,297 +1,399 @@
-import { Header } from "@/app/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
-import { useConnectionIndicator } from "@/database/sync";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useObservable } from "@/database/hooks/useObservable";
+import { observeProntuarioRows, type ProntuarioRow } from "@/database/repositories/lists";
+import { observePetsByVeterinario } from "@/database/repositories/pets";
+import { useConnectionIndicator, useSyncStatus, type ConnectionIndicatorStatus } from "@/database/sync";
+import { formatDateBR, speciesToIcon } from "@/utils/format";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter, type Href } from "expo-router";
+import { useMemo, useState, type ComponentProps } from "react";
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { of } from "rxjs";
 
-// Colors pulled from the mock
+type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
+
 const COLORS = {
-  bg: "#ffffff",
-  screenBg: "#f2f2f2",
-  textDark: "#2b2b2b",
-  textMuted: "#8a8a8a",
-  blue: "#5b8def",
-  orange: "#ffb700",
-  green: "#00c274",
-  border: "#e5e5e5",
-  navActiveBg: "#dbe9ff",
-  navActive: "#5b8def",
-  navInactive: "#3a3a3a",
+  brand: "#12B4C4",
+  brandOverlay: "rgba(255, 255, 255, 0.22)",
+  bg: "#FFFFFF",
+  textDark: "#0F1E3D",
+  textMuted: "#8A8A8A",
+  actionBg: "#F0F2F5",
+  divider: "#EEEEEE",
 };
 
-const ROWS = 3;
-const COLS = 6;
+// Fade built from thin strips of rising opacity instead of a gradient, so it needs no native module.
+const EDGE_SHADOW_STEPS = 24;
+const EDGE_SHADOW_MAX_OPACITY = 0.12;
+const EDGE_SHADOW_STRIPS = Array.from({ length: EDGE_SHADOW_STEPS }, (_, index) => {
+  const opacity = (EDGE_SHADOW_MAX_OPACITY * (index + 1) ** 2) / EDGE_SHADOW_STEPS ** 2;
+  return `rgba(15, 30, 61, ${opacity.toFixed(4)})`;
+});
+
+const RECENT_LIMIT = 3;
+
+interface QuickAction {
+  key: string;
+  label: string;
+  icon: IconName;
+  href: Href;
+}
+
+// Horizontal row of round shortcuts, as in Nubank's Pix/Pagar/Transferir row.
+const QUICK_ACTIONS: QuickAction[] = [
+  { key: "consulta", label: "Consulta", icon: "clipboard-plus-outline", href: "/prontuarios/select" },
+  { key: "tutor", label: "Novo tutor", icon: "account-plus-outline", href: "/tutores/new" },
+  { key: "pet", label: "Novo pet", icon: "paw", href: "/pets/new" },
+  { key: "pacientes", label: "Pacientes", icon: "dog-side", href: "/(tabs)/pets" },
+  { key: "tutores", label: "Tutores", icon: "account-group-outline", href: "/(tabs)/tutores" },
+  { key: "historico", label: "Histórico", icon: "history", href: "/(tabs)/prontuarios" },
+];
+
+const SYNC_ICON: Record<ConnectionIndicatorStatus, IconName> = {
+  online: "cloud-check-outline",
+  syncing: "cloud-sync-outline",
+  offline: "wifi-off",
+};
+
+function initialsOf(nome: string | undefined): string {
+  const words = (nome ?? "").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  const first = words[0][0];
+  const last = words.length > 1 ? words[words.length - 1][0] : "";
+  return (first + last).toUpperCase();
+}
+
+function startOfToday(): number {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+}
+
+function startOfMonth(): number {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+}
+
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function syncDescription(status: ConnectionIndicatorStatus, lastSyncedAt: number | null): string {
+  if (status === "offline") {
+    return "Você está offline. Tudo fica salvo no aparelho e sincroniza quando a conexão voltar.";
+  }
+  if (status === "syncing") return "Sincronizando seus dados com a nuvem...";
+  return lastSyncedAt ? `Tudo sincronizado. Última sincronização às ${formatTime(lastSyncedAt)}.` : "Tudo sincronizado.";
+}
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { veterinario, logout } = useAuth();
   const syncStatus = useConnectionIndicator();
+  const { lastSyncedAt } = useSyncStatus();
 
-  const handleNewProntuarioPress = () => {
-    router.navigate("/prontuarios/select");
-  };
+  const [actionsViewportWidth, setActionsViewportWidth] = useState(0);
+  const [actionsContentWidth, setActionsContentWidth] = useState(0);
+  const [actionsScrollX, setActionsScrollX] = useState(0);
+  // 1px tolerance: the final scroll offset can land a fraction short of the exact end.
+  const canScrollRight = actionsScrollX + actionsViewportWidth < actionsContentWidth - 1;
 
-  const handleNewTutorPress = () => {
-    router.push("/tutores/new");
-  };
+  const prontuarioRows = useObservable<ProntuarioRow[]>(
+    () => (veterinario ? observeProntuarioRows(veterinario.id) : of([])),
+    [veterinario],
+    [],
+  );
+  const pets = useObservable(
+    () => (veterinario ? observePetsByVeterinario(veterinario.id) : of([])),
+    [veterinario],
+    [],
+  );
 
-  const handleNewPetPress = () => {
-    router.push("/pets/new");
-  };
+  const summary = useMemo(() => {
+    const today = startOfToday();
+    const month = startOfMonth();
+    let todayCount = 0;
+    let monthCount = 0;
+    for (const { prontuario } of prontuarioRows) {
+      const time = prontuario.date.getTime();
+      if (time >= today) todayCount += 1;
+      if (time >= month) monthCount += 1;
+    }
+    const recent = [...prontuarioRows]
+      .sort((a, b) => b.prontuario.date.getTime() - a.prontuario.date.getTime())
+      .slice(0, RECENT_LIMIT);
+    return { todayCount, monthCount, recent };
+  }, [prontuarioRows]);
 
-  const handleLogout = () => {
-    logout();
+  const firstName = veterinario?.nome.trim().split(/\s+/)[0] ?? "";
+
+  const openProntuario = (prontuarioId: string) => {
+    router.push({ pathname: "/(modals)/prontuarios/details", params: { prontuarioId } });
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.content}>
-        {/* Header */}
-        <Header title="RoadVet" syncStatus={syncStatus} />
-        <View style={{paddingHorizontal: 16}}>
-          {/* Greeting */}
-          <View style={styles.greetingRow}>
-            <View style={styles.greetingContainer}>
-              <Ionicons name="person-circle-outline" size={28} color={COLORS.blue} style={styles.greetingIcon} />
-              <Text style={styles.greeting}>Olá, {veterinario?.nome ?? ''}</Text>
-            </View>
-            <TouchableOpacity onPress={handleLogout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="log-out-outline" size={22} color={COLORS.textMuted} />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <MaterialCommunityIcons name="information-outline" size={20} color={COLORS.blue} />
-              <Text style={styles.cardTitle}>Resumo do Dia</Text>
-            </View>
-            <Text style={styles.cardDescription}>
-              Modo offline ativo. Todos os dados serão sincronizados automaticamente assim que houver conexão.
-            </Text>
-          </View>
+    <View style={styles.screen}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.brand} />
 
-          {/* Primary action */}
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.85}
-            onPress={handleNewProntuarioPress}
-          >
-            <MaterialCommunityIcons
-              name="clipboard-text-outline"
-              size={20}
-              color="#fff"
-            />
-            <Text style={styles.primaryButtonText}>
-              Nova consulta (Prontuário)
-            </Text>
-          </TouchableOpacity>
-
-          {/* Secondary actions */}
-          <View style={styles.secondaryRow}>
-            <TouchableOpacity
-              style={[
-                styles.secondaryButton,
-                { backgroundColor: COLORS.orange },
-              ]}
-              activeOpacity={0.85}
-              onPress={handleNewTutorPress}
-            >
-              <Ionicons name="person-outline" size={20} color="#fff" />
-              <Text style={styles.secondaryButtonText}>Novo Tutor</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.secondaryButton,
-                { backgroundColor: COLORS.green },
-              ]}
-              activeOpacity={0.85}
-              onPress={handleNewPetPress}
-            >
-              <MaterialCommunityIcons
-                name="paw-outline"
-                size={20}
-                color="#fff"
-              />
-              <Text style={styles.secondaryButtonText}>Novo Animal</Text>
+      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.avatar}>
+            {veterinario ? (
+              <Text style={styles.avatarText}>{initialsOf(veterinario.nome)}</Text>
+            ) : (
+              <MaterialCommunityIcons name="account-outline" size={24} color="#FFFFFF" />
+            )}
+          </View>
+          <View style={styles.heroIcons}>
+            <MaterialCommunityIcons name={SYNC_ICON[syncStatus]} size={24} color="#FFFFFF" />
+            <TouchableOpacity onPress={logout} hitSlop={10} accessibilityLabel="Sair">
+              <MaterialCommunityIcons name="logout" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
+        <Text style={styles.greeting}>Olá, {firstName}</Text>
       </View>
-    </SafeAreaView>
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity
+          style={styles.section}
+          activeOpacity={0.7}
+          onPress={() => router.navigate("/(tabs)/prontuarios")}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Atendimentos</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color={COLORS.textDark} />
+          </View>
+          <Text style={styles.bigNumber}>
+            {summary.todayCount} {summary.todayCount === 1 ? "consulta hoje" : "consultas hoje"}
+          </Text>
+          <Text style={styles.mutedText}>{summary.monthCount} neste mês</Text>
+        </TouchableOpacity>
+
+        <View style={styles.actionsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.actionsRow}
+            scrollEventThrottle={16}
+            onLayout={(event) => setActionsViewportWidth(event.nativeEvent.layout.width)}
+            onContentSizeChange={(width) => setActionsContentWidth(width)}
+            onScroll={(event) => setActionsScrollX(event.nativeEvent.contentOffset.x)}
+          >
+            {QUICK_ACTIONS.map((action) => (
+              <TouchableOpacity
+                key={action.key}
+                style={styles.action}
+                activeOpacity={0.7}
+                onPress={() => router.navigate(action.href)}
+              >
+                <View style={styles.actionCircle}>
+                  <MaterialCommunityIcons name={action.icon} size={26} color={COLORS.textDark} />
+                </View>
+                <Text style={styles.actionLabel}>{action.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {/* Edge shadow hinting that the row scrolls; it goes away once the last button is in view. */}
+          {canScrollRight ? (
+            <View style={styles.actionsEdgeShadow}>
+              {EDGE_SHADOW_STRIPS.map((color) => (
+                <View key={color} style={[styles.actionsEdgeShadowStrip, { backgroundColor: color }]} />
+              ))}
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.section}>
+          <MaterialCommunityIcons name="clipboard-text-clock-outline" size={24} color={COLORS.textDark} />
+          <TouchableOpacity
+            style={[styles.sectionHeader, styles.sectionHeaderSpaced]}
+            activeOpacity={0.7}
+            onPress={() => router.navigate("/(tabs)/prontuarios")}
+          >
+            <Text style={styles.sectionTitle}>Últimas consultas</Text>
+            <MaterialCommunityIcons name="chevron-right" size={24} color={COLORS.textDark} />
+          </TouchableOpacity>
+
+          {summary.recent.length === 0 ? (
+            <Text style={styles.mutedText}>Nenhuma consulta registrada ainda.</Text>
+          ) : (
+            summary.recent.map(({ id, prontuario, pet, tutor }) => (
+              <TouchableOpacity
+                key={id}
+                style={styles.recentRow}
+                activeOpacity={0.7}
+                onPress={() => openProntuario(id)}
+              >
+                <MaterialCommunityIcons
+                  name={pet ? speciesToIcon(pet.especie) : "paw"}
+                  size={20}
+                  color={COLORS.brand}
+                />
+                <View style={styles.recentInfo}>
+                  <Text style={styles.recentTitle} numberOfLines={1}>{pet?.nome ?? "Pet removido"}</Text>
+                  {tutor ? <Text style={styles.mutedText} numberOfLines={1}>{tutor.nomeCompleto}</Text> : null}
+                </View>
+                <Text style={styles.mutedText}>{formatDateBR(prontuario.date)}</Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.section}>
+          <MaterialCommunityIcons name={SYNC_ICON[syncStatus]} size={24} color={COLORS.textDark} />
+          <Text style={[styles.sectionTitle, styles.sectionHeaderSpaced]}>Sincronização</Text>
+          <Text style={styles.mutedText}>{syncDescription(syncStatus, lastSyncedAt)}</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  screen: {
     flex: 1,
     backgroundColor: COLORS.bg,
   },
-  content: {
-    flex: 1,
+  hero: {
+    backgroundColor: COLORS.brand,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
-  header: {
+  heroTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginTop: 12,
+    alignItems: "center",
   },
-  logo: {
-    fontSize: 26,
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.brandOverlay,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "700",
-    color: COLORS.textDark,
   },
-  statusColumn: {
-    alignItems: "flex-end",
-  },
-  statusRow: {
+  heroIcons: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
-  },
-  statusText: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginLeft: 4,
-  },
-  greetingRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  greetingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  greetingIcon: {
-    marginRight: 8,
+    gap: 20,
   },
   greeting: {
-    fontSize: 22,
+    marginTop: 24,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  section: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  sectionHeaderSpaced: {
+    marginTop: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "700",
     color: COLORS.textDark,
   },
-  // --- ESTILOS DO CARD ---
-  card: {
-    backgroundColor: "#F8FAFC",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 16,
+  bigNumber: {
+    marginTop: 8,
+    fontSize: 22,
     fontWeight: "600",
     color: COLORS.textDark,
-    marginLeft: 8,
   },
-  cardDescription: {
+  mutedText: {
+    marginTop: 4,
     fontSize: 13,
     color: COLORS.textMuted,
     lineHeight: 18,
   },
-  // ---------------------------
-  primaryButton: {
-    backgroundColor: COLORS.blue,
-    borderRadius: 12,
-    paddingVertical: 16,
+  actionsWrapper: {
+    marginTop: 28,
+  },
+  actionsRow: {
+    paddingHorizontal: 20,
+    gap: 14,
+  },
+  actionsEdgeShadow: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 48,
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    pointerEvents: "none",
   },
-  primaryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 15,
-    marginLeft: 8,
-  },
-  secondaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 14,
-    gap: 12,
-  },
-  secondaryButton: {
+  actionsEdgeShadowStrip: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 16,
-    flexDirection: "row",
+  },
+  action: {
+    alignItems: "center",
+    width: 72,
+  },
+  actionCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.actionBg,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+  actionLabel: {
+    marginTop: 8,
     fontSize: 13,
-  },
-  sectionTitle: {
-    fontSize: 22,
     fontWeight: "600",
     color: COLORS.textDark,
+    textAlign: "center",
+  },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: 20,
     marginTop: 28,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: COLORS.actionBg,
   },
-  grid: {
-    borderWidth: 1,
-    borderColor: COLORS.textDark,
+  pillText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textDark,
   },
-  gridRow: {
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.divider,
+    marginTop: 28,
+  },
+  recentRow: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
   },
-  gridCell: {
+  recentInfo: {
     flex: 1,
-    height: 44,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.textDark,
   },
-  gridCellLast: {
-    borderRightWidth: 0,
-  },
-  navBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 8,
-    paddingBottom: 12,
-    marginTop: "auto",
-  },
-  navItem: {
-    alignItems: "center",
-  },
-  navIconWrap: {
-    width: 40,
-    height: 32,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  navLabel: {
-    fontSize: 10,
-    color: COLORS.navInactive,
-    marginTop: 2,
+  recentTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.textDark,
   },
 });
