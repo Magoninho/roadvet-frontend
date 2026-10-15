@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
+import { COLORS, SPACING } from '@/theme';
 
 interface InfoTextProps {
   label: string;
@@ -16,12 +17,14 @@ export function InfoText({ label, value }: InfoTextProps) {
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 13,
-    color: '#5A5A5A',
-    marginHorizontal: 16,
-    marginTop: 4,
+    fontSize: 14,
+    color: COLORS.textMuted,
+    marginHorizontal: SPACING.gutter,
+    marginTop: 8,
+    lineHeight: 20,
   },
   value: {
-    color: '#1A1A1A',
+    fontWeight: '600',
+    color: COLORS.textDark,
   },
 });

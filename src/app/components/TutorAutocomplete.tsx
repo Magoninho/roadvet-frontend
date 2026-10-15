@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, TextInput, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 export interface TutorSuggestion {
   id: string;
@@ -34,11 +35,11 @@ export function TutorAutocomplete({
   return (
     <View style={{zIndex: 1}}>
       <View style={styles.inputWrapper}>
-        <Icon name="account" size={20} color="#5A5A5A" style={styles.icon} />
+        <Icon name="account" size={20} color={COLORS.textDark} style={styles.icon} />
         <TextInput
           style={styles.input}
           placeholder="Tutor responsável..."
-          placeholderTextColor="#B0B0B0"
+          placeholderTextColor={COLORS.placeholder}
           value={value}
           onChangeText={onChangeText}
           onFocus={onFocus}
@@ -75,20 +76,19 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.gutter,
   },
   icon: {
     marginRight: 10,
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   suggestionsWrapper: {
     position: 'absolute', // Pulls the element out of the flow
@@ -97,24 +97,24 @@ const styles = StyleSheet.create({
     right: 0, // Matches your old marginHorizontal right side
     zIndex: 1000, // Forces it to render on top for iOS
     elevation: 5, // Forces it to render on top for Android, adds drop shadow
-    marginHorizontal: 16,
-    marginLeft: 46,
-    marginTop: 4,
+    marginHorizontal: SPACING.gutter,
+    marginLeft: SPACING.gutter + 30,
+    marginTop: 6,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
+    borderColor: COLORS.divider,
+    borderRadius: RADIUS.control,
+    backgroundColor: COLORS.bg,
     overflow: 'hidden',
   },
   suggestionItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: COLORS.divider,
   },
   suggestionText: {
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   suggestionTextBold: {
     fontWeight: '700',

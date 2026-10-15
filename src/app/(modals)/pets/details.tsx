@@ -25,6 +25,7 @@ import { RecordCard, RecordCardData } from '../../components/RecordCard';
 import { SectionDivider } from '../../components/SectionDivider';
 import { SelectInput } from '../../components/SelectInput';
 import { WeightInput } from '../../components/WeightInput';
+import { COLORS, SPACING } from '@/theme';
 
 const ESPECIES = ['Canino', 'Felino'];
 
@@ -145,19 +146,20 @@ export function PetDetalheScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <DetailTopBar
         onBackPress={handleBack}
         onEditPress={editMode ? undefined : handleEnableEdit}
         onDeletePress={editMode ? undefined : deletion.open}
-      />
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      >
         <EditableAvatar
           photoUrl={avatarUri ?? pet.avatarUrl ?? undefined}
           fallbackIcon={species}
           editable={editMode}
           onPress={handleChangePhoto}
+          size={72}
+          tone="onBrand"
+          style={styles.avatar}
         />
 
         {editMode ? (
@@ -167,8 +169,10 @@ export function PetDetalheScreen() {
         )}
 
         {tutor && <OwnerReference ownerName={tutor.nomeCompleto} />}
+      </DetailTopBar>
 
-        <SectionDivider icon="information" label="Informações básicas" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
         {editMode ? (
           <>
             <View style={styles.row}>
@@ -197,7 +201,7 @@ export function PetDetalheScreen() {
           </>
         )}
 
-        <SectionDivider icon="script-text-outline" label="Prontuários" />
+        <SectionDivider icon="clipboard-text-clock-outline" label="Prontuários" />
         {records.map((record) => (
           <RecordCard key={record.id} data={record} onPress={handleRecordPress} />
         ))}
@@ -224,24 +228,25 @@ export default PetDetalheScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingBottom: SPACING.block,
+  },
+  avatar: {
+    alignSelf: 'flex-start',
+    marginTop: 16,
   },
   name: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginTop: 14,
+    color: COLORS.onBrand,
+    marginTop: 16,
   },
   nameInput: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    textAlign: 'center',
+    marginTop: 16,
   },
-  row: { flexDirection: 'row', marginHorizontal: 16, marginTop: 12, gap: 12, alignItems: 'flex-start' },
+  row: { flexDirection: 'row', marginHorizontal: SPACING.gutter, marginTop: 12, gap: 12, alignItems: 'flex-start' },
   rowInputLeft: { flex: 1 },
   rowInputRight: { flex: 1 },
 });

@@ -16,6 +16,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { SearchBar } from '../../components/SearchBar';
 import { SectionLabel } from '../../components/SectionLabel';
 import { PetFormModal } from '@/app/components/PetFormModal';
+import { COLORS, SPACING } from '@/theme';
 
 function toPetCardData({ pet, tutor }: PetRow): PetCardData {
   return {
@@ -65,7 +66,7 @@ export default function ProntuarioSelection() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title="Criar prontuário" onBackPress={handleBack} />
       <SearchBar
         value={search}
@@ -113,9 +114,9 @@ export default function ProntuarioSelection() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: SPACING.block,
   },
 });

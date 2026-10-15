@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface TextAreaFieldProps {
   value: string;
@@ -16,7 +17,7 @@ export function TextAreaField({
     <TextInput
       style={styles.textarea}
       placeholder={placeholder}
-      placeholderTextColor="#B0B0B0"
+      placeholderTextColor={COLORS.placeholder}
       value={value}
       onChangeText={onChangeText}
       multiline
@@ -27,13 +28,12 @@ export function TextAreaField({
 
 const styles = StyleSheet.create({
   textarea: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    padding: 16,
     minHeight: 100,
     fontSize: 14,
-    color: '#1A1A1A',
-    marginHorizontal: 16,
+    color: COLORS.textDark,
+    marginHorizontal: SPACING.gutter,
   },
 });

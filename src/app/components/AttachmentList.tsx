@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AttachmentItem, AttachmentFile } from './AttachmentItem';
+import { COLORS, SPACING } from '@/theme';
 
 interface AttachmentListProps {
   files: AttachmentFile[];
@@ -28,12 +29,12 @@ export function AttachmentList({
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginHorizontal: 16,
-    marginTop: 10,
+    marginHorizontal: SPACING.gutter,
+    marginTop: 12,
   },
   emptyText: {
     fontSize: 13,
-    color: '#B0B0B0',
+    color: COLORS.placeholder,
     fontStyle: 'italic',
   },
 });

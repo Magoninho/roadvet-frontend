@@ -19,6 +19,7 @@ import { OwnerCard, OwnerCardData } from '../../components/OwnerCard';
 import { SearchBar } from '../../components/SearchBar';
 import { SortSheet } from '../../components/SortSheet';
 import { ViewSortFilterBar, type ViewMode } from '../../components/ViewSortFilterBar';
+import { COLORS, SPACING } from '@/theme';
 
 const SORT_OPTIONS: SortOption[] = [
   { key: 'nome', label: 'Nome', ascLabel: 'Nome (A-Z)', descLabel: 'Nome (Z-A)', defaultDirection: 'asc' },
@@ -106,7 +107,7 @@ export default function TutoresScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <Header title="Tutores" syncStatus={syncStatus} />
       <SearchBar
         value={search}
@@ -180,14 +181,16 @@ export default function TutoresScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: COLORS.bg,
   },
+  // Cards keep a 1.16% side margin, so this plus that margin lines up with the 20px gutter.
   gridContent: {
-    paddingHorizontal: 10,
+    paddingHorizontal: SPACING.gutter - 4,
     paddingBottom: 100,
-    paddingTop: 10
+    paddingTop: 16,
   },
   listContent: {
+    paddingTop: 4,
     paddingBottom: 100,
   },
   row: {

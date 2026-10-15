@@ -18,6 +18,7 @@ import { SelectInput } from './SelectInput';
 import { TutorAutocomplete, TutorSuggestion } from './TutorAutocomplete';
 import { TutorFormModal } from './TutorFormModal';
 import { WeightInput } from './WeightInput';
+import { COLORS, SPACING } from '@/theme';
 
 const ESPECIES = ['Canino', 'Felino'];
 
@@ -111,6 +112,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
           fallbackIcon={speciesToIcon(especie)}
           editable
           onPress={handlePickAvatar}
+          style={styles.avatar}
         />
 
         {/* Renderização condicional da seleção de Tutor */}
@@ -179,11 +181,12 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingBottom: 24 },
-  ouText: { textAlign: 'center', fontSize: 13, color: '#9A9A9A', marginTop: 14, marginBottom: 14 },
-  divider: { height: 1, backgroundColor: '#E5E5E5', marginHorizontal: 16, marginTop: 20, marginBottom: 20 },
-  fullInput: { marginHorizontal: 16, marginBottom: 14 },
-  row: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 14, gap: 12, alignItems: 'flex-start' },
+  scrollContent: { paddingBottom: SPACING.section },
+  avatar: { marginTop: 8, marginBottom: SPACING.section },
+  ouText: { textAlign: 'center', fontSize: 13, color: COLORS.textMuted, marginTop: 12, marginBottom: 12 },
+  divider: { height: 1, backgroundColor: COLORS.divider, marginTop: SPACING.block, marginBottom: SPACING.section },
+  fullInput: { marginHorizontal: SPACING.gutter, marginBottom: 12 },
+  row: { flexDirection: 'row', marginHorizontal: SPACING.gutter, marginBottom: 12, gap: 12, alignItems: 'flex-start' },
   rowInputLeft: { flex: 1 },
   rowInputRight: { flex: 1 },
 });

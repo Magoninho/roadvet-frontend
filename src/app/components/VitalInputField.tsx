@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface VitalInputFieldProps {
   placeholder: string;
@@ -21,7 +22,7 @@ export function VitalInputField({
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#B0B0B0"
+        placeholderTextColor={COLORS.placeholder}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
@@ -35,23 +36,22 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 12,
+    marginHorizontal: SPACING.gutter,
+    marginBottom: 12,
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 14,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
   unit: {
     marginLeft: 10,
     fontSize: 14,
-    color: '#5A5A5A',
+    color: COLORS.textMuted,
     minWidth: 24,
   },
 });

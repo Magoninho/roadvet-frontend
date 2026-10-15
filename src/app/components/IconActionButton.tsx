@@ -1,33 +1,35 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS } from '@/theme';
 
 interface IconActionButtonProps {
   icon: string;
-  color: string;
   onPress: () => void;
+  accessibilityLabel?: string;
 }
 
-export function IconActionButton({ icon, color, onPress }: IconActionButtonProps) {
+/** Round translucent button for actions placed on the brand header. */
+export function IconActionButton({ icon, onPress, accessibilityLabel }: IconActionButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, { borderColor: color }]}
+      style={styles.button}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityLabel={accessibilityLabel}
     >
-      <Icon name={icon} size={16} color={color} />
+      <Icon name={icon} size={20} color={COLORS.onBrand} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.brandOverlay,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
   },
 });

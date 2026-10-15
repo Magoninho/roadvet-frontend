@@ -21,6 +21,7 @@ import { FormSectionTitle } from '../../components/FormSectionTitle';
 import { TextAreaField } from '../../components/TextAreaField';
 import { VitalInputField } from '../../components/VitalInputField';
 import { FileUploadField, AttachmentFile } from '../../components/FileUploadField';
+import { COLORS } from '@/theme';
 
 export default function NewProntuario() {
   const { petId } = useLocalSearchParams<{ petId: string }>();
@@ -100,7 +101,7 @@ export default function NewProntuario() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title={`Novo prontuário para ${pet?.nome ?? ''}`} onBackPress={handleBack} />
 
       <KeyboardAvoidingView
@@ -180,7 +181,7 @@ export default function NewProntuario() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
   flex: {
     flex: 1,

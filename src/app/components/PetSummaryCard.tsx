@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 export interface PetSummaryData {
   id: string;
@@ -26,7 +27,7 @@ export function PetSummaryCard({ data, onPress }: PetSummaryCardProps) {
       onPress={() => onPress?.(id)}
     >
       <View style={styles.leftContent}>
-        <Icon name={species === 'dog' ? 'dog' : 'cat'} size={18} color="#1A1A1A" style={styles.icon} />
+        <Icon name={species === 'dog' ? 'dog' : 'cat'} size={20} color={COLORS.brand} style={styles.icon} />
         <Text style={styles.name}>{name}</Text>
       </View>
 
@@ -40,14 +41,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-    borderRadius: 14,
-    paddingVertical: 14,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginTop: 10,
+    marginHorizontal: SPACING.gutter,
+    marginTop: 12,
   },
   leftContent: {
     flexDirection: 'row',
@@ -58,11 +57,11 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: COLORS.textDark,
   },
   info: {
     fontSize: 12,
-    color: '#9A9A9A',
+    color: COLORS.textMuted,
   },
 });

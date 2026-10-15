@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS } from '@/theme';
 
 interface EmptyListMessageProps {
   icon?: string;
@@ -11,7 +12,9 @@ interface EmptyListMessageProps {
 export function EmptyListMessage({ icon = 'magnify', title, subtitle }: EmptyListMessageProps) {
   return (
     <View style={styles.container}>
-      <Icon name={icon} size={36} color="#C7C7CC" />
+      <View style={styles.iconCircle}>
+        <Icon name={icon} size={28} color={COLORS.textDark} />
+      </View>
       <Text style={styles.title}>{title}</Text>
       {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
     </View>
@@ -24,17 +27,26 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingHorizontal: 32,
   },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
-    marginTop: 12,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#5A5A5A',
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textDark,
     textAlign: 'center',
   },
   subtitle: {
     marginTop: 4,
     fontSize: 13,
-    color: '#9A9A9A',
+    lineHeight: 18,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
 });

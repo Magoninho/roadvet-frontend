@@ -24,6 +24,7 @@ import { PetSummaryCard, PetSummaryData } from '../../components/PetSummaryCard'
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SectionDivider } from '../../components/SectionDivider';
 import { PetFormModal } from '../../components/PetFormModal';
+import { COLORS, SPACING } from '@/theme';
 
 export function TutorDetalheScreen() {
   const router = useRouter();
@@ -157,18 +158,19 @@ export function TutorDetalheScreen() {
   }));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <DetailTopBar
         onBackPress={handleBack}
         onEditPress={editMode ? undefined : handleEnableEdit}
         onDeletePress={editMode ? undefined : deletion.open}
-      />
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      >
         <EditableAvatar
           photoUrl={avatarUri ?? tutor.avatarUrl ?? undefined}
           editable={editMode}
           onPress={handleChangePhoto}
+          size={72}
+          tone="onBrand"
+          style={styles.avatar}
         />
 
         {editMode ? (
@@ -181,8 +183,10 @@ export function TutorDetalheScreen() {
         ) : (
           <Text style={styles.name}>{tutor.nomeCompleto}</Text>
         )}
+      </DetailTopBar>
 
-        <SectionDivider icon="information" label="Informações básicas" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
         {editMode ? (
           <>
             <FormRow style={styles.formRowMargin}>
@@ -241,7 +245,7 @@ export function TutorDetalheScreen() {
           </>
         )}
 
-        <SectionDivider icon="paw" label="Pets" />
+        <SectionDivider icon="paw-outline" label="Pets" />
         {!editMode && <PrimaryButton label="Novo pet" onPress={handleNewPet} />}
 
         {petSummaries.map((pet) => (
@@ -279,30 +283,32 @@ export default TutorDetalheScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingBottom: SPACING.block,
+  },
+  avatar: {
+    alignSelf: 'flex-start',
+    marginTop: 16,
   },
   name: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginTop: 14,
+    color: COLORS.onBrand,
+    marginTop: 16,
   },
   nameInput: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    textAlign: 'center',
+    marginTop: 16,
   },
   fullInput: {
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.gutter,
     marginTop: 12,
   },
   formRowMargin: {
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.gutter,
     marginTop: 12,
+    marginBottom: 0,
   },
   flexInput: { flex: 1, minWidth: 0, flexShrink: 1 },
   flexInputLarge: { flex: 2, minWidth: 0, flexShrink: 1 },

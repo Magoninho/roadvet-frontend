@@ -1,9 +1,8 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Prontuario from '@/database/models/Prontuario';
 import Pet from '@/database/models/Pet';
 import {
@@ -21,6 +20,7 @@ import { BackHeader } from '../../components/BackHeader';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { FormFooter } from '../../components/FormFooter';
 import { FormSectionTitle } from '../../components/FormSectionTitle';
+import { IconActionButton } from '../../components/IconActionButton';
 import { ReadOnlyField } from '../../components/ReadOnlyField';
 import { VitalReadOnlyRow } from '../../components/VitalReadOnlyRow';
 import { AttachmentList } from '../../components/AttachmentList';
@@ -28,6 +28,7 @@ import { AttachmentFile } from '@/app/components/AttachmentItem';
 import { VitalInputField } from '../../components/VitalInputField';
 import { TextAreaField } from '../../components/TextAreaField';
 import { FileUploadField } from '../../components/FileUploadField';
+import { COLORS, SPACING } from '@/theme';
 
 export default function ProntuarioDetalhe() {
   const router = useRouter();
@@ -160,25 +161,21 @@ export default function ProntuarioDetalhe() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader
         title={`Prontuário de ${pet?.nome ?? ''}`}
         onBackPress={handleBack}
         rightElement={
           !editMode && (
             <View style={styles.headerActions}>
-              <TouchableOpacity onPress={handleEnableEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Icon name="pencil-outline" size={22} color="#2FA9E8" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={deletion.open} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Icon name="trash-can-outline" size={22} color="#E85C5C" />
-              </TouchableOpacity>
+              <IconActionButton icon="pencil-outline" onPress={handleEnableEdit} accessibilityLabel="Editar" />
+              <IconActionButton icon="trash-can-outline" onPress={deletion.open} accessibilityLabel="Excluir" />
             </View>
           )
         }
       />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <FormSectionTitle text="Parâmetros vitais" />
         {editMode ? (
           <>
@@ -280,11 +277,15 @@ export default function ProntuarioDetalhe() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.block,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
+    gap: 12,
+    marginLeft: 12,
   },
 });

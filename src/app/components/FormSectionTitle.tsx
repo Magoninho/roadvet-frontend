@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
+import { COLORS, SPACING } from '@/theme';
 
 interface FormSectionTitleProps {
   text: string;
@@ -11,11 +12,11 @@ export function FormSectionTitle({ text }: FormSectionTitleProps) {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textDark,
+    marginHorizontal: SPACING.gutter,
+    marginTop: SPACING.block,
+    marginBottom: 12,
   },
 });

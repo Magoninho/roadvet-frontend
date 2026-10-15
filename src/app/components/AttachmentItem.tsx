@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { COLORS, RADIUS } from '@/theme';
 
 export interface AttachmentFile {
   id: string;
@@ -19,11 +20,11 @@ export function AttachmentItem({ file, onPress }: AttachmentItemProps) {
 
   return (
     <TouchableOpacity style={styles.row} onPress={() => onPress?.(file)} activeOpacity={0.8}>
-      <Icon name={icon} size={20} color="#5A5A5A" />
+      <Icon name={icon} size={20} color={COLORS.textDark} />
       <Text style={styles.name} numberOfLines={1}>
         {file.name}
       </Text>
-      <Icon name="eye-outline" size={18} color="#2FA9E8" />
+      <Icon name="eye-outline" size={18} color={COLORS.brand} />
     </TouchableOpacity>
   );
 }
@@ -32,18 +33,17 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.control,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     marginBottom: 8,
   },
   name: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 10,
     marginRight: 8,
     fontSize: 13,
-    color: '#1A1A1A',
+    color: COLORS.textDark,
   },
 });

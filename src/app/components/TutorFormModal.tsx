@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Modal, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import Tutor from '@/database/models/Tutor';
 import { TutorForm } from './TutorForm'; // Importe o componente criado
+import { COLORS, RADIUS, SPACING } from '@/theme';
 
 interface TutorFormModalProps {
   visible: boolean;
@@ -39,10 +40,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
+    backgroundColor: COLORS.bg,
+    borderTopLeftRadius: RADIUS.sheet,
+    borderTopRightRadius: RADIUS.sheet,
+    paddingTop: SPACING.section,
     // Limitamos a altura a 85% da tela para sobrar um espaço em cima
     // e permitir que o ScrollView do TutorForm funcione perfeitamente.
     maxHeight: '85%', 
@@ -50,8 +51,8 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textDark,
     marginBottom: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.gutter,
   },
 });

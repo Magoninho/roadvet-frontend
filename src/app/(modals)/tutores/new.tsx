@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import Tutor from '@/database/models/Tutor';
 import { BackHeader } from '../../components/BackHeader';
 import { TutorForm } from '../../components/TutorForm';
+import { COLORS } from '@/theme';
 
 export function NovoTutorScreen() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function NovoTutorScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title="Novo Tutor" onBackPress={handleBack} />
 
       <TutorForm
@@ -38,6 +39,6 @@ export default NovoTutorScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.bg,
   },
 });
