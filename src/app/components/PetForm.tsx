@@ -9,6 +9,8 @@ import { observeTutoresWhereNome } from '@/database/repositories/tutores';
 import { useAuth } from '@/contexts/AuthContext';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
 import { speciesToIcon } from '@/utils/format';
+import { ESPECIES } from '@/utils/racas';
+import { BreedSelectInput } from './BreedSelectInput';
 import { DateInput } from './DateInput';
 import { EditableAvatar } from './EditableAvatar';
 import { FormFooter } from './FormFooter';
@@ -19,8 +21,6 @@ import { TutorAutocomplete, TutorSuggestion } from './TutorAutocomplete';
 import { TutorFormModal } from './TutorFormModal';
 import { WeightInput } from './WeightInput';
 import { COLORS, SPACING } from '@/theme';
-
-const ESPECIES = ['Canino', 'Felino'];
 
 interface PetFormProps {
   onCancel: () => void;
@@ -47,6 +47,12 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // A raça escolhida pertence à espécie anterior, então é descartada quando a espécie muda.
+  const handleSelectEspecie = (novaEspecie: string) => {
+    if (novaEspecie !== especie) setRaca('');
+    setEspecie(novaEspecie);
+  };
 
   const handlePickAvatar = async () => {
     const picked = await pickAvatarImage();
@@ -156,12 +162,12 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         <View style={styles.row}>
           <SelectInput
             value={especie}
-            onSelect={setEspecie}
+            onSelect={handleSelectEspecie}
             options={ESPECIES}
             placeholder="Espécie"
             style={styles.rowInputLeft}
           />
-          <LabeledInput placeholder="Raça" value={raca} onChangeText={setRaca} style={styles.rowInputRight} />
+          <BreedSelectInput especie={especie} value={raca} onSelect={setRaca} style={styles.rowInputRight} />
         </View>
       </ScrollView>
 

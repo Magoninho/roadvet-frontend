@@ -6,6 +6,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,6 +16,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 function Logo() {
   return (
@@ -33,6 +35,7 @@ export default function CadastroScreen() {
   const [telefone, setTelefone] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [aceitouTermos, setAceitouTermos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,6 +50,10 @@ export default function CadastroScreen() {
     }
     if (senha !== confirmarSenha) {
       setError('As senhas não coincidem.');
+      return;
+    }
+    if (!aceitouTermos) {
+      setError('É necessário aceitar os Termos de Uso e a Política de Privacidade.');
       return;
     }
 
@@ -68,6 +75,15 @@ export default function CadastroScreen() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const toggleTermos = () => {
+    setAceitouTermos((aceito) => !aceito);
+    if (error) setError(null);
+  };
+
+  const handleAbrirTermos = () => {
+    router.push('/(auth)/terms');
   };
 
   const handleVoltarLogin = () => {
@@ -157,6 +173,29 @@ export default function CadastroScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleCadastrar}
               />
+
+              <View style={styles.termsRow}>
+                <Pressable
+                  onPress={toggleTermos}
+                  hitSlop={8}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: aceitouTermos }}
+                  accessibilityLabel="Aceito os Termos de Uso e a Política de Privacidade"
+                >
+                  <Icon
+                    name={aceitouTermos ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={24}
+                    color={aceitouTermos ? CYAN : '#5F6B7A'}
+                  />
+                </Pressable>
+                <Text style={styles.termsText}>
+                  <Text onPress={toggleTermos}>Li e concordo com os </Text>
+                  <Text style={styles.termsLink} onPress={handleAbrirTermos} accessibilityRole="link">
+                    Termos de Uso e a Política de Privacidade
+                  </Text>
+                  <Text onPress={toggleTermos}>, em conformidade com a LGPD (Lei nº 13.709/2018).</Text>
+                </Text>
+              </View>
 
               {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -257,6 +296,24 @@ const styles = StyleSheet.create({
   cadastrar: {
     color: CYAN,
     fontSize: 15,
+    fontWeight: '700',
+  },
+  termsRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  termsText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#3E4653',
+  },
+  termsLink: {
+    color: CYAN,
     fontWeight: '700',
   },
   errorText: {

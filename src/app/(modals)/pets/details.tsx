@@ -13,6 +13,8 @@ import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { deletionWarnings } from '@/utils/deletion';
 import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { ESPECIES } from '@/utils/racas';
+import { BreedSelectInput } from '../../components/BreedSelectInput';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
@@ -26,8 +28,6 @@ import { SectionDivider } from '../../components/SectionDivider';
 import { SelectInput } from '../../components/SelectInput';
 import { WeightInput } from '../../components/WeightInput';
 import { COLORS, SPACING } from '@/theme';
-
-const ESPECIES = ['Canino', 'Felino'];
 
 export function PetDetalheScreen() {
   const router = useRouter();
@@ -98,6 +98,12 @@ export function PetDetalheScreen() {
     setAvatarUri(null);
     setAvatarFileName(null);
     setEditMode(true);
+  };
+
+  // A raça escolhida pertence à espécie anterior, então é descartada quando a espécie muda.
+  const handleSelectEspecie = (novaEspecie: string) => {
+    if (novaEspecie !== especie) setRaca('');
+    setEspecie(novaEspecie);
   };
 
   const handleCancelEdit = () => {
@@ -183,12 +189,12 @@ export function PetDetalheScreen() {
             <View style={styles.row}>
               <SelectInput
                 value={especie}
-                onSelect={setEspecie}
+                onSelect={handleSelectEspecie}
                 options={ESPECIES}
                 placeholder="Espécie*"
                 style={styles.rowInputLeft}
               />
-              <LabeledInput placeholder="Raça" value={raca} onChangeText={setRaca} style={styles.rowInputRight} />
+              <BreedSelectInput especie={especie} value={raca} onSelect={setRaca} style={styles.rowInputRight} />
             </View>
           </>
         ) : (
