@@ -8,6 +8,7 @@ import { pickAvatarImage } from '@/utils/pickAvatarImage';
 import { EditableAvatar } from './EditableAvatar';
 import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
+import { FormField } from './FormField';
 import { FormRow } from './FormRow';
 import { FormFooter } from './FormFooter';
 import { SPACING } from '@/theme';
@@ -85,49 +86,56 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         <EditableAvatar photoUrl={avatarUri ?? undefined} editable onPress={handlePickAvatar} style={styles.avatar} />
 
         <LabeledInput
-          placeholder="Nome completo do tutor*"
+          label="Nome completo*"
+          placeholder="Nome completo do tutor"
           value={nomeCompleto}
           onChangeText={setNomeCompleto}
-          style={styles.fullInput}
+          containerStyle={styles.fullInput}
         />
 
         <FormRow>
           <LabeledInput
-            placeholder="CPF*"
+            label="CPF*"
+            placeholder="000.000.000-00"
             value={cpf}
             onChangeText={setCpf}
             keyboardType="numeric"
-            style={styles.flexInput}
+            containerStyle={styles.flexInput}
           />
-          <DateInput
-            value={dataNascimento}
-            onChange={setDataNascimento}
-            placeholder="Data de nasc."
-            style={styles.flexInput}
-          />
+          <FormField label="Data de nascimento" style={styles.flexInput}>
+            <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
+          </FormField>
         </FormRow>
 
-        <LabeledInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.fullInput} />
-        <LabeledInput placeholder="CEP*" value={cep} onChangeText={setCep} keyboardType="numeric" style={styles.fullInput} />
+        <LabeledInput
+          label="Email"
+          placeholder="nome@exemplo.com"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          containerStyle={styles.fullInput}
+        />
+        <LabeledInput label="CEP*" placeholder="00000-000" value={cep} onChangeText={setCep} keyboardType="numeric" containerStyle={styles.fullInput} />
 
         <FormRow>
-          <LabeledInput placeholder="Endereço*" value={endereco} onChangeText={setEndereco} style={styles.flexInputLarge} />
-          <LabeledInput placeholder="Número*" value={numero} onChangeText={setNumero} keyboardType="numeric" style={styles.flexInputSmall} />
-        </FormRow>
-
-        <FormRow>
-          <LabeledInput placeholder="Bairro*" value={bairro} onChangeText={setBairro} style={styles.flexInput} />
-          <LabeledInput placeholder="Complemento" value={complemento} onChangeText={setComplemento} style={styles.flexInput} />
-        </FormRow>
-
-        <FormRow>
-          <LabeledInput placeholder="Cidade*" value={cidade} onChangeText={setCidade} style={styles.flexInputLarge} />
-          <LabeledInput placeholder="UF*" value={uf} onChangeText={setUf} style={styles.flexInputSmall} />
+          <LabeledInput label="Endereço*" placeholder="Rua, avenida..." value={endereco} onChangeText={setEndereco} containerStyle={styles.flexInputLarge} />
+          <LabeledInput label="Número*" placeholder="Nº" value={numero} onChangeText={setNumero} keyboardType="numeric" containerStyle={styles.flexInputSmall} />
         </FormRow>
 
         <FormRow>
-          <LabeledInput placeholder="Telefone 1*" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" style={styles.flexInput} />
-          <LabeledInput placeholder="Telefone 2" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" style={styles.flexInput} />
+          <LabeledInput label="Bairro*" placeholder="Ex.: Centro" value={bairro} onChangeText={setBairro} containerStyle={styles.flexInput} />
+          <LabeledInput label="Complemento" placeholder="Apto, bloco..." value={complemento} onChangeText={setComplemento} containerStyle={styles.flexInput} />
+        </FormRow>
+
+        <FormRow>
+          <LabeledInput label="Cidade*" placeholder="Ex.: Fortaleza" value={cidade} onChangeText={setCidade} containerStyle={styles.flexInputLarge} />
+          <LabeledInput label="UF*" placeholder="CE" value={uf} onChangeText={setUf} autoCapitalize="characters" containerStyle={styles.flexInputSmall} />
+        </FormRow>
+
+        <FormRow>
+          <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" containerStyle={styles.flexInput} />
+          <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" containerStyle={styles.flexInput} />
         </FormRow>
       </ScrollView>
 

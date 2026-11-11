@@ -16,6 +16,7 @@ export default class Veterinario extends Model {
   @text('email') email!: string;
   @text('senha_hash') senhaHash!: string;
   @text('telefone') telefone!: string | null;
+  @text('avatar_url') avatarUrl!: string | null;
 
   @readonly @date('created_at') createdAt!: Date;
   @readonly @date('updated_at') updatedAt!: Date;

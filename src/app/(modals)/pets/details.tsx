@@ -21,6 +21,7 @@ import { DetailTopBar } from '../../components/DetailTopBar';
 import { EditableAvatar } from '../../components/EditableAvatar';
 import { FormFooter } from '../../components/FormFooter';
 import { InfoText } from '../../components/InfoText';
+import { FormField } from '../../components/FormField';
 import { LabeledInput } from '../../components/LabeledInput';
 import { OwnerReference } from '../../components/OwnerReference';
 import { RecordCard, RecordCardData } from '../../components/RecordCard';
@@ -169,7 +170,14 @@ export function PetDetalheScreen() {
         />
 
         {editMode ? (
-          <LabeledInput placeholder="Nome" value={nome} onChangeText={setNome} style={styles.nameInput} />
+          <LabeledInput
+            label="Nome do pet*"
+            labelTone="onBrand"
+            placeholder="Ex.: Rex"
+            value={nome}
+            onChangeText={setNome}
+            containerStyle={styles.nameInput}
+          />
         ) : (
           <Text style={styles.name}>{pet.nome}</Text>
         )}
@@ -182,19 +190,26 @@ export function PetDetalheScreen() {
         {editMode ? (
           <>
             <View style={styles.row}>
-              <DateInput value={dataNascimento} onChange={setDataNascimento} style={styles.rowInputLeft} />
-              <WeightInput value={peso} onChangeText={setPeso} style={styles.rowInputRight} />
+              <FormField label="Data de nascimento" style={styles.rowInputLeft}>
+                <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
+              </FormField>
+              <FormField label="Peso" style={styles.rowInputRight}>
+                <WeightInput value={peso} onChangeText={setPeso} placeholder="0,0" />
+              </FormField>
             </View>
 
             <View style={styles.row}>
-              <SelectInput
-                value={especie}
-                onSelect={handleSelectEspecie}
-                options={ESPECIES}
-                placeholder="Espécie*"
-                style={styles.rowInputLeft}
-              />
-              <BreedSelectInput especie={especie} value={raca} onSelect={setRaca} style={styles.rowInputRight} />
+              <FormField label="Espécie*" style={styles.rowInputLeft}>
+                <SelectInput value={especie} onSelect={handleSelectEspecie} options={ESPECIES} placeholder="Selecione" />
+              </FormField>
+              <FormField label="Raça" style={styles.rowInputRight}>
+                <BreedSelectInput
+                  especie={especie}
+                  value={raca}
+                  onSelect={setRaca}
+                  placeholder={especie ? 'Selecione' : 'Escolha a espécie'}
+                />
+              </FormField>
             </View>
           </>
         ) : (

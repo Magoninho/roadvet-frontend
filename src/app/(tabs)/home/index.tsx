@@ -7,7 +7,7 @@ import { formatDateBR, speciesToIcon } from "@/utils/format";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, type Href } from "expo-router";
 import { useMemo, useState, type ComponentProps } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { of } from "rxjs";
 import { COLORS, RADIUS, SPACING } from "@/theme";
 import { ScreenHero } from "../../components/ScreenHero";
@@ -126,13 +126,20 @@ export default function HomeScreen() {
     <View style={styles.screen}>
       <ScreenHero style={styles.hero}>
         <View style={styles.heroTopRow}>
-          <View style={styles.avatar}>
-            {veterinario ? (
+          <TouchableOpacity
+            style={styles.avatar}
+            activeOpacity={0.7}
+            onPress={() => router.push("/perfil")}
+            accessibilityLabel="Meu perfil"
+          >
+            {veterinario?.avatarUrl ? (
+              <Image source={{ uri: veterinario.avatarUrl }} style={styles.avatarImage} />
+            ) : veterinario ? (
               <Text style={styles.avatarText}>{initialsOf(veterinario.nome)}</Text>
             ) : (
               <MaterialCommunityIcons name="account-outline" size={24} color={COLORS.onBrand} />
             )}
-          </View>
+          </TouchableOpacity>
           <View style={styles.heroIcons}>
             <MaterialCommunityIcons name={SYNC_ICON[syncStatus]} size={24} color={COLORS.onBrand} />
             <TouchableOpacity onPress={logout} hitSlop={10} accessibilityLabel="Sair">
@@ -263,6 +270,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.brandOverlay,
     alignItems: "center",
     justifyContent: "center",
+  },
+  avatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   avatarText: {
     color: COLORS.onBrand,

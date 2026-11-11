@@ -13,6 +13,7 @@ import { ESPECIES } from '@/utils/racas';
 import { BreedSelectInput } from './BreedSelectInput';
 import { DateInput } from './DateInput';
 import { EditableAvatar } from './EditableAvatar';
+import { FormField } from './FormField';
 import { FormFooter } from './FormFooter';
 import { GhostButton } from './GhostButton';
 import { LabeledInput } from './LabeledInput';
@@ -125,6 +126,8 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         {showTutorSection && (
           <>
             <TutorAutocomplete
+              label="Tutor responsável*"
+              placeholder="Buscar pelo nome do tutor"
               value={tutorQuery}
               onChangeText={(text) => {
                 setTutorQuery(text);
@@ -152,22 +155,35 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
           </>
         )}
 
-        <LabeledInput placeholder="Nome do pet" value={nome} onChangeText={setNome} style={styles.fullInput} />
+        <LabeledInput
+          label="Nome do pet*"
+          placeholder="Ex.: Rex"
+          value={nome}
+          onChangeText={setNome}
+          containerStyle={styles.fullInput}
+        />
 
         <View style={styles.row}>
-          <DateInput value={dataNascimento} onChange={setDataNascimento} style={styles.rowInputLeft} />
-          <WeightInput value={peso} onChangeText={setPeso} style={styles.rowInputRight} />
+          <FormField label="Data de nascimento" style={styles.rowInputLeft}>
+            <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
+          </FormField>
+          <FormField label="Peso" style={styles.rowInputRight}>
+            <WeightInput value={peso} onChangeText={setPeso} placeholder="0,0" />
+          </FormField>
         </View>
 
         <View style={styles.row}>
-          <SelectInput
-            value={especie}
-            onSelect={handleSelectEspecie}
-            options={ESPECIES}
-            placeholder="Espécie"
-            style={styles.rowInputLeft}
-          />
-          <BreedSelectInput especie={especie} value={raca} onSelect={setRaca} style={styles.rowInputRight} />
+          <FormField label="Espécie*" style={styles.rowInputLeft}>
+            <SelectInput value={especie} onSelect={handleSelectEspecie} options={ESPECIES} placeholder="Selecione" />
+          </FormField>
+          <FormField label="Raça" style={styles.rowInputRight}>
+            <BreedSelectInput
+              especie={especie}
+              value={raca}
+              onSelect={setRaca}
+              placeholder={especie ? 'Selecione' : 'Escolha a espécie'}
+            />
+          </FormField>
         </View>
       </ScrollView>
 

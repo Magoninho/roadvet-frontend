@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, TextInput, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { COLORS, RADIUS, SPACING } from '@/theme';
+import { FieldLabel } from './FormField';
 
 export interface TutorSuggestion {
   id: string;
@@ -15,6 +16,9 @@ interface TutorAutocompleteProps {
   showSuggestions: boolean;
   onFocus: () => void;
   onSelectSuggestion: (suggestion: TutorSuggestion) => void;
+  /** Title shown above the field, aligned with the text box. */
+  label?: string;
+  placeholder?: string;
 }
 
 export function TutorAutocomplete({
@@ -24,6 +28,8 @@ export function TutorAutocomplete({
   showSuggestions,
   onFocus,
   onSelectSuggestion,
+  label,
+  placeholder = 'Tutor responsável...',
 }: TutorAutocompleteProps) {
   const filteredSuggestions = useMemo(() => {
     if (!value) return [];
@@ -34,45 +40,54 @@ export function TutorAutocomplete({
 
   return (
     <View style={{zIndex: 1}}>
-      <View style={styles.inputWrapper}>
-        <Icon name="account" size={20} color={COLORS.textDark} style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Tutor responsável..."
-          placeholderTextColor={COLORS.placeholder}
-          value={value}
-          onChangeText={onChangeText}
-          onFocus={onFocus}
-        />
-      </View>
-
-      {showSuggestions && filteredSuggestions.length > 0 && (
-        <View style={styles.suggestionsWrapper}>
-          <FlatList
-            data={filteredSuggestions}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => onSelectSuggestion(item)}
-              >
-                <Text style={styles.suggestionText}>
-                  <Text style={styles.suggestionTextBold}>
-                    {item.label.slice(0, value.length)}
-                  </Text>
-                  {item.label.slice(value.length)}
-                </Text>
-              </TouchableOpacity>
-            )}
+      {label ? <FieldLabel label={label} style={styles.label} /> : null}
+      {/* Own positioning context so the dropdown's `top` stays relative to the input, below the label. */}
+      <View>
+        <View style={styles.inputWrapper}>
+          <Icon name="account" size={20} color={COLORS.textDark} style={styles.icon} />
+          <TextInput
+            style={styles.input}
+            placeholder={placeholder}
+            placeholderTextColor={COLORS.placeholder}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={onFocus}
           />
         </View>
-      )}
+
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <View style={styles.suggestionsWrapper}>
+            <FlatList
+              data={filteredSuggestions}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.suggestionItem}
+                  onPress={() => onSelectSuggestion(item)}
+                >
+                  <Text style={styles.suggestionText}>
+                    <Text style={styles.suggestionTextBold}>
+                      {item.label.slice(0, value.length)}
+                    </Text>
+                    {item.label.slice(value.length)}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  label: {
+    // Lines up with the text box, which sits right of the 20px icon + 10px gap.
+    marginLeft: SPACING.gutter + 30,
+    marginRight: SPACING.gutter,
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',

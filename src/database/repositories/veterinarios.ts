@@ -9,6 +9,7 @@ export interface VeterinarioInput {
   crmv?: string | null;
   email: string;
   telefone?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface RemoteVeterinarioProfile {
@@ -17,6 +18,12 @@ export interface RemoteVeterinarioProfile {
   crmv?: string | null;
   email: string;
   telefone?: string | null;
+  avatar_url?: string | null;
+}
+
+/** True for a URL already hosted by the API, false for a local file/`data:` URI still waiting for upload. */
+export function isRemoteAvatarUri(uri: string): boolean {
+  return uri.startsWith('http://') || uri.startsWith('https://');
 }
 
 const veterinariosCollection = () => database.get<Veterinario>('veterinarios');
@@ -41,6 +48,7 @@ export async function updateVeterinario(
       if (input.crmv !== undefined) record.crmv = input.crmv ?? null;
       if (input.email !== undefined) record.email = input.email;
       if (input.telefone !== undefined) record.telefone = input.telefone ?? null;
+      if (input.avatarUrl !== undefined) record.avatarUrl = input.avatarUrl ?? null;
     }),
   );
 }
@@ -67,6 +75,10 @@ export async function authenticateVeterinario(email: string, senha: string): Pro
 
 export function observeVeterinarios() {
   return veterinariosCollection().query(Q.sortBy('nome', Q.asc)).observe();
+}
+
+export function observeVeterinario(id: string) {
+  return veterinariosCollection().findAndObserve(id);
 }
 
 export async function findVeterinarioById(id: string): Promise<Veterinario> {
@@ -109,6 +121,9 @@ export async function upsertVeterinarioFromRemote(
         r.crmv = profile.crmv ?? null;
         r.email = profile.email;
         r.telefone = profile.telefone ?? null;
+        // Keep a locally picked photo that is still waiting for upload; otherwise trust the server.
+        const hasPendingAvatar = !!r.avatarUrl && !isRemoteAvatarUri(r.avatarUrl);
+        if (profile.avatar_url !== undefined && !hasPendingAvatar) r.avatarUrl = profile.avatar_url ?? null;
         if (senhaHash) r.senhaHash = senhaHash;
       }),
     );
@@ -123,6 +138,7 @@ export async function upsertVeterinarioFromRemote(
       email: profile.email,
       senha_hash: senhaHash ?? '',
       telefone: profile.telefone ?? null,
+      avatar_url: profile.avatar_url ?? null,
       created_at: now,
       updated_at: now,
     }) as Veterinario;

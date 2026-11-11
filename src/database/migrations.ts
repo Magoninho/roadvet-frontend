@@ -20,5 +20,14 @@ export const migrations = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 4,
+      steps: [
+        addColumns({
+          table: 'veterinarios',
+          columns: [{ name: 'avatar_url', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });

@@ -1,13 +1,22 @@
 import React from 'react';
-import { TextInput, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { TextInput, StyleSheet, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { COLORS, RADIUS } from '@/theme';
+import { FieldLabelTone, FormField } from './FormField';
 
 interface LabeledInputProps {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
   style?: StyleProp<TextStyle>;
-  keyboardType?: 'default' | 'numeric';
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+  secureTextEntry?: boolean;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  /** Title shown above the field. */
+  label?: string;
+  /** Layout (margins, flex) of the label + field block; only used together with `label`. */
+  containerStyle?: StyleProp<ViewStyle>;
+  /** `onBrand`: white label for fields placed on the brand header. */
+  labelTone?: FieldLabelTone;
 }
 
 export function LabeledInput({
@@ -16,8 +25,13 @@ export function LabeledInput({
   onChangeText,
   style,
   keyboardType = 'default',
+  secureTextEntry,
+  autoCapitalize,
+  label,
+  containerStyle,
+  labelTone = 'default',
 }: LabeledInputProps) {
-  return (
+  const input = (
     <TextInput
       style={[styles.input, style]}
       placeholder={placeholder}
@@ -25,7 +39,18 @@ export function LabeledInput({
       value={value}
       onChangeText={onChangeText}
       keyboardType={keyboardType}
+      secureTextEntry={secureTextEntry}
+      autoCapitalize={autoCapitalize}
+      accessibilityLabel={label}
     />
+  );
+
+  if (!label) return input;
+
+  return (
+    <FormField label={label} tone={labelTone} style={containerStyle}>
+      {input}
+    </FormField>
   );
 }
 

@@ -28,7 +28,7 @@ function getBaseUrl(): string {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   query?: Record<string, string | undefined>;
   body?: unknown;
   /** Skip attaching a bearer token (used by /auth/login and /auth/register). */

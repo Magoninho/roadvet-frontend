@@ -2,13 +2,12 @@ import { Q } from '@nozbe/watermelondb';
 import { database } from '@/database';
 import Tutor from '@/database/models/Tutor';
 import Pet from '@/database/models/Pet';
+import Veterinario from '@/database/models/Veterinario';
+import { deleteAvatarFile } from '@/database/repositories/avatars';
+import { isRemoteAvatarUri as isRemoteUri } from '@/database/repositories/veterinarios';
 import { apiUpload } from '@/services/api/client';
 
-function isRemoteUri(uri: string): boolean {
-  return uri.startsWith('http://') || uri.startsWith('https://');
-}
-
-/** Recovers a filename + MIME type from a local `data:`/`file://` uri, since neither the Tutor nor Pet table stores them separately. */
+/** Recovers a filename + MIME type from a local `data:`/`file://` uri, since no avatar table stores them separately. */
 function inferUploadMeta(uri: string, recordId: string): { name: string; type: string } {
   const dataUrlMatch = /^data:([^;]+);base64,/.exec(uri);
   if (dataUrlMatch) {
@@ -39,10 +38,19 @@ async function findPendingPetAvatars(veterinarioId: string): Promise<Pet[]> {
   return pets.filter((pet) => !!pet.avatarUrl && !isRemoteUri(pet.avatarUrl));
 }
 
+async function findPendingVeterinarioAvatar(veterinarioId: string): Promise<Veterinario | null> {
+  try {
+    const veterinario = await database.get<Veterinario>('veterinarios').find(veterinarioId);
+    return veterinario.avatarUrl && !isRemoteUri(veterinario.avatarUrl) ? veterinario : null;
+  } catch {
+    return null;
+  }
+}
+
 let uploadPromise: Promise<void> | null = null;
 
 /**
- * Sends the image file for every tutor/pet whose metadata was already
+ * Sends the image file for the logged-in vet and every tutor/pet whose metadata was already
  * synced but whose `avatarUrl` is still a local device path or web `data:`
  * URL. Safe to call repeatedly -- concurrent calls share the in-flight run.
  * Failures are per-record and non-fatal; a record left with a local
@@ -52,10 +60,29 @@ export function uploadPendingAvatars(veterinarioId: string): Promise<void> {
   if (uploadPromise) return uploadPromise;
 
   uploadPromise = (async () => {
-    const [tutores, pets] = await Promise.all([
+    const [veterinario, tutores, pets] = await Promise.all([
+      findPendingVeterinarioAvatar(veterinarioId),
       findPendingTutorAvatars(veterinarioId),
       findPendingPetAvatars(veterinarioId),
     ]);
+
+    if (veterinario) {
+      try {
+        const localUri = veterinario.avatarUrl!;
+        const result = await apiUpload<{ avatar_url: string }>('/auth/me/avatar', {
+          uri: localUri,
+          ...inferUploadMeta(localUri, veterinario.id),
+        });
+        await database.write(() =>
+          veterinario.update((record) => {
+            record.avatarUrl = result.avatar_url;
+          }),
+        );
+        await deleteAvatarFile(localUri);
+      } catch {
+        // Leave it pending; the next sync cycle retries.
+      }
+    }
 
     for (const tutor of tutores) {
       try {

@@ -10,6 +10,8 @@ import {
   findVeterinarioById,
   generateVeterinarioId,
   RemoteVeterinarioProfile,
+  updateSenha,
+  updateVeterinario,
   upsertVeterinarioFromRemote,
   VeterinarioInput,
 } from '@/database/repositories/veterinarios';
@@ -24,6 +26,13 @@ export interface RegisterInput extends VeterinarioInput {
   senha: string;
 }
 
+export interface ProfileInput {
+  nome: string;
+  crmv: string | null;
+  email: string;
+  telefone: string | null;
+}
+
 type AuthResult = { ok: true } | { ok: false; error: string };
 
 interface AuthContextValue {
@@ -32,6 +41,10 @@ interface AuthContextValue {
   login: (email: string, senha: string) => Promise<AuthResult>;
   register: (input: RegisterInput) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  /** Saves name/CRMV/email/phone. Works offline except for email changes, which the server must validate. */
+  updateProfile: (input: ProfileInput) => Promise<AuthResult>;
+  /** Requires a connection: the current password is checked by the server. */
+  changePassword: (senhaAtual: string, novaSenha: string) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -100,6 +113,18 @@ async function completeRemoteAuth(response: RemoteAuthResponse, senhaHash?: stri
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [veterinario, setVeterinario] = useState<Veterinario | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Bumped on every change to the vet's row (local edit or sync pull) so consumers re-render
+  // with the updated name/photo, since `veterinario` itself is the same mutable Model instance.
+  const [profileVersion, setProfileVersion] = useState(0);
+
+  useEffect(() => {
+    if (!veterinario) return;
+    const subscription = veterinario.observe().subscribe({
+      next: () => setProfileVersion((version) => version + 1),
+      error: () => {},
+    });
+    return () => subscription.unsubscribe();
+  }, [veterinario]);
 
   useEffect(() => {
     (async () => {
@@ -196,9 +221,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (input: ProfileInput): Promise<AuthResult> => {
+    if (!veterinario) return { ok: false, error: 'Nenhum usuário autenticado.' };
+
+    const email = input.email.trim().toLowerCase();
+    const emailChanged = email !== veterinario.email;
+    const body = {
+      nome: input.nome.trim(),
+      crmv: input.crmv?.trim() || null,
+      email,
+      telefone: input.telefone?.trim() || null,
+    };
+
+    try {
+      const response = await apiRequest<RemoteVeterinarioProfile>('/auth/me', { method: 'PATCH', body });
+      await upsertVeterinarioFromRemote(response);
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return { ok: false, error: messageFromApiError(error, 'Não foi possível salvar o perfil.') };
+      }
+      if (emailChanged) {
+        return { ok: false, error: 'Conecte-se à internet para alterar o email.' };
+      }
+      // Offline: save locally; the next sync pushes nome/crmv/telefone to the server.
+      await updateVeterinario(veterinario, { nome: body.nome, crmv: body.crmv, telefone: body.telefone });
+      return { ok: true };
+    }
+  };
+
+  const changePassword = async (senhaAtual: string, novaSenha: string): Promise<AuthResult> => {
+    if (!veterinario) return { ok: false, error: 'Nenhum usuário autenticado.' };
+
+    try {
+      await apiRequest('/auth/me/password', {
+        method: 'POST',
+        body: { senha_atual: senhaAtual, nova_senha: novaSenha },
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return { ok: false, error: messageFromApiError(error, 'Não foi possível alterar a senha.') };
+      }
+      return { ok: false, error: 'Conecte-se à internet para alterar a senha.' };
+    }
+
+    // Keeps the offline-login fallback in step with the new password.
+    await updateSenha(veterinario, novaSenha);
+    return { ok: true };
+  };
+
   const value = useMemo(
-    () => ({ veterinario, isLoading, login, register, logout }),
-    [veterinario, isLoading],
+    () => ({ veterinario, isLoading, login, register, logout, updateProfile, changePassword }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [veterinario, isLoading, profileVersion],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
