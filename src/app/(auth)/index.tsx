@@ -4,8 +4,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -13,6 +11,7 @@ import {
   useWindowDimensions,
   View
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Componente Logo modificado para exibir a imagem do exemplo (gatinho e cachorro)
@@ -79,7 +78,8 @@ export default function WelcomeScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
+        automaticOffset
       >
         {/* Removida a alça superior decorativa, pois não está no exemplo */}
 

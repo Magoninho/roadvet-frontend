@@ -4,8 +4,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -15,6 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -95,7 +94,8 @@ export default function CadastroScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#BFE6E6" />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
+        automaticOffset
       >
         {/* Top drag handle, purely decorative to match the mock */}
         <View style={styles.handle} />

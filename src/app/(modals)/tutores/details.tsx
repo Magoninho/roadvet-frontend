@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Tutor from '@/database/models/Tutor';
@@ -188,81 +189,83 @@ export function TutorDetalheScreen() {
         )}
       </DetailTopBar>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
-        {editMode ? (
-          <>
-            <FormRow style={styles.formRowMargin}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
+          {editMode ? (
+            <>
+              <FormRow style={styles.formRowMargin}>
+                <LabeledInput
+                  label="CPF*"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChangeText={setCpf}
+                  keyboardType="numeric"
+                  containerStyle={styles.flexInput}
+                />
+                <FormField label="Data de nascimento" style={styles.flexInput}>
+                  <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
+                </FormField>
+              </FormRow>
+
               <LabeledInput
-                label="CPF*"
-                placeholder="000.000.000-00"
-                value={cpf}
-                onChangeText={setCpf}
-                keyboardType="numeric"
-                containerStyle={styles.flexInput}
+                label="Email"
+                placeholder="nome@exemplo.com"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                containerStyle={styles.fullInput}
               />
-              <FormField label="Data de nascimento" style={styles.flexInput}>
-                <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
-              </FormField>
-            </FormRow>
+              <LabeledInput label="CEP*" placeholder="00000-000" value={cep} onChangeText={setCep} keyboardType="numeric" containerStyle={styles.fullInput} />
 
-            <LabeledInput
-              label="Email"
-              placeholder="nome@exemplo.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              containerStyle={styles.fullInput}
-            />
-            <LabeledInput label="CEP*" placeholder="00000-000" value={cep} onChangeText={setCep} keyboardType="numeric" containerStyle={styles.fullInput} />
+              <FormRow style={styles.formRowMargin}>
+                <LabeledInput label="Endereço*" placeholder="Rua, avenida..." value={endereco} onChangeText={setEndereco} containerStyle={styles.flexInputLarge} />
+                <LabeledInput label="Número*" placeholder="Nº" value={numero} onChangeText={setNumero} keyboardType="numeric" containerStyle={styles.flexInputSmall} />
+              </FormRow>
 
-            <FormRow style={styles.formRowMargin}>
-              <LabeledInput label="Endereço*" placeholder="Rua, avenida..." value={endereco} onChangeText={setEndereco} containerStyle={styles.flexInputLarge} />
-              <LabeledInput label="Número*" placeholder="Nº" value={numero} onChangeText={setNumero} keyboardType="numeric" containerStyle={styles.flexInputSmall} />
-            </FormRow>
+              <FormRow style={styles.formRowMargin}>
+                <LabeledInput label="Bairro*" placeholder="Ex.: Centro" value={bairro} onChangeText={setBairro} containerStyle={styles.flexInput} />
+                <LabeledInput label="Complemento" placeholder="Apto, bloco..." value={complemento} onChangeText={setComplemento} containerStyle={styles.flexInput} />
+              </FormRow>
 
-            <FormRow style={styles.formRowMargin}>
-              <LabeledInput label="Bairro*" placeholder="Ex.: Centro" value={bairro} onChangeText={setBairro} containerStyle={styles.flexInput} />
-              <LabeledInput label="Complemento" placeholder="Apto, bloco..." value={complemento} onChangeText={setComplemento} containerStyle={styles.flexInput} />
-            </FormRow>
+              <FormRow style={styles.formRowMargin}>
+                <LabeledInput label="Cidade*" placeholder="Ex.: Fortaleza" value={cidade} onChangeText={setCidade} containerStyle={styles.flexInputLarge} />
+                <LabeledInput label="UF*" placeholder="CE" value={uf} onChangeText={setUf} autoCapitalize="characters" containerStyle={styles.flexInputSmall} />
+              </FormRow>
 
-            <FormRow style={styles.formRowMargin}>
-              <LabeledInput label="Cidade*" placeholder="Ex.: Fortaleza" value={cidade} onChangeText={setCidade} containerStyle={styles.flexInputLarge} />
-              <LabeledInput label="UF*" placeholder="CE" value={uf} onChangeText={setUf} autoCapitalize="characters" containerStyle={styles.flexInputSmall} />
-            </FormRow>
+              <FormRow style={styles.formRowMargin}>
+                <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" containerStyle={styles.flexInput} />
+                <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" containerStyle={styles.flexInput} />
+              </FormRow>
+            </>
+          ) : (
+            <>
+              <InfoText label="CPF" value={tutor.cpf} />
+              <InfoText label="Data de nascimento" value={formatDateBR(tutor.dataNascimento)} />
+              {!!tutor.email && <InfoText label="Email" value={tutor.email} />}
+              <InfoText label="Endereço" value={tutor.endereco ?? ''} />
+              {!!tutor.numero && <InfoText label="Número" value={tutor.numero} />}
+              {!!tutor.complemento && <InfoText label="Complemento" value={tutor.complemento} />}
+              <InfoText label="Bairro" value={tutor.bairro ?? ''} />
+              <InfoText label="Cidade" value={tutor.cidade ?? ''} />
+              <InfoText label="UF" value={tutor.uf ?? ''} />
+              <InfoText label="CEP" value={tutor.cep ?? ''} />
+              <InfoText label="Telefone" value={tutor.telefone1 ?? ''} />
+              {!!tutor.telefone2 && <InfoText label="Telefone 2" value={tutor.telefone2} />}
+            </>
+          )}
 
-            <FormRow style={styles.formRowMargin}>
-              <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" containerStyle={styles.flexInput} />
-              <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" containerStyle={styles.flexInput} />
-            </FormRow>
-          </>
-        ) : (
-          <>
-            <InfoText label="CPF" value={tutor.cpf} />
-            <InfoText label="Data de nascimento" value={formatDateBR(tutor.dataNascimento)} />
-            {!!tutor.email && <InfoText label="Email" value={tutor.email} />}
-            <InfoText label="Endereço" value={tutor.endereco ?? ''} />
-            {!!tutor.numero && <InfoText label="Número" value={tutor.numero} />}
-            {!!tutor.complemento && <InfoText label="Complemento" value={tutor.complemento} />}
-            <InfoText label="Bairro" value={tutor.bairro ?? ''} />
-            <InfoText label="Cidade" value={tutor.cidade ?? ''} />
-            <InfoText label="UF" value={tutor.uf ?? ''} />
-            <InfoText label="CEP" value={tutor.cep ?? ''} />
-            <InfoText label="Telefone" value={tutor.telefone1 ?? ''} />
-            {!!tutor.telefone2 && <InfoText label="Telefone 2" value={tutor.telefone2} />}
-          </>
-        )}
+          <SectionDivider icon="paw-outline" label="Pets" />
+          {!editMode && <PrimaryButton label="Novo pet" onPress={handleNewPet} />}
 
-        <SectionDivider icon="paw-outline" label="Pets" />
-        {!editMode && <PrimaryButton label="Novo pet" onPress={handleNewPet} />}
+          {petSummaries.map((pet) => (
+            <PetSummaryCard key={pet.id} data={pet} onPress={handlePetPress} />
+          ))}
+        </ScrollView>
 
-        {petSummaries.map((pet) => (
-          <PetSummaryCard key={pet.id} data={pet} onPress={handlePetPress} />
-        ))}
-      </ScrollView>
-
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+        {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+      </KeyboardAvoidingView>
 
       <PetFormModal
         visible={modalPetVisible}
@@ -290,6 +293,7 @@ export function TutorDetalheScreen() {
 export default TutorDetalheScreen;
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,

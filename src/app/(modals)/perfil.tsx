@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/avatars';
@@ -213,122 +214,125 @@ export default function PerfilScreen() {
         )}
       </DetailTopBar>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <SectionDivider icon="account-outline" label="Dados pessoais" showLine={false} />
-        {editMode ? (
-          <>
-            <LabeledInput
-              label="Email*"
-              placeholder="nome@exemplo.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              containerStyle={styles.fullInput}
-            />
-            <LabeledInput
-              label="CRMV"
-              placeholder="Ex.: CE-12345"
-              value={crmv}
-              onChangeText={setCrmv}
-              autoCapitalize="characters"
-              containerStyle={styles.fullInput}
-            />
-            <LabeledInput
-              label="Telefone"
-              placeholder="(85) 99999-9999"
-              value={telefone}
-              onChangeText={setTelefone}
-              keyboardType="phone-pad"
-              containerStyle={styles.fullInput}
-            />
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <SectionDivider icon="account-outline" label="Dados pessoais" showLine={false} />
+          {editMode ? (
+            <>
+              <LabeledInput
+                label="Email*"
+                placeholder="nome@exemplo.com"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                containerStyle={styles.fullInput}
+              />
+              <LabeledInput
+                label="CRMV"
+                placeholder="Ex.: CE-12345"
+                value={crmv}
+                onChangeText={setCrmv}
+                autoCapitalize="characters"
+                containerStyle={styles.fullInput}
+              />
+              <LabeledInput
+                label="Telefone"
+                placeholder="(85) 99999-9999"
+                value={telefone}
+                onChangeText={setTelefone}
+                keyboardType="phone-pad"
+                containerStyle={styles.fullInput}
+              />
 
-            {shownAvatar ? (
+              {shownAvatar ? (
+                <View style={styles.buttonSpacing}>
+                  <GhostButton label="Remover foto" icon="image-remove" onPress={() => setAvatarChange('remove')} />
+                </View>
+              ) : null}
+
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            </>
+          ) : (
+            <>
+              <InfoText label="Nome" value={veterinario.nome} />
+              <InfoText label="Email" value={veterinario.email} />
+              <InfoText label="CRMV" value={veterinario.crmv || 'Não informado'} />
+              <InfoText label="Telefone" value={veterinario.telefone || 'Não informado'} />
+            </>
+          )}
+
+          {!editMode && (
+            <>
+              <SectionDivider icon="lock-outline" label="Segurança" />
+              {passwordFormVisible ? (
+                <>
+                  <LabeledInput
+                    label="Senha atual"
+                    placeholder="Digite sua senha atual"
+                    value={senhaAtual}
+                    onChangeText={setSenhaAtual}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    containerStyle={styles.fullInput}
+                  />
+                  <LabeledInput
+                    label="Nova senha"
+                    placeholder="Mínimo de 6 caracteres"
+                    value={novaSenha}
+                    onChangeText={setNovaSenha}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    containerStyle={styles.fullInput}
+                  />
+                  <LabeledInput
+                    label="Confirmar nova senha"
+                    placeholder="Repita a nova senha"
+                    value={confirmarSenha}
+                    onChangeText={setConfirmarSenha}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    containerStyle={styles.fullInput}
+                  />
+                  {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                  <PrimaryButton
+                    label={passwordSaving ? 'Salvando...' : 'Salvar nova senha'}
+                    icon="check"
+                    onPress={handleSavePassword}
+                  />
+                  <View style={styles.buttonSpacing}>
+                    <GhostButton label="Cancelar" icon="close" onPress={handleCancelPassword} />
+                  </View>
+                </>
+              ) : (
+                <>
+                  {passwordSuccess ? <Text style={styles.successText}>Senha alterada com sucesso.</Text> : null}
+                  <View style={styles.buttonSpacing}>
+                    <GhostButton label="Alterar senha" icon="key-outline" onPress={handleOpenPasswordForm} />
+                  </View>
+                </>
+              )}
+
+              <SectionDivider icon="cog-outline" label="Conta" />
               <View style={styles.buttonSpacing}>
-                <GhostButton label="Remover foto" icon="image-remove" onPress={() => setAvatarChange('remove')} />
+                <GhostButton label="Sair da conta" icon="logout" onPress={logout} />
               </View>
-            ) : null}
+            </>
+          )}
+        </ScrollView>
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          </>
-        ) : (
-          <>
-            <InfoText label="Nome" value={veterinario.nome} />
-            <InfoText label="Email" value={veterinario.email} />
-            <InfoText label="CRMV" value={veterinario.crmv || 'Não informado'} />
-            <InfoText label="Telefone" value={veterinario.telefone || 'Não informado'} />
-          </>
-        )}
-
-        {!editMode && (
-          <>
-            <SectionDivider icon="lock-outline" label="Segurança" />
-            {passwordFormVisible ? (
-              <>
-                <LabeledInput
-                  label="Senha atual"
-                  placeholder="Digite sua senha atual"
-                  value={senhaAtual}
-                  onChangeText={setSenhaAtual}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  containerStyle={styles.fullInput}
-                />
-                <LabeledInput
-                  label="Nova senha"
-                  placeholder="Mínimo de 6 caracteres"
-                  value={novaSenha}
-                  onChangeText={setNovaSenha}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  containerStyle={styles.fullInput}
-                />
-                <LabeledInput
-                  label="Confirmar nova senha"
-                  placeholder="Repita a nova senha"
-                  value={confirmarSenha}
-                  onChangeText={setConfirmarSenha}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  containerStyle={styles.fullInput}
-                />
-                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-                <PrimaryButton
-                  label={passwordSaving ? 'Salvando...' : 'Salvar nova senha'}
-                  icon="check"
-                  onPress={handleSavePassword}
-                />
-                <View style={styles.buttonSpacing}>
-                  <GhostButton label="Cancelar" icon="close" onPress={handleCancelPassword} />
-                </View>
-              </>
-            ) : (
-              <>
-                {passwordSuccess ? <Text style={styles.successText}>Senha alterada com sucesso.</Text> : null}
-                <View style={styles.buttonSpacing}>
-                  <GhostButton label="Alterar senha" icon="key-outline" onPress={handleOpenPasswordForm} />
-                </View>
-              </>
-            )}
-
-            <SectionDivider icon="cog-outline" label="Conta" />
-            <View style={styles.buttonSpacing}>
-              <GhostButton label="Sair da conta" icon="logout" onPress={logout} />
-            </View>
-          </>
-        )}
-      </ScrollView>
-
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+        {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,

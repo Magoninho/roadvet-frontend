@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, Modal, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Tutor from '@/database/models/Tutor';
 import { TutorForm } from './TutorForm'; // Importe o componente criado
 import { COLORS, RADIUS, SPACING } from '@/theme';
@@ -11,13 +13,26 @@ interface TutorFormModalProps {
 }
 
 export function TutorFormModal({ visible, onCancel, onSave }: TutorFormModalProps) {
+  // On Android the modal draws behind the navigation bar, so the bottom inset keeps the footer clear of it.
+  const insets = useSafeAreaInsets();
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onCancel}>
-      <KeyboardAvoidingView 
-        style={styles.overlay} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onCancel}
+    >
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior="padding"
+        automaticOffset
+        // The keyboard already covers the inset area, so it is discounted while the keyboard is open.
+        keyboardVerticalOffset={-insets.bottom}
       >
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { paddingBottom: insets.bottom }]}>
           <Text style={styles.modalTitle}>Cadastrar novo tutor</Text>
           
           {/* Aqui chamamos o formulário reutilizável */}

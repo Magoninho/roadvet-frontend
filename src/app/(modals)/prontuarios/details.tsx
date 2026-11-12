@@ -1,6 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Prontuario from '@/database/models/Prontuario';
@@ -175,90 +176,92 @@ export default function ProntuarioDetalhe() {
         }
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <FormSectionTitle text="Parâmetros vitais" />
-        {editMode ? (
-          <>
-            <VitalInputField placeholder="Peso..." value={weight} onChangeText={setWeight} unit="kg" keyboardType="numeric" />
-            <VitalInputField placeholder="Temperatura..." value={temperature} onChangeText={setTemperature} unit="°C" keyboardType="numeric" />
-            <VitalInputField placeholder="FC" value={heartRate} onChangeText={setHeartRate} keyboardType="numeric" />
-          </>
-        ) : (
-          <VitalReadOnlyRow
-            items={[
-              { label: 'Peso', value: prontuario.weight ?? '', unit: 'kg' },
-              { label: 'Temperatura', value: prontuario.temperature ?? '', unit: '°C' },
-              { label: 'FC', value: prontuario.heartRate ?? '' },
-            ]}
-          />
-        )}
-
-        <FormSectionTitle text="Anamnese" />
-        {editMode ? (
-          <TextAreaField value={anamnesis} onChangeText={setAnamnesis} />
-        ) : (
-          <ReadOnlyField value={prontuario.anamnesis ?? ''} />
-        )}
-
-        <FormSectionTitle text="Exame físico" />
-        {editMode ? (
-          <TextAreaField value={physicalExam} onChangeText={setPhysicalExam} />
-        ) : (
-          <ReadOnlyField value={prontuario.physicalExam ?? ''} />
-        )}
-
-        <FormSectionTitle text="Prescrição" />
-        {editMode ? (
-          <TextAreaField value={prescription} onChangeText={setPrescription} />
-        ) : (
-          <ReadOnlyField value={prontuario.prescription ?? ''} />
-        )}
-
-        <FormSectionTitle text="Vacinas" />
-        {editMode ? (
-          <TextAreaField value={vaccines} onChangeText={setVaccines} placeholder="Descreva as vacinas aplicadas..." />
-        ) : (
-          <ReadOnlyField value={prontuario.vaccines ?? ''} />
-        )}
-
-        <FormSectionTitle text="Solicitação de exames" />
-        {editMode ? (
-          <>
-            <TextAreaField value={examRequestNotes} onChangeText={setExamRequestNotes} />
-            <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
-            <FileUploadField
-              files={newRequestFiles}
-              onFilesChange={setNewRequestFiles}
-              label="Anexar solicitação (PDF ou imagem)"
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <FormSectionTitle text="Parâmetros vitais" />
+          {editMode ? (
+            <>
+              <VitalInputField placeholder="Peso..." value={weight} onChangeText={setWeight} unit="kg" keyboardType="numeric" />
+              <VitalInputField placeholder="Temperatura..." value={temperature} onChangeText={setTemperature} unit="°C" keyboardType="numeric" />
+              <VitalInputField placeholder="FC" value={heartRate} onChangeText={setHeartRate} keyboardType="numeric" />
+            </>
+          ) : (
+            <VitalReadOnlyRow
+              items={[
+                { label: 'Peso', value: prontuario.weight ?? '', unit: 'kg' },
+                { label: 'Temperatura', value: prontuario.temperature ?? '', unit: '°C' },
+                { label: 'FC', value: prontuario.heartRate ?? '' },
+              ]}
             />
-          </>
-        ) : (
-          <>
-            <ReadOnlyField value={prontuario.examRequestNotes ?? ''} />
-            <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
-          </>
-        )}
+          )}
 
-        <FormSectionTitle text="Resultados" />
-        {editMode ? (
-          <>
-            <TextAreaField value={examResultsNotes} onChangeText={setExamResultsNotes} />
-            <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
-            <FileUploadField
-              files={newResultFiles}
-              onFilesChange={setNewResultFiles}
-              label="Anexar resultados (PDF ou imagem)"
-            />
-          </>
-        ) : (
-          <>
-            <ReadOnlyField value={prontuario.examResultsNotes ?? ''} />
-            <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
-          </>
-        )}
-      </ScrollView>
+          <FormSectionTitle text="Anamnese" />
+          {editMode ? (
+            <TextAreaField value={anamnesis} onChangeText={setAnamnesis} />
+          ) : (
+            <ReadOnlyField value={prontuario.anamnesis ?? ''} />
+          )}
 
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+          <FormSectionTitle text="Exame físico" />
+          {editMode ? (
+            <TextAreaField value={physicalExam} onChangeText={setPhysicalExam} />
+          ) : (
+            <ReadOnlyField value={prontuario.physicalExam ?? ''} />
+          )}
+
+          <FormSectionTitle text="Prescrição" />
+          {editMode ? (
+            <TextAreaField value={prescription} onChangeText={setPrescription} />
+          ) : (
+            <ReadOnlyField value={prontuario.prescription ?? ''} />
+          )}
+
+          <FormSectionTitle text="Vacinas" />
+          {editMode ? (
+            <TextAreaField value={vaccines} onChangeText={setVaccines} placeholder="Descreva as vacinas aplicadas..." />
+          ) : (
+            <ReadOnlyField value={prontuario.vaccines ?? ''} />
+          )}
+
+          <FormSectionTitle text="Solicitação de exames" />
+          {editMode ? (
+            <>
+              <TextAreaField value={examRequestNotes} onChangeText={setExamRequestNotes} />
+              <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
+              <FileUploadField
+                files={newRequestFiles}
+                onFilesChange={setNewRequestFiles}
+                label="Anexar solicitação (PDF ou imagem)"
+              />
+            </>
+          ) : (
+            <>
+              <ReadOnlyField value={prontuario.examRequestNotes ?? ''} />
+              <AttachmentList files={examRequestFiles} onFilePress={handleOpenFile} />
+            </>
+          )}
+
+          <FormSectionTitle text="Resultados" />
+          {editMode ? (
+            <>
+              <TextAreaField value={examResultsNotes} onChangeText={setExamResultsNotes} />
+              <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
+              <FileUploadField
+                files={newResultFiles}
+                onFilesChange={setNewResultFiles}
+                label="Anexar resultados (PDF ou imagem)"
+              />
+            </>
+          ) : (
+            <>
+              <ReadOnlyField value={prontuario.examResultsNotes ?? ''} />
+              <AttachmentList files={examResultFiles} onFilePress={handleOpenFile} />
+            </>
+          )}
+        </ScrollView>
+
+        {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+      </KeyboardAvoidingView>
 
       <ConfirmDialog
         visible={deletion.visible}
@@ -275,6 +278,7 @@ export default function ProntuarioDetalhe() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,

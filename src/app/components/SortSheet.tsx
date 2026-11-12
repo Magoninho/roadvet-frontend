@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { SortDirection, SortOption, SortState } from '@/utils/sort';
 import { COLORS, RADIUS, SPACING } from '@/theme';
@@ -18,10 +19,20 @@ function directionLabel(option: SortOption, direction: SortDirection): string {
 }
 
 export function SortSheet({ visible, title = 'Ordenar por', options, value, onChange, onClose }: SortSheetProps) {
+  // On Android the modal draws behind the navigation bar, so the inset keeps the options clear of it.
+  const insets = useSafeAreaInsets();
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: SHEET_BOTTOM_PADDING + insets.bottom }]} onPress={() => {}}>
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -84,6 +95,8 @@ export function SortSheet({ visible, title = 'Ordenar por', options, value, onCh
   );
 }
 
+const SHEET_BOTTOM_PADDING = 32;
+
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -95,7 +108,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: RADIUS.sheet,
     borderTopRightRadius: RADIUS.sheet,
     paddingTop: SPACING.section,
-    paddingBottom: 32,
     paddingHorizontal: SPACING.gutter,
   },
   header: {

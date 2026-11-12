@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import Tutor from '@/database/models/Tutor';
 import { BackHeader } from '../../components/BackHeader';
@@ -25,10 +26,9 @@ export function NovoTutorScreen() {
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title="Novo Tutor" onBackPress={handleBack} />
 
-      <TutorForm
-        onCancel={handleBack}
-        onSave={handleSalvar}
-      />
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <TutorForm onCancel={handleBack} onSave={handleSalvar} />
+      </KeyboardAvoidingView>
 
     </SafeAreaView>
   );
@@ -37,6 +37,7 @@ export function NovoTutorScreen() {
 export default NovoTutorScreen;
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,

@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Pet from '@/database/models/Pet';
 import { BackHeader } from '../../components/BackHeader';
@@ -25,12 +26,14 @@ export function NovoPetScreen() {
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <BackHeader title="Novo Pet" onBackPress={handleCancelar} />
 
-      <PetForm
-        onCancel={handleCancelar}
-        onSave={handleSalvar}
-        showTutorSection={!tutorId}
-        tutorId={tutorId}
-      />
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <PetForm
+          onCancel={handleCancelar}
+          onSave={handleSalvar}
+          showTutorSection={!tutorId}
+          tutorId={tutorId}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -38,6 +41,7 @@ export function NovoPetScreen() {
 export default NovoPetScreen;
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,

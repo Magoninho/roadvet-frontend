@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { FilterChipGroupConfig, FilterState, FilterToggleConfig } from '@/utils/filter';
 import { setToggle, toggleChip } from '@/utils/filter';
@@ -26,10 +27,20 @@ export function FilterSheet({
   onClear,
   onClose,
 }: FilterSheetProps) {
+  // On Android the modal draws behind the navigation bar, so the inset keeps the buttons clear of it.
+  const insets = useSafeAreaInsets();
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom }]} onPress={() => {}}>
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>

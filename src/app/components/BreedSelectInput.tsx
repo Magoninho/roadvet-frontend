@@ -1,9 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -13,6 +11,8 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { racasDaEspecie } from '@/utils/racas';
 import { normalizeSearchText } from '@/utils/search';
@@ -35,6 +35,7 @@ interface BreedSelectInputProps {
 export function BreedSelectInput({ especie, value, onSelect, placeholder = 'Raça', style }: BreedSelectInputProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const insets = useSafeAreaInsets();
 
   const disabled = !especie;
   const racas = useMemo(() => racasDaEspecie(especie), [especie]);
@@ -74,10 +75,23 @@ export function BreedSelectInput({ especie, value, onSelect, placeholder = 'Raç
         <Icon name="chevron-down" size={18} color={disabled ? COLORS.placeholder : COLORS.textDark} />
       </TouchableOpacity>
 
-      <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Modal
+        visible={open}
+        animationType="slide"
+        transparent
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setOpen(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior="padding"
+          automaticOffset
+          // The keyboard already covers the navigation bar inset, so it is discounted while the keyboard is open.
+          keyboardVerticalOffset={-insets.bottom}
+        >
           <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-            <Pressable style={styles.sheet} onPress={() => {}}>
+            <Pressable style={[styles.sheet, { paddingBottom: SHEET_BOTTOM_PADDING + insets.bottom }]} onPress={() => {}}>
               <View style={styles.header}>
                 <Text style={styles.title}>Raça ({especie})</Text>
                 <TouchableOpacity onPress={() => setOpen(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -132,6 +146,8 @@ export function BreedSelectInput({ especie, value, onSelect, placeholder = 'Raç
   );
 }
 
+const SHEET_BOTTOM_PADDING = 32;
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   input: {
@@ -169,7 +185,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: RADIUS.sheet,
     borderTopRightRadius: RADIUS.sheet,
     paddingTop: SPACING.section,
-    paddingBottom: 32,
     paddingHorizontal: SPACING.gutter,
   },
   header: {

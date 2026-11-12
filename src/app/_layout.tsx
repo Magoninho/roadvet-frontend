@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider } from '@nozbe/watermelondb/react';
 import { database } from '@/database';
@@ -39,7 +40,10 @@ export default function RootLayout() {
     <DatabaseProvider database={database}>
       <AuthProvider>
         <SafeAreaProvider>
-          <RootNavigator />
+          {/* The app is edge-to-edge on Android, so the provider must not add its own system bar margins. */}
+          <KeyboardProvider statusBarTranslucent navigationBarTranslucent preserveEdgeToEdge>
+            <RootNavigator />
+          </KeyboardProvider>
         </SafeAreaProvider>
       </AuthProvider>
     </DatabaseProvider>

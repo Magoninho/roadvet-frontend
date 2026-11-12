@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
@@ -185,50 +186,52 @@ export function PetDetalheScreen() {
         {tutor && <OwnerReference ownerName={tutor.nomeCompleto} />}
       </DetailTopBar>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
-        {editMode ? (
-          <>
-            <View style={styles.row}>
-              <FormField label="Data de nascimento" style={styles.rowInputLeft}>
-                <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
-              </FormField>
-              <FormField label="Peso" style={styles.rowInputRight}>
-                <WeightInput value={peso} onChangeText={setPeso} placeholder="0,0" />
-              </FormField>
-            </View>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding" automaticOffset>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <SectionDivider icon="information-outline" label="Informações básicas" showLine={false} />
+          {editMode ? (
+            <>
+              <View style={styles.row}>
+                <FormField label="Data de nascimento" style={styles.rowInputLeft}>
+                  <DateInput value={dataNascimento} onChange={setDataNascimento} placeholder="DD/MM/AAAA" />
+                </FormField>
+                <FormField label="Peso" style={styles.rowInputRight}>
+                  <WeightInput value={peso} onChangeText={setPeso} placeholder="0,0" />
+                </FormField>
+              </View>
 
-            <View style={styles.row}>
-              <FormField label="Espécie*" style={styles.rowInputLeft}>
-                <SelectInput value={especie} onSelect={handleSelectEspecie} options={ESPECIES} placeholder="Selecione" />
-              </FormField>
-              <FormField label="Raça" style={styles.rowInputRight}>
-                <BreedSelectInput
-                  especie={especie}
-                  value={raca}
-                  onSelect={setRaca}
-                  placeholder={especie ? 'Selecione' : 'Escolha a espécie'}
-                />
-              </FormField>
-            </View>
-          </>
-        ) : (
-          <>
-            <InfoText label="Espécie" value={pet.especie} />
-            <InfoText label="Raça" value={pet.raca ?? ''} />
-            <InfoText label="Data de nascimento" value={formatDateBR(pet.dataNascimento)} />
-            <InfoText label="Idade" value={formatAge(pet.dataNascimento)} />
-            {!!pet.peso && <InfoText label="Peso" value={`${pet.peso} kg`} />}
-          </>
-        )}
+              <View style={styles.row}>
+                <FormField label="Espécie*" style={styles.rowInputLeft}>
+                  <SelectInput value={especie} onSelect={handleSelectEspecie} options={ESPECIES} placeholder="Selecione" />
+                </FormField>
+                <FormField label="Raça" style={styles.rowInputRight}>
+                  <BreedSelectInput
+                    especie={especie}
+                    value={raca}
+                    onSelect={setRaca}
+                    placeholder={especie ? 'Selecione' : 'Escolha a espécie'}
+                  />
+                </FormField>
+              </View>
+            </>
+          ) : (
+            <>
+              <InfoText label="Espécie" value={pet.especie} />
+              <InfoText label="Raça" value={pet.raca ?? ''} />
+              <InfoText label="Data de nascimento" value={formatDateBR(pet.dataNascimento)} />
+              <InfoText label="Idade" value={formatAge(pet.dataNascimento)} />
+              {!!pet.peso && <InfoText label="Peso" value={`${pet.peso} kg`} />}
+            </>
+          )}
 
-        <SectionDivider icon="clipboard-text-clock-outline" label="Prontuários" />
-        {records.map((record) => (
-          <RecordCard key={record.id} data={record} onPress={handleRecordPress} />
-        ))}
-      </ScrollView>
+          <SectionDivider icon="clipboard-text-clock-outline" label="Prontuários" />
+          {records.map((record) => (
+            <RecordCard key={record.id} data={record} onPress={handleRecordPress} />
+          ))}
+        </ScrollView>
 
-      {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+        {editMode && <FormFooter onCancel={handleCancelEdit} onSave={handleSaveEdit} saving={saving} />}
+      </KeyboardAvoidingView>
 
       <ConfirmDialog
         visible={deletion.visible}
@@ -247,6 +250,7 @@ export function PetDetalheScreen() {
 export default PetDetalheScreen;
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
