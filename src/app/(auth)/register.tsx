@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { isValidEmail, isValidPhone, maskPhone, sanitizeEmail } from '@/utils/validation';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -41,6 +42,14 @@ export default function CadastroScreen() {
   const handleCadastrar = async () => {
     if (!nome.trim() || !email.trim() || !senha) {
       setError('Preencha nome, email e senha.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError('Informe um email válido.');
+      return;
+    }
+    if (telefone.trim() && !isValidPhone(telefone)) {
+      setError('Informe um telefone válido com DDD.');
       return;
     }
     if (senha.length < 6) {
@@ -136,7 +145,7 @@ export default function CadastroScreen() {
                 placeholder="Email"
                 placeholderTextColor="#8A8F98"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => setEmail(sanitizeEmail(text))}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -145,10 +154,11 @@ export default function CadastroScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder="Telefone"
+                placeholder="Telefone (85) 99999-9999"
                 placeholderTextColor="#8A8F98"
                 value={telefone}
-                onChangeText={setTelefone}
+                onChangeText={(text) => setTelefone(maskPhone(text))}
+                maxLength={15}
                 keyboardType="phone-pad"
                 returnKeyType="next"
               />

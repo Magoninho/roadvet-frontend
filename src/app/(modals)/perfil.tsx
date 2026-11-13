@@ -8,6 +8,7 @@ import { deleteAvatarFile, persistAvatarFile } from '@/database/repositories/ava
 import { isRemoteAvatarUri, updateVeterinario } from '@/database/repositories/veterinarios';
 import { synchronizeDatabase, uploadPendingAvatars } from '@/database/sync';
 import { pickAvatarImage, type PickedAvatar } from '@/utils/pickAvatarImage';
+import { isValidEmail, isValidPhone, maskPhone, sanitizeEmail } from '@/utils/validation';
 import { DetailTopBar } from '../components/DetailTopBar';
 import { EditableAvatar } from '../components/EditableAvatar';
 import { FormFooter } from '../components/FormFooter';
@@ -18,7 +19,6 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { SectionDivider } from '../components/SectionDivider';
 import { COLORS, SPACING } from '@/theme';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
 
 /** A new photo picked in edit mode, or `'remove'` to clear the current one. */
@@ -74,7 +74,7 @@ export default function PerfilScreen() {
     setNome(veterinario.nome);
     setEmail(veterinario.email);
     setCrmv(veterinario.crmv ?? '');
-    setTelefone(veterinario.telefone ?? '');
+    setTelefone(maskPhone(veterinario.telefone ?? ''));
     setAvatarChange(null);
     setError(null);
     setEditMode(true);
@@ -106,8 +106,12 @@ export default function PerfilScreen() {
       setError('Preencha os campos marcados com *.');
       return;
     }
-    if (!EMAIL_PATTERN.test(email.trim())) {
+    if (!isValidEmail(email)) {
       setError('Informe um email válido.');
+      return;
+    }
+    if (telefone.trim() && !isValidPhone(telefone)) {
+      setError('Informe um telefone válido com DDD.');
       return;
     }
 
@@ -227,7 +231,7 @@ export default function PerfilScreen() {
                 label="Email*"
                 placeholder="nome@exemplo.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => setEmail(sanitizeEmail(text))}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 containerStyle={styles.fullInput}
@@ -244,7 +248,7 @@ export default function PerfilScreen() {
                 label="Telefone"
                 placeholder="(85) 99999-9999"
                 value={telefone}
-                onChangeText={setTelefone}
+                onChangeText={(text) => setTelefone(maskPhone(text))}
                 keyboardType="phone-pad"
                 containerStyle={styles.fullInput}
               />

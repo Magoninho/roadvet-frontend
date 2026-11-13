@@ -5,6 +5,7 @@ import { persistAvatarFile } from '@/database/repositories/avatars';
 import { createTutor } from '@/database/repositories/tutores';
 import { useAuth } from '@/contexts/AuthContext';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { isValidCpf, isValidEmail, isValidPhone, maskCpf, maskPhone, sanitizeEmail } from '@/utils/validation';
 import { EditableAvatar } from './EditableAvatar';
 import { LabeledInput } from './LabeledInput';
 import { DateInput } from './DateInput';
@@ -47,6 +48,18 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
   const handleSalvar = async () => {
     if (!nomeCompleto.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
       Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
+      return;
+    }
+    if (!isValidCpf(cpf)) {
+      Alert.alert('CPF inválido', 'Confira os números do CPF informado.');
+      return;
+    }
+    if (email.trim() && !isValidEmail(email)) {
+      Alert.alert('Email inválido', 'Informe um email válido, como nome@exemplo.com.');
+      return;
+    }
+    if (!isValidPhone(telefone1) || (telefone2.trim() && !isValidPhone(telefone2))) {
+      Alert.alert('Telefone inválido', 'Informe o telefone com DDD, como (85) 99999-9999.');
       return;
     }
     if (!veterinario) return;
@@ -98,7 +111,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
             label="CPF*"
             placeholder="000.000.000-00"
             value={cpf}
-            onChangeText={setCpf}
+            onChangeText={(text) => setCpf(maskCpf(text))}
             keyboardType="numeric"
             containerStyle={styles.flexInput}
           />
@@ -111,7 +124,7 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
           label="Email"
           placeholder="nome@exemplo.com"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => setEmail(sanitizeEmail(text))}
           keyboardType="email-address"
           autoCapitalize="none"
           containerStyle={styles.fullInput}
@@ -134,8 +147,8 @@ export function TutorForm({ onCancel, onSave }: TutorFormProps) {
         </FormRow>
 
         <FormRow>
-          <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" containerStyle={styles.flexInput} />
-          <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" containerStyle={styles.flexInput} />
+          <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={(text) => setTelefone1(maskPhone(text))} keyboardType="numeric" containerStyle={styles.flexInput} />
+          <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={(text) => setTelefone2(maskPhone(text))} keyboardType="numeric" containerStyle={styles.flexInput} />
         </FormRow>
       </ScrollView>
 

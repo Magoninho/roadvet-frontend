@@ -13,6 +13,7 @@ import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { deletionWarnings } from '@/utils/deletion';
 import { formatAge, formatDateBR } from '@/utils/format';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
+import { isValidCpf, isValidEmail, isValidPhone, maskCpf, maskPhone, sanitizeEmail } from '@/utils/validation';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { DateInput } from '../../components/DateInput';
 import { DetailTopBar } from '../../components/DetailTopBar';
@@ -75,7 +76,7 @@ export function TutorDetalheScreen() {
 
   const handleEnableEdit = () => {
     setNome(tutor.nomeCompleto);
-    setCpf(tutor.cpf);
+    setCpf(maskCpf(tutor.cpf));
     setDataNascimento(tutor.dataNascimento);
     setEmail(tutor.email ?? '');
     setCep(tutor.cep ?? '');
@@ -85,8 +86,8 @@ export function TutorDetalheScreen() {
     setComplemento(tutor.complemento ?? '');
     setCidade(tutor.cidade ?? '');
     setUf(tutor.uf ?? '');
-    setTelefone1(tutor.telefone1 ?? '');
-    setTelefone2(tutor.telefone2 ?? '');
+    setTelefone1(maskPhone(tutor.telefone1 ?? ''));
+    setTelefone2(maskPhone(tutor.telefone2 ?? ''));
     setAvatarUri(null);
     setAvatarFileName(null);
     setEditMode(true);
@@ -99,6 +100,18 @@ export function TutorDetalheScreen() {
   const handleSaveEdit = async () => {
     if (!nome.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
       Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
+      return;
+    }
+    if (!isValidCpf(cpf)) {
+      Alert.alert('CPF inválido', 'Confira os números do CPF informado.');
+      return;
+    }
+    if (email.trim() && !isValidEmail(email)) {
+      Alert.alert('Email inválido', 'Informe um email válido, como nome@exemplo.com.');
+      return;
+    }
+    if (!isValidPhone(telefone1) || (telefone2.trim() && !isValidPhone(telefone2))) {
+      Alert.alert('Telefone inválido', 'Informe o telefone com DDD, como (85) 99999-9999.');
       return;
     }
 
@@ -199,7 +212,7 @@ export function TutorDetalheScreen() {
                   label="CPF*"
                   placeholder="000.000.000-00"
                   value={cpf}
-                  onChangeText={setCpf}
+                  onChangeText={(text) => setCpf(maskCpf(text))}
                   keyboardType="numeric"
                   containerStyle={styles.flexInput}
                 />
@@ -212,7 +225,7 @@ export function TutorDetalheScreen() {
                 label="Email"
                 placeholder="nome@exemplo.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => setEmail(sanitizeEmail(text))}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 containerStyle={styles.fullInput}
@@ -235,8 +248,8 @@ export function TutorDetalheScreen() {
               </FormRow>
 
               <FormRow style={styles.formRowMargin}>
-                <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={setTelefone1} keyboardType="numeric" containerStyle={styles.flexInput} />
-                <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={setTelefone2} keyboardType="numeric" containerStyle={styles.flexInput} />
+                <LabeledInput label="Telefone 1*" placeholder="(85) 99999-9999" value={telefone1} onChangeText={(text) => setTelefone1(maskPhone(text))} keyboardType="numeric" containerStyle={styles.flexInput} />
+                <LabeledInput label="Telefone 2" placeholder="(85) 99999-9999" value={telefone2} onChangeText={(text) => setTelefone2(maskPhone(text))} keyboardType="numeric" containerStyle={styles.flexInput} />
               </FormRow>
             </>
           ) : (
