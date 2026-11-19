@@ -62,13 +62,16 @@ export function getProntuarioDeletionImpact(prontuario: Prontuario) {
 export function observeProntuariosByPet(petId: string) {
   return prontuariosCollection()
     .query(Q.where('pet_id', petId), Q.sortBy('date', Q.desc))
-    .observe();
+    .observeWithColumns(PRONTUARIO_LIST_COLUMNS);
 }
 
-/** Columns whose edits must refresh a prontuário list (displayed or searched on). */
+/**
+ * Columns whose edits must refresh a prontuário list (displayed or searched on).
+ * `_status` is WatermelonDB's sync state; watching it flips the card's cloud icon after a sync.
+ */
 export const PRONTUARIO_LIST_COLUMNS = [
   'pet_id', 'date', 'weight', 'anamnesis', 'physical_exam',
-  'prescription', 'vaccines', 'exam_request_notes', 'exam_results_notes',
+  'prescription', 'vaccines', 'exam_request_notes', 'exam_results_notes', '_status',
 ];
 
 export function observeProntuariosByVeterinario(veterinarioId: string) {

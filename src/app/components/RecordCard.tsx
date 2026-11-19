@@ -11,7 +11,8 @@ export interface RecordCardData {
   description: string;
   badges: BadgeType[];
   date: string;
-  synced: boolean; // true = já sincronizado (nuvem verde), false = pendente (nuvem cinza)
+  /** true = already in the cloud (green cloud); false = local only, waiting for the next sync (gray cloud). */
+  synced: boolean;
 }
 
 interface RecordCardProps {
@@ -49,6 +50,7 @@ export function RecordCard({ data, onPress }: RecordCardProps) {
             name={synced ? 'cloud-upload' : 'cloud-outline'}
             size={16}
             color={synced ? '#22C55E' : '#B0B0B0'}
+            accessibilityLabel={synced ? 'Sincronizado com a nuvem' : 'Salvo apenas neste aparelho'}
           />
           <Text style={styles.dateText}>{date}</Text>
         </View>

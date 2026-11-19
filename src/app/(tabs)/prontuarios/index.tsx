@@ -46,7 +46,7 @@ function toRecordCardData({ prontuario, pet }: ProntuarioRow): RecordCardData {
     description: prontuario.anamnesis || prontuario.physicalExam || 'Consulta registrada',
     badges,
     date: formatDateBR(prontuario.date),
-    synced: true,
+    synced: prontuario.syncStatus === 'synced',
   };
 }
 
