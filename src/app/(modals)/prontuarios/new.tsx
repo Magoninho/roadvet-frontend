@@ -1,10 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { showAlert } from '@/utils/showAlert';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
@@ -92,7 +92,7 @@ export default function NewProntuario() {
 
       router.replace({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: prontuario.id } });
     } catch (error) {
-      Alert.alert('Erro ao salvar', 'Não foi possível salvar o prontuário. Tente novamente.');
+      showAlert('Erro ao salvar', 'Não foi possível salvar o prontuário. Tente novamente.');
       console.error(error);
     } finally {
       setSaving(false);

@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
+import { showAlert } from '@/utils/showAlert';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
@@ -99,19 +100,19 @@ export function TutorDetalheScreen() {
 
   const handleSaveEdit = async () => {
     if (!nome.trim() || !cpf.trim() || !cep.trim() || !endereco.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !uf.trim() || !telefone1.trim()) {
-      Alert.alert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
+      showAlert('Campos obrigatórios', 'Preencha todos os campos marcados com *.');
       return;
     }
     if (!isValidCpf(cpf)) {
-      Alert.alert('CPF inválido', 'Confira os números do CPF informado.');
+      showAlert('CPF inválido', 'Confira os números do CPF informado.');
       return;
     }
     if (email.trim() && !isValidEmail(email)) {
-      Alert.alert('Email inválido', 'Informe um email válido, como nome@exemplo.com.');
+      showAlert('Email inválido', 'Informe um email válido, como nome@exemplo.com.');
       return;
     }
     if (!isValidPhone(telefone1) || (telefone2.trim() && !isValidPhone(telefone2))) {
-      Alert.alert('Telefone inválido', 'Informe o telefone com DDD, como (85) 99999-9999.');
+      showAlert('Telefone inválido', 'Informe o telefone com DDD, como (85) 99999-9999.');
       return;
     }
 
@@ -142,6 +143,9 @@ export function TutorDetalheScreen() {
       }
 
       setEditMode(false);
+    } catch (error) {
+      console.error(error);
+      showAlert('Erro ao salvar', 'Não foi possível salvar o tutor. Tente novamente.');
     } finally {
       setSaving(false);
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { showAlert } from '@/utils/showAlert';
 import { of } from 'rxjs';
 import Pet from '@/database/models/Pet';
 import Tutor from '@/database/models/Tutor';
@@ -82,11 +83,11 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
     const resolvedTutorId = showTutorSection ? selectedTutorId : tutorId;
 
     if (!resolvedTutorId) {
-      Alert.alert('Tutor obrigatório', 'Selecione um tutor cadastrado ou cadastre um novo antes de salvar.');
+      showAlert('Tutor obrigatório', 'Selecione um tutor cadastrado ou cadastre um novo antes de salvar.');
       return;
     }
     if (!nome.trim() || !especie) {
-      Alert.alert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+      showAlert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
       return;
     }
 
@@ -102,6 +103,9 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         avatarUrl,
       });
       onSave(pet);
+    } catch (error) {
+      console.error(error);
+      showAlert('Erro ao salvar', 'Não foi possível salvar o pet. Tente novamente.');
     } finally {
       setSaving(false);
     }

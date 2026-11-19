@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { showAlert } from '@/utils/showAlert';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { of } from 'rxjs';
@@ -114,7 +115,7 @@ export function PetDetalheScreen() {
 
   const handleSaveEdit = async () => {
     if (!nome.trim() || !especie) {
-      Alert.alert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+      showAlert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
       return;
     }
 
@@ -137,6 +138,9 @@ export function PetDetalheScreen() {
       }
 
       setEditMode(false);
+    } catch (error) {
+      console.error(error);
+      showAlert('Erro ao salvar', 'Não foi possível salvar o pet. Tente novamente.');
     } finally {
       setSaving(false);
     }
