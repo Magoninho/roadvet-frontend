@@ -90,7 +90,10 @@ export default function NewProntuario() {
         });
       }
 
-      router.replace({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: prontuario.id } });
+      // Drop the creation flow (select pet -> new) from the stack so any "back" from the
+      // details screen (header icon, Android back, swipe) lands on the prontuarios list.
+      router.dismissTo('/(tabs)/prontuarios');
+      router.push({ pathname: '/(modals)/prontuarios/details', params: { prontuarioId: prontuario.id } });
     } catch (error) {
       showAlert('Erro ao salvar', 'Não foi possível salvar o prontuário. Tente novamente.');
       console.error(error);
