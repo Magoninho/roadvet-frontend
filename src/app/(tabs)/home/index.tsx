@@ -117,6 +117,11 @@ export default function HomeScreen() {
   }, [prontuarioRows]);
 
   const firstName = veterinario?.nome.trim().split(/\s+/)[0] ?? "";
+  // Read into plain values: `veterinario` is a WatermelonDB model mutated in place, so
+  // JSX keyed on the object itself (React Compiler memoization) would never refresh.
+  const avatarUrl = veterinario?.avatarUrl ?? null;
+  const nome = veterinario?.nome ?? null;
+  const initials = nome !== null ? initialsOf(nome) : null;
 
   const openProntuario = (prontuarioId: string) => {
     router.push({ pathname: "/(modals)/prontuarios/details", params: { prontuarioId } });
@@ -132,10 +137,10 @@ export default function HomeScreen() {
             onPress={() => router.push("/perfil")}
             accessibilityLabel="Meu perfil"
           >
-            {veterinario?.avatarUrl ? (
-              <Image source={{ uri: veterinario.avatarUrl }} style={styles.avatarImage} />
-            ) : veterinario ? (
-              <Text style={styles.avatarText}>{initialsOf(veterinario.nome)}</Text>
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            ) : initials !== null ? (
+              <Text style={styles.avatarText}>{initials}</Text>
             ) : (
               <MaterialCommunityIcons name="account-outline" size={24} color={COLORS.onBrand} />
             )}

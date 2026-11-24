@@ -1,3 +1,4 @@
+import { File as FileSystemFile } from 'expo-file-system';
 import { Platform } from 'react-native';
 import {
   clearAuthTokens,
@@ -134,11 +135,11 @@ export async function apiUpload<T>(
     const blob = await (await fetch(file.uri)).blob();
     form.append('file', blob, file.name);
   } else {
-    form.append('file', {
-      uri: file.uri,
-      name: file.name,
-      type: file.type ?? 'application/octet-stream',
-    } as unknown as Blob);
+    // Expo replaces the global fetch on native with expo/fetch, whose multipart
+    // encoder rejects React Native's `{ uri, name, type }` convention ("Unsupported
+    // FormDataPart implementation"). expo-file-system's File implements Blob and
+    // exposes bytes(), which expo/fetch reads directly from disk.
+    form.append('file', new FileSystemFile(file.uri) as unknown as Blob, file.name);
   }
 
   const response = await fetch(url.toString(), { method: 'POST', headers, body: form });
