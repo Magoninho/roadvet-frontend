@@ -10,7 +10,7 @@ import { observeTutoresWhereNome } from '@/database/repositories/tutores';
 import { useAuth } from '@/contexts/AuthContext';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
 import { speciesToIcon } from '@/utils/format';
-import { ESPECIES } from '@/utils/racas';
+import { ESPECIES, SEXOS } from '@/utils/racas';
 import { BreedSelectInput } from './BreedSelectInput';
 import { DateInput } from './DateInput';
 import { EditableAvatar } from './EditableAvatar';
@@ -46,6 +46,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [sexo, setSexo] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -86,8 +87,8 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
       showAlert('Tutor obrigatório', 'Selecione um tutor cadastrado ou cadastre um novo antes de salvar.');
       return;
     }
-    if (!nome.trim() || !especie) {
-      showAlert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+    if (!nome.trim() || !especie || !sexo) {
+      showAlert('Campos obrigatórios', 'Preencha o nome, a espécie e o sexo do pet.');
       return;
     }
 
@@ -100,6 +101,7 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
         peso: peso.trim() || null,
         especie,
         raca: raca.trim() || null,
+        sexo,
         avatarUrl,
       });
       onSave(pet);
@@ -166,6 +168,10 @@ export function PetForm({ onCancel, onSave, showTutorSection = true, tutorId }: 
           onChangeText={setNome}
           containerStyle={styles.fullInput}
         />
+
+        <FormField label="Sexo*" style={styles.fullInput}>
+          <SelectInput value={sexo} onSelect={setSexo} options={SEXOS} placeholder="Selecione" />
+        </FormField>
 
         <View style={styles.row}>
           <FormField label="Data de nascimento" style={styles.rowInputLeft}>

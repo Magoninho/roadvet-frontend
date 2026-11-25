@@ -15,7 +15,7 @@ import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { deletionWarnings } from '@/utils/deletion';
 import { formatAge, formatDateBR, speciesToIcon } from '@/utils/format';
 import { pickAvatarImage } from '@/utils/pickAvatarImage';
-import { ESPECIES } from '@/utils/racas';
+import { ESPECIES, SEXOS } from '@/utils/racas';
 import { BreedSelectInput } from '../../components/BreedSelectInput';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { DateInput } from '../../components/DateInput';
@@ -52,6 +52,7 @@ export function PetDetalheScreen() {
   const [peso, setPeso] = useState('');
   const [especie, setEspecie] = useState('');
   const [raca, setRaca] = useState('');
+  const [sexo, setSexo] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
 
@@ -98,6 +99,7 @@ export function PetDetalheScreen() {
     setPeso(pet.peso ?? '');
     setEspecie(pet.especie);
     setRaca(pet.raca ?? '');
+    setSexo(pet.sexo ?? '');
     setAvatarUri(null);
     setAvatarFileName(null);
     setEditMode(true);
@@ -114,8 +116,8 @@ export function PetDetalheScreen() {
   };
 
   const handleSaveEdit = async () => {
-    if (!nome.trim() || !especie) {
-      showAlert('Campos obrigatórios', 'Preencha o nome e a espécie do pet.');
+    if (!nome.trim() || !especie || !sexo) {
+      showAlert('Campos obrigatórios', 'Preencha o nome, a espécie e o sexo do pet.');
       return;
     }
 
@@ -130,6 +132,7 @@ export function PetDetalheScreen() {
         peso: peso.trim() || null,
         especie,
         raca: raca.trim() || null,
+        sexo,
         ...(avatarUrl !== undefined ? { avatarUrl } : {}),
       });
 
@@ -217,11 +220,16 @@ export function PetDetalheScreen() {
                   />
                 </FormField>
               </View>
+
+              <FormField label="Sexo*" style={styles.fullRow}>
+                <SelectInput value={sexo} onSelect={setSexo} options={SEXOS} placeholder="Selecione" />
+              </FormField>
             </>
           ) : (
             <>
               <InfoText label="Espécie" value={pet.especie} />
               <InfoText label="Raça" value={pet.raca ?? ''} />
+              <InfoText label="Sexo" value={pet.sexo ?? ''} />
               <InfoText label="Data de nascimento" value={formatDateBR(pet.dataNascimento)} />
               <InfoText label="Idade" value={formatAge(pet.dataNascimento)} />
               {!!pet.peso && <InfoText label="Peso" value={`${pet.peso} kg`} />}
@@ -278,4 +286,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', marginHorizontal: SPACING.gutter, marginTop: 12, gap: 12, alignItems: 'flex-start' },
   rowInputLeft: { flex: 1 },
   rowInputRight: { flex: 1 },
+  fullRow: { marginHorizontal: SPACING.gutter, marginTop: 12 },
 });

@@ -17,6 +17,7 @@ export default class Pet extends Model {
   @text('peso') peso!: string | null;
   @text('especie') especie!: string;
   @text('raca') raca!: string | null;
+  @text('sexo') sexo!: string | null;
   @text('avatar_url') avatarUrl!: string | null;
 
   @readonly @date('created_at') createdAt!: Date;

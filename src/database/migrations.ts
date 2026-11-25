@@ -29,5 +29,14 @@ export const migrations = schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 5,
+      steps: [
+        addColumns({
+          table: 'pets',
+          columns: [{ name: 'sexo', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });

@@ -9,6 +9,7 @@ export interface PetInput {
   peso?: string | null;
   especie: string;
   raca?: string | null;
+  sexo?: string | null;
   avatarUrl?: string | null;
 }
 
@@ -20,6 +21,7 @@ function applyPetInput(pet: Pet, input: Partial<PetInput>) {
   if (input.peso !== undefined) pet.peso = input.peso ?? null;
   if (input.especie !== undefined) pet.especie = input.especie;
   if (input.raca !== undefined) pet.raca = input.raca ?? null;
+  if (input.sexo !== undefined) pet.sexo = input.sexo ?? null;
   if (input.avatarUrl !== undefined) pet.avatarUrl = input.avatarUrl ?? null;
 }
 

@@ -6,6 +6,8 @@
 
 export const ESPECIES = ['Canino', 'Felino'];
 
+export const SEXOS = ['Macho', 'Fêmea'];
+
 export const RACA_SRD = 'SRD (Sem raça definida)';
 
 const CANINOS = [
