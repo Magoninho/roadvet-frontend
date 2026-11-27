@@ -81,6 +81,7 @@ export default function ProntuariosScreen() {
         { especie: (row) => row.pet?.especie },
         {
           comPrescricao: (row) => !!row.prontuario.prescription,
+          comVacina: (row) => !!row.prontuario.vaccines,
           comExame: (row) => !!row.prontuario.examRequestNotes,
         },
       ),
@@ -163,8 +164,9 @@ export default function ProntuariosScreen() {
         visible={filterVisible}
         chipGroups={filterGroups}
         toggles={[
-          { key: 'comPrescricao', label: 'Com prescrição' },
-          { key: 'comExame', label: 'Com pedido de exame' },
+          { key: 'comPrescricao', label: 'Com prescrição', badge: 'medication' },
+          { key: 'comVacina', label: 'Com vacina', badge: 'vaccine' },
+          { key: 'comExame', label: 'Com pedido de exame', badge: 'exam' },
         ]}
         value={filterState}
         onChange={setFilterState}

@@ -8,6 +8,8 @@
  * ORed (selecting "Cão" and "Gato" keeps both).
  */
 
+import type { BadgeType } from '@/app/components/StatusBadge';
+
 export interface FilterChipOption {
   value: string;
   label: string;
@@ -22,6 +24,8 @@ export interface FilterChipGroupConfig {
 export interface FilterToggleConfig {
   key: string;
   label: string;
+  /** Shows the same badge icon used on the list cards next to the label, so the user learns what it means. */
+  badge?: BadgeType;
 }
 
 export interface FilterConfig {

@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { FilterChipGroupConfig, FilterState, FilterToggleConfig } from '@/utils/filter';
 import { setToggle, toggleChip } from '@/utils/filter';
 import { COLORS, RADIUS, SPACING } from '@/theme';
+import { StatusBadge } from './StatusBadge';
 
 interface FilterSheetProps {
   visible: boolean;
@@ -79,7 +80,10 @@ export function FilterSheet({
 
             {toggles.map((toggle) => (
               <View key={toggle.key} style={styles.toggleRow}>
-                <Text style={styles.toggleLabel}>{toggle.label}</Text>
+                <View style={styles.toggleLabelRow}>
+                  {toggle.badge && <StatusBadge type={toggle.badge} />}
+                  <Text style={styles.toggleLabel}>{toggle.label}</Text>
+                </View>
                 <Switch
                   value={!!value.toggles[toggle.key]}
                   onValueChange={(active) => onChange(setToggle(value, toggle.key, active))}
@@ -182,11 +186,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.divider,
   },
+  toggleLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    marginRight: 12,
+  },
   toggleLabel: {
     fontSize: 14,
     color: COLORS.textDark,
     flexShrink: 1,
-    marginRight: 12,
   },
   footer: {
     flexDirection: 'row',
